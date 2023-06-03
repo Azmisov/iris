@@ -9,5 +9,6 @@ iris-client*
 devel/
 devel*.cfg
 
-# For Eclipse output
+# For Eclipse/development output
 bin/eclipse/
+dev/

@@ -1,0 +1,25 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "MainServer",
+            "request": "launch",
+            "mainClass": "us.mn.state.dot.tms.server.MainServer",
+            "projectName": "iris_680b11c0",
+            "vmArgs": ["-server","-Xmx4G","-XX:+UseG1GC","-Ddevel.cfg=./dev/dev.cfg"],
+            "cwd": "${workspaceFolder}",
+            "shortenCommandLine": "none"
+        },
+        {
+            "type": "java",
+            "name": "MainClient",
+            "request": "launch",
+            "mainClass": "us.mn.state.dot.tms.client.MainClient",
+            "projectName": "iris_680b11c0"
+        }
+    ]
+}

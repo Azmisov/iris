@@ -142,6 +142,138 @@ function update_database() {
 	# FIXME: run required SQL migrate scripts
 }
 
+# Cleanup the effects of init. Can be run from source, since doesn't depend on
+# java filtersets. Note: this doesn't undo string substitutions
+function clean(){
+	# performing in the reverse order
+	enable_error_logging
+
+	# create_links: remove jar link, assume there was no other older version it
+	# 	should be linked to; remove keystores
+	echo "Removing IRIS links"
+	/usr/bin/rm -f /usr/share/java/iris-server/iris-server.jar
+	/usr/bin/rm -f /var/www/html/iris-client/iris-client.keystore
+	/usr/bin/rm -f /var/www/html/iris-client/iris-client.properties
+
+	# configure_services: stop/disable nginx/iris; assume stopped originally
+	echo "Disabling iris/nginx services"
+	systemctl stop iris.service
+	systemctl disable iris.service
+	systemctl stop nginx.service
+	systemctl disable nginx.service	
+	
+	# configure_firewall: remove port 1037
+	echo "Removing firewall port"
+	firewall-cmd --permanent --remove-port=1037/tcp
+	firewall-cmd --reload
+
+	# configure_selinux; assume network connect was disabled (default I
+	# 	believe); remove the 3030 port
+	echo "Removing nginx SELinux configurations"
+	setsebool -P httpd_can_network_connect false
+	semanage port -d -p tcp 3030
+
+	# create_tms_database: drop db
+	echo "Removing tms database"
+	su --login postgres -c "dropdb tms;"
+	
+	# create_tms_user: remove user
+	su --login postgres -c "dropuser tms;"
+
+	# create_earthwyrm_database: drop db
+	echo "Removing earthwyrm database"
+	su --login postgres -c "dropdb earthwyrm;"
+	
+	# init_db: remove custom IRIS postgres settings (assumes 2 lines added after comment);
+	# 	disable db service, assuming stopped originally
+	echo "Removing IRIS postgres settings"
+	pg_conf=/var/lib/pgsql/data/postgresql.conf
+	sed -i -e '/IRIS osm schema/,+2d' $pg_conf
+	echo "Disabling postgres service"
+	systemctl stop postgresql.service
+	systemctl disable postgresql.service
+
+	# create_keystores: remove keys
+	echo "Removing keystores"
+	k_cert=/etc/iris/iris-sonar-public.cert
+	k_server=/etc/iris/iris-server.keystore
+	k_client=/etc/iris/iris-client.keystore
+	/usr/bin/rm -f $k_cert $k_server $k_client
+
+	echo "Cleanup complete! If uninstalling, you'll still need to remove the rpm package"
+}
+
+# Setup for development, to be performed after init
+function dev(){
+	enable_error_logging
+
+	# ensure running in correct directory
+	sprops_src=./etc/dev/iris-server.properties
+	if test -f "$sprops_src"; then
+		# existing dev directory already setup?
+		if test -e "./dev"; then
+			read -p "Existing ./dev found, do you want to overwrite (y/n)? " choice
+			case "$choice" in 
+				y|Y ) ;;
+				* ) exit 1;;
+			esac
+			echo "Removing existing ./dev"
+			/usr/bin/rm -rf ./dev
+		fi
+
+		echo "Copying templates"
+		cp -Rp ./etc/dev ./
+
+		# so we don't have to always stop iris service on restart during development
+		echo "Disabling any installed iris service"
+		systemctl stop iris.service
+		systemctl disable iris.service
+
+		echo "Copying keystores"
+		k_cert=/etc/iris/iris-sonar-public.cert
+		k_server=/etc/iris/iris-server.keystore
+		k_client=/etc/iris/iris-client.keystore
+		# should match ownership of ./dev folder
+		cp -f --preserve=mode,timestamps $k_cert $k_server $k_client ./dev/
+		chown --reference=./dev/iris-server.properties ./dev/*.keystore ./dev/*.cert
+
+		echo "Copying passwords"
+		keystore_pass=`sed -n 's/.*keystore\.password=\(.*\)/\1/p' /etc/iris/iris-server.properties`
+		db_pass=`sed -n 's/.*db\.password=\(.*\)/\1/p' /etc/iris/iris-server.properties`
+		sprops=./dev/iris-server.properties
+		sed -i "s/.*keystore\.password=.*/keystore.password=$keystore_pass/" $sprops
+		sed -i "s/.*db\.password=.*/db.password=$db_pass/" $sprops
+
+		# even with db.version commented, it still seems to refuse to start if version isn't same
+		# so doing this always, just to be doubly sure the server will run
+		echo "Copying IRIS version number"
+		iris_version=`sed -n 's/^version=\(.*\)/\1/p' ./project.properties`
+		sed -i "s/.*db.version\ =\ .*/db.version\ =\ $iris_version/" ./dev/dev.cfg
+
+		echo "Setup complete!"
+		# TODO: logs for sonar, sonar_tls, sonar_task, sonar_time?
+	else
+		echo "Expected $sprops_src file. Try running from the iris root code directory."
+		exit 1
+	fi
+}
+
+function enable_error_logging(){
+	# exit when any command fails
+	set -e
+	# keep track of the last executed command
+	trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
+	# echo an error message before exiting
+	trap log_error EXIT
+}
+function log_error(){
+	exit_code=$?
+    if [ $exit_code -ne 0 ]; then
+        echo "\"${last_command}\" command failed with exit code ${exit_code}."
+        exit $exit_code
+	fi
+}
+
 case "$1" in
 	init)
 		check_initialized
@@ -164,7 +296,13 @@ case "$1" in
 		create_links
 		update_database
 		;;
+	clean)
+		clean
+		;;
+	dev)
+		dev
+		;;
 	*)
-		echo $"Usage: $0 {init|update}"
+		echo $"Usage: $0 {init|update|clean}"
 		exit 1
 esac

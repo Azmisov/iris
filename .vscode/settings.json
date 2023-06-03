@@ -1,0 +1,14 @@
+{
+    "java.project.sourcePaths": [
+        "src",
+        "etc/i18n"
+    ],
+    "java.project.outputPath": "build/classes",
+    "java.server.launchMode": "Standard",
+    "java.dependency.packagePresentation": "hierarchical",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "/usr/share/java/postgresql-jdbc.jar"
+    ],
+    "editor.rulers": [80,100,120]
+}
