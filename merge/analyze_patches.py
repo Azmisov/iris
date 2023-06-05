@@ -1,11 +1,10 @@
-""" Takes a list of mercurial patches, filters them, and analyzes them for conflicts/clusters
-"""
+""" Takes a list of unified patches, filters them, and analyzes them for conflicts/clusters """
 import os, re, pprint
 import whatthepatch
 __dir__ = os.path.dirname(os.path.realpath(__file__))
 pp = pprint.PrettyPrinter(indent=4)
 
-# Directory of *.patch files and hg_log.txt
+# Directory of *.patch files and hg_log.txt; relative to current file
 patch_dir = os.path.join(__dir__, "../patches_v47")
 # The changesets you are interested in
 changeset_range = [9784,10062]
@@ -73,7 +72,7 @@ class Patch:
 		self.summary = attrs["summary"]
 		self.lines = {}
 		""" mapping from filename to count of lines changed; populuated by `read_patch` """
-		self.diffs = None
+		self.diffs = []
 		""" diffs extracted from patch file; populuated by `read_patch` """
 		self.conflicts = set()
 		""" other changesets that affect same fileset """
@@ -97,13 +96,15 @@ class Patch:
 		with open(os.path.join(patch_dir, f"{self.id}.patch")) as f:
 			raw = f.read()
 		# which files were modified, and count of lines that chnaged
-		self.diffs = list(whatthepatch.parse_patch(raw))
+		diffs = list(whatthepatch.parse_patch(raw))
 		# calculate line changes
-		for diff in self.diffs:
+		for diff in diffs:
 			path = diff.header.new_path
+			if path.startswith('b/'):
+				path = path[2:]
 			# this can occur if it is a binary file
 			if not diff.changes:
-				print(f"Warning, no changes for patch {self.id}, file {path}")
+				print(f"Warning, no changes given for patch {self.id}, file {path}")
 				continue
 			# line change count
 			count = [0,0] # [rmeove,add]
@@ -122,6 +123,11 @@ class Patch:
 				if path not in Patch.file_index:
 					Patch.file_index[path] = []
 				Patch.file_index[path].append(self.id)
+			
+			self.diffs.append({
+				"path": path,
+				"diff": diff
+			})
 
 	@staticmethod
 	def find_conflicts():
@@ -140,9 +146,10 @@ class Patch:
 						c.add(oid)
 	
 	@staticmethod
-	def cluster(ofile="./patch_clusters.txt"):
+	def cluster(ofile="patch_clusters.txt"):
 		""" Find clusters of Patches based on possible conflicts
-			:param ofile (str): filepath to write results to (optional)
+			:param ofile (str): if not None, filepath to write results to; if filepath
+				is not absolute or prefixed by ., then it is written to this python files directory
 		"""
 		# Set of all ids that have already been clustered
 		clustered = set()
@@ -186,6 +193,8 @@ class Patch:
 		clusters.insert(0, singletons)
 		
 		if ofile:
+			if not (os.path.isabs(ofile) or ofile[0] == '.'):
+				ofile = os.path.join(__dir__, ofile)
 			print(f"Writing patch clusters to {ofile}")
 			with open(ofile,"w") as f:
 				for cluster in clusters:
