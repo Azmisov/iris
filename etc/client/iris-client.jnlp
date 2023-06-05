@@ -4,8 +4,8 @@
       codebase="http://@@WEBSTART.HOST@@/iris-client"
       href="iris-client.jnlp">
     <information>
-	<title>IRIS</title>
-	<vendor>MnDOT</vendor>
+	<title>WyDOT IRIS</title>
+	<vendor>Iteris Inc.</vendor>
 	<homepage href="index.html"/>
 	<description>Intelligent Roadway Information System</description>
 	<icon href="images/iris_icon.png"/>
