@@ -10,89 +10,100 @@ patch_dir = os.path.join(__dir__, "../patches_v47")
 # The changesets you are interested in
 changeset_range = [9784,10062]
 
-""" Parsed patch format:
-	{
-		id: int, the changeset number
-		hash: str, hash for changeset
-		user: str, who made the change
-		date: str, date of change
-		summary: str, description of change
-		lines: {
-			[filename]: int, count of lines changed
-		}
-		conflicts: set([id]), other changesets that affect same fileset
-	}
-"""
+class Patch:
+	patch_index = {}
+	""" Mapping from id to Patch; populated by `read_patch` """
+	file_index = {}
+	""" Mapping from modified file to Patch.id; populuated by `read_patch` """
 
-""" Filter out patches to ignore
-	:returns: (bool) true to ignore, otherwise patch will be kept
-"""
-def ignore_patch(patch: dict):
-	# outside desired range
-	if patch["id"] < changeset_range[0] or patch["id"] > changeset_range[1]:
-		return True
-	# ignore: keyword
-	if re.match("^ignore:", patch["summary"], re.I):
-		# print("Ignored:", patch["summary"])
-		return True
-
-def parse_log():
-	""" Reads/Parses changesets listed in hg_log.txt and outputs JSON format.
-		Filters the patches using function `ignore_patch`
-		:returns: (dict)
-	"""
-	print("Parsing hg_log.txt...")
-	patches = []
-	builder = {}
-	def flush():
-		nonlocal builder
-		if not ignore_patch(builder):
-			patches.append(builder)
+	@staticmethod
+	def get(id: int):
+		""" Get Patch by id """
+		return Patch.patch_index[id]
+	@staticmethod
+	def add(patch: "Patch"):
+		""" Add the Patch to the index """
+		Patch.patch_index[patch.id] = patch
+	
+	@staticmethod
+	def parse_hg_log():
+		""" Populates the index of Patch objects from hg_log.txt
+			:returns: (list[Patch]) patches that were added
+		"""
+		print("Parsing hg_log.txt...")
+		patches = []
 		builder = {}
-	tokenize = re.compile("(.*?):\s*(.*)")
-	with open(os.path.join(patch_dir, "hg_log.txt")) as f:
-		lines = f.readlines()
-		builder = {}
-		for line in lines:
-			m = tokenize.match(line)
-			if m is None:
-				flush()
-				continue
-			key, val = m.groups()
-			if key == "changeset":
-				id, hash = val.split(":")
-				builder["id"] = int(id)
-				builder["hash"] = hash
-			else:
-				builder[key] = val
-	if builder:
-		flush()
-	return patches
+		def flush():
+			nonlocal builder
+			p = Patch(builder)
+			if not p.should_ignore():
+				p.read_patch()
+				patches.append(p)
+			builder = {}
+		tokenize = re.compile("(.*?):\s*(.*)")
+		with open(os.path.join(patch_dir, "hg_log.txt")) as f:
+			lines = f.readlines()
+			builder = {}
+			for line in lines:
+				m = tokenize.match(line)
+				if m is None:
+					flush()
+					continue
+				key, val = m.groups()
+				if key == "changeset":
+					id, hash = val.split(":")
+					builder["id"] = int(id)
+					builder["hash"] = hash
+				else:
+					builder[key] = val
+		if builder:
+			flush()
 
-def parse_patches(patches):
-	""" Parse actual patch data
-		:param (list): output of parse_log, an index of the patches
-	"""
-	print("Parsing patch data...")
-	# Mapping from file->patch to check which patches might conflict
-	files = {}
-	# Mapping from id->patch
-	patches_index = {}
+		Patch.find_conflicts()
+		return patches
+	
+	def __init__(self, attrs):
+		""" Construct a new Patch
+			:param attrs (dict): metadata extracted from hg_log.txt
+		"""
+		self.id = attrs["id"]
+		self.hash = attrs["hash"]
+		self.date = attrs["date"]
+		self.user = attrs["user"]
+		self.summary = attrs["summary"]
+		self.lines = {}
+		""" mapping from filename to count of lines changed; populuated by `read_patch` """
+		self.diffs = None
+		""" diffs extracted from patch file; populuated by `read_patch` """
+		self.conflicts = set()
+		""" other changesets that affect same fileset """
+	
+	def should_ignore(self):
+		""" Filter out patches to ignore
+			:returns: (bool) true to ignore, otherwise patch will be kept
+		"""
+		# outside desired range
+		if changeset_range[0] <= self.id <= changeset_range[1]:
+			# ignore: keyword
+			if not re.match("^ignore:", self.summary, re.I):
+				return False
+			# print("Ignored:", self.summary)
+		return True
+	
+	def read_patch(self):
+		""" Read/parse patch file, and add this Patch to the index """
+		Patch.add(self)
 
-	for patch in patches:
-		patches_index[patch["id"]] = patch
-
-		with open(os.path.join(patch_dir, f"{patch['id']}.patch")) as f:
+		with open(os.path.join(patch_dir, f"{self.id}.patch")) as f:
 			raw = f.read()
-		# possible conflicts with other patches (added later)
-		patch["conflicts"] = set()
 		# which files were modified, and count of lines that chnaged
-		lines = patch["lines"] = {}
-		for diff in whatthepatch.parse_patch(raw):
+		self.diffs = list(whatthepatch.parse_patch(raw))
+		# calculate line changes
+		for diff in self.diffs:
 			path = diff.header.new_path
 			# this can occur if it is a binary file
 			if not diff.changes:
-				print(f"Warning, no changes for patch {patch['id']}, file {path}")
+				print(f"Warning, no changes for patch {self.id}, file {path}")
 				continue
 			# line change count
 			count = [0,0] # [rmeove,add]
@@ -103,79 +114,92 @@ def parse_patches(patches):
 					count[1] += 1
 			# save file info
 			count = max(count)
-			if path in lines:
-				lines[path] += count
+			if path in self.lines:
+				self.lines[path] += count
 			else:
-				lines[path] = count
+				self.lines[path] = count
 				# track list of files
-				if path not in files:
-					files[path] = []
-				files[path].append(patch["id"])
+				if path not in Patch.file_index:
+					Patch.file_index[path] = []
+				Patch.file_index[path].append(self.id)
 
-	# Mark patches that have possible conflicts; e.g. affect same file, so maybe alter the
-	# same line number, or are just working on the same module
-	for ids in files.values():
-		# no conflicts for this file
-		if len(ids) <= 1:
-			continue
-		for id in ids:
-			c = patches_index[id]["conflicts"]
-			for oid in ids:
-				if oid != id:
-					c.add(oid)
-
-	# Find clusters based on possible conflicts;
-	# Set of all ids that have already been clustered
-	clustered = set()
-	# first cluster are patches that have no conflicts
-	clusters = [[]]
-	for patch in patches:
-		id = patch["id"]
-		# already clustered
-		if id in clustered:
-			continue
-		clustered.add(id)
-		# singleton
-		if not patch["conflicts"]:
-			clusters[0].append(patch)
-			continue
-		# build cluster
-		cluster = []
-		clusters.append(cluster)
-		# cluster in two pass manner: add `commit` to cluster, while adding any
-		# unclustered children (conflicts) to `pending`; 
-		commit = [patch]
-		while commit:
-			pending = []
-			for patch in commit:
-				cluster.append(patch)
-				# children (conflicts)
-				for cid in patch["conflicts"]:
-					if cid not in clustered:
-						clustered.add(cid)
-						pending.append(patches_index[cid])
-			# next pass
-			commit = pending
+	@staticmethod
+	def find_conflicts():
+		""" Populate Patch.conflicts lists, which are cases where two patches affect the same file """
+		# Mark patches that have possible conflicts; e.g. affect same file, so maybe alter the
+		# same line number, or are just working on the same module
+		print("Building list of conflicts...")
+		for ids in Patch.file_index.values():
+			# no conflicts for this file
+			if len(ids) <= 1:
+				continue
+			for id in ids:
+				c = Patch.get(id).conflicts
+				for oid in ids:
+					if oid != id:
+						c.add(oid)
 	
-	# sort clusters by their size, else earliest change
-	print("Writing patch clusters to patch_clusters.txt")
-	with open("./patch_clusters.txt","w") as f:
-		singletons = clusters.pop(0)
-		clusters.sort(key=lambda c: (len(c), c[0]["id"]))
-		clusters.insert(0, singletons)
-		for cluster in clusters:
-			ids = list(map(lambda v: v["id"], cluster))
-			f.write(f"Patches: {ids}\n")
-			f.write(f"Count: {len(ids)}\n")
-			f.write("Summary:\n")
-			for patch in cluster:
-				f.write(f"\t{patch['summary']}\n")
+	@staticmethod
+	def cluster(ofile="./patch_clusters.txt"):
+		""" Find clusters of Patches based on possible conflicts
+			:param ofile (str): filepath to write results to (optional)
+		"""
+		# Set of all ids that have already been clustered
+		clustered = set()
+		# first cluster are patches that have no conflicts
+		clusters = [[]]
 
-	# TODO: check for file existence
-	# TODO: compute updated line numbers if file exists
+		for patch in Patch.patch_index.values():
+			# already clustered
+			if patch.id in clustered:
+				continue
+			clustered.add(patch.id)
+			# singleton
+			if not patch.conflicts:
+				clusters[0].append(patch)
+				continue
+			# build cluster
+			cluster = []
+			clusters.append(cluster)
+			# cluster in two pass manner: add `commit` to cluster, while adding any
+			# unclustered children (conflicts) to `pending`; 
+			commit = [patch]
+			while commit:
+				pending = []
+				for patch in commit:
+					cluster.append(patch)
+					# children (conflicts)
+					for cid in patch.conflicts:
+						if cid not in clustered:
+							clustered.add(cid)
+							pending.append(Patch.get(cid))
+				# next pass
+				commit = pending
+		
+		# sort patches in each cluster by id
+		for cluster in clusters:
+			cluster.sort(key=lambda p: p.id)
+
+		# sort clusters by their size, else earliest change
+		singletons = clusters.pop(0)
+		clusters.sort(key=lambda c: (len(c), c[0].id))
+		clusters.insert(0, singletons)
+		
+		if ofile:
+			print(f"Writing patch clusters to {ofile}")
+			with open(ofile,"w") as f:
+				for cluster in clusters:
+					ids = list(map(lambda v: v.id, cluster))
+					f.write(f"Patches: {ids}\n")
+					f.write(f"Count: {len(ids)}\n")
+					f.write("Summary:\n")
+					for patch in cluster:
+						f.write(f"\t{patch.summary}\n")
+
+		return clusters
+
+# TODO: check for file existence
 
 if __name__ == "__main__":
-	patches = parse_log()
-	patches.sort(key=lambda v: v["id"])
-	print("Patch count:", len(patches))
-	parse_patches(patches)
+	Patch.parse_hg_log()
+	Patch.cluster()
