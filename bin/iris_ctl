@@ -171,18 +171,26 @@ function clean(){
 	# 	believe); remove the 3030 port
 	echo "Removing nginx SELinux configurations"
 	setsebool -P httpd_can_network_connect false
-	semanage port -d -p tcp 3030
+	if semanage port -l | grep "^http_port_t\s*tcp.*\s3030\(,\|$\)"; then
+		semanage port -d -p tcp 3030
+	fi
 
-	# create_tms_database: drop db
-	echo "Removing tms database"
-	su --login postgres -c "dropdb tms;"
-	
-	# create_tms_user: remove user
-	su --login postgres -c "dropuser tms;"
+	if pgrep postgres; then
+		# create_tms_database: drop db
+		echo "Removing tms database"
+		su --login postgres -c "dropdb --if-exists tms;"
+		
+		# create_tms_user: remove user; cap schema prevents deletion
+		su --login postgres -c "psql -c 'DROP SCHEMA IF EXISTS cap;'"
+		su --login postgres -c "dropuser --if-exists tms;"
 
-	# create_earthwyrm_database: drop db
-	echo "Removing earthwyrm database"
-	su --login postgres -c "dropdb earthwyrm;"
+		# create_earthwyrm_database: drop db
+		echo "Removing earthwyrm database"
+		su --login postgres -c "dropdb --if-exists earthwyrm;"
+	else
+		echo -e "\033[31mPostgres not running; assuming postgres cleanup has already occurred"
+		echo -e "Restart postgres and rerun if this is not the case\033[0m"
+	fi
 	
 	# init_db: remove custom IRIS postgres settings (assumes 2 lines added after comment);
 	# 	disable db service, assuming stopped originally
@@ -200,7 +208,8 @@ function clean(){
 	k_client=/etc/iris/iris-client.keystore
 	/usr/bin/rm -f $k_cert $k_server $k_client
 
-	echo "Cleanup complete! If uninstalling, you'll still need to remove the rpm package"
+	echo -e "\033[0;32mCleanup complete!\033[0m"
+	echo "If uninstalling, you'll still need to remove the rpm package"
 }
 
 # Setup for development, to be performed after init
@@ -250,7 +259,7 @@ function dev(){
 		iris_version=`sed -n 's/^version=\(.*\)/\1/p' ./project.properties`
 		sed -i "s/.*db.version\ =\ .*/db.version\ =\ $iris_version/" ./dev/dev.cfg
 
-		echo "Setup complete!"
+		echo -e "\033[0;32mSetup complete!\033[0m"
 		# TODO: logs for sonar, sonar_tls, sonar_task, sonar_time?
 	else
 		echo "Expected $sprops_src file. Try running from the iris root code directory."
@@ -269,7 +278,9 @@ function enable_error_logging(){
 function log_error(){
 	exit_code=$?
     if [ $exit_code -ne 0 ]; then
+		echo -e "\033[31m"
         echo "\"${last_command}\" command failed with exit code ${exit_code}."
+		echo -e "\033[0m"
         exit $exit_code
 	fi
 }
