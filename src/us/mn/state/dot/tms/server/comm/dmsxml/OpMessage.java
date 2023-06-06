@@ -2,7 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2000-2023  Minnesota Department of Transportation
  * Copyright (C) 2008-2014  AHMCT, University of California
- * Copyright (C) 2012 Iteris Inc.
+ * Copyright (C) 2012-2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -153,6 +153,7 @@ class OpMessage extends OpDms {
 	 *		<RunPriority>...</RunPriority>
 	 *		<Owner>...</Owner>
 	 *		<Msg>...</Msg>
+	 *		<BeaconEnabled>...</BeaconEnabled>
 	 *	</elemname></dmsxml>
 	 */
 	private XmlElem buildReqRes(String elemReqName, String elemResName) {
@@ -199,6 +200,9 @@ class OpMessage extends OpDms {
 
 		// bitmap
 		xrr.addReq("Bitmap", m_bitmaps);
+
+		// beacon enabled
+		xrr.addReq("BeaconEnabled", m_sm.getFlashBeacon());
 
 		// response
 		xrr.addRes("Id");

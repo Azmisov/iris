@@ -2,6 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2012  Minnesota Department of Transportation
  * Copyright (C) 2008-2010  AHMCT, University of California
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,7 +69,20 @@ class XmlElem extends ControllerProperty {
 		sb.append("res size=").append(m_reslist.size()).append(", ");
 		sb.append("reqtagname=").append(m_reqtagname).append(", ");
 		sb.append("restagname=").append(m_restagname).append(", ");
-		sb.append("resread=").append(m_resread);
+		sb.append("resread=").append(m_resread).append(", ");
+		sb.append("reqlist=");
+		Iterator it = m_reqlist.keySet().iterator();
+		while(it.hasNext()) {
+			String n = (String)it.next();
+			sb.append(n).append(" ");
+		}
+		sb.append(", reslist= ");
+		it = m_reslist.keySet().iterator();
+		while(it.hasNext()) {
+			String n = (String)it.next();
+			Object v = m_reslist.get(n);
+			sb.append(n).append("=").append(v).append(" ");
+		}
 		sb.append(")");
 		return sb.toString();
 	}
