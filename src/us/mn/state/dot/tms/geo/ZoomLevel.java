@@ -49,6 +49,10 @@ public enum ZoomLevel {
 
 	/** Get a zoom level from an ordinal value */
 	static public ZoomLevel fromOrdinal(int o) {
+		if (o < 0)
+			return ZERO;
+		if (o > 17)
+			return SEVENTEEN;
 		for (ZoomLevel zl: values()) {
 			if (zl.ordinal() == o)
 				return zl;
