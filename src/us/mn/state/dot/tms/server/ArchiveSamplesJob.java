@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2010-2013  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +29,7 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+import us.mn.state.dot.sched.DebugLog;
 import us.mn.state.dot.sched.Job;
 import us.mn.state.dot.sched.TimeSteward;
 
@@ -35,14 +37,24 @@ import us.mn.state.dot.sched.TimeSteward;
  * Job to create sample data archive files.
  *
  * @author Douglas Lau
+ * @author Michale Darter
  */
 public class ArchiveSamplesJob extends Job {
+
+	/** Debug log */
+	static private final DebugLog TA_LOG = new DebugLog("traffic_archive");
 
 	/** Buffer for reading sample data files */
 	protected final byte[] buffer = new byte[8192];
 
 	/** Sample archive factory */
 	private final SampleArchiveFactory a_factory;
+
+	/** Log a DMS message */
+	static public void log(String msg) {
+		if (TA_LOG.isOpen())
+			TA_LOG.log(msg);
+	}
 
 	/** Create a new job to archive sample data.  This needs to happen
 	 * after 6 PM to allow for buffered data to be read in case of
@@ -59,16 +71,28 @@ public class ArchiveSamplesJob extends Job {
 
 	/** Archive data samples */
 	protected void archiveSamples() throws IOException {
+		log("------starting daily archive");
+		log("known_extensions=" + a_factory.getKnownExtensions());
 		File[] years = listYears();
 		if(years != null) {
+			log("n_years=" + years.length);
 			for(File year: years) {
+				log("year=" + year);
 				File[] days = listDays(year);
 				if(days != null) {
-					for(File day: days)
+					log("n_days=" + days.length);
+					for(File day: days) {
+						log("day=" + day);
 						createSampleArchive(day);
+					}
+				} else {
+					log("n_days=none");
 				}
 			}
+		} else {
+			log("n_years=none");
 		}
+		log("done with daily archive");
 	}
 
 	/** Get an array of years in the sample archive directory */
@@ -95,8 +119,12 @@ public class ArchiveSamplesJob extends Job {
 	/** Create a sample archive file for the given day */
 	protected void createSampleArchive(File day) throws IOException {
 		File traf = new File(day.toString() + ".traffic");
-		if(!traf.exists())
+		if(!traf.exists()) {
+			log("archive file does NOT exist: " + traf);
 			createSampleArchive(traf, day);
+		} else {
+			log("archive file exists: " + traf);
+		}
 	}
 
 	/** Create a sample archive file and delete the original sample files */
@@ -105,6 +133,7 @@ public class ArchiveSamplesJob extends Job {
 	{
 		FileOutputStream fos = new FileOutputStream(traf);
 		try {
+			log("createSampleArchive: " + traf + " day=" + day);
 			addSampleEntries(fos, day);
 			deleteOriginalSampleFiles(traf, day);
 		}
@@ -125,12 +154,20 @@ public class ArchiveSamplesJob extends Job {
 	}
 
 	/** Add all valid sample file entries to an archive file */
-	protected void addSampleEntries(ZipOutputStream zos, File day)
+	protected void addSampleEntries(ZipOutputStream zos, final File day)
 		throws IOException
 	{
 		String[] entries = day.list(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
-				return a_factory.hasKnownExtension(name);
+				final boolean e = 
+					a_factory.hasKnownExtension(name);
+				if (!e) {
+					log("addSampleEntries: ignoring " + 
+						"invalid file extension " + 
+						"for file=" + name);
+				}
+				return e;
+				//return a_factory.hasKnownExtension(name);
 			}
 		});
 		Arrays.sort(entries);
@@ -142,6 +179,7 @@ public class ArchiveSamplesJob extends Job {
 	protected void addSampleEntry(ZipOutputStream zos, File day,
 		String name) throws IOException
 	{
+		log("addSampleEntry: adding name=" + name + " day=" + day);
 		zos.putNextEntry(new ZipEntry(name));
 		FileInputStream fis = new FileInputStream(new File(day, name));
 		try {
@@ -171,8 +209,13 @@ public class ArchiveSamplesJob extends Job {
 			String name = ze.getName();
 			if(a_factory.hasKnownExtension(name)) {
 				File file = new File(day, name);
+				log("deleteOriginalSampleFiles: day=" + day + 
+					" name=" + name);
 				if(file.isFile())
 					file.delete();
+			} else {
+				log("deleteOriginalSampleFiles: unknown " + 
+					"extension=" + name);
 			}
 		}
 		day.delete();
@@ -186,6 +229,7 @@ public class ArchiveSamplesJob extends Job {
 			return Integer.parseInt(year) > 1900;
 		}
 		catch(NumberFormatException e) {
+			log("invalid year=" + year);
 			return false;
 		}
 	}
@@ -199,6 +243,7 @@ public class ArchiveSamplesJob extends Job {
 			return Integer.parseInt(date) > 19000000;
 		}
 		catch(NumberFormatException e) {
+			log("invalid date=" + date);
 			return false;
 		}
 	}

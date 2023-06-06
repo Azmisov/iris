@@ -23,7 +23,7 @@ import sys, os, shutil, subprocess
 from analyze_patches import Patch, __dir__
 
 """ Complete:
-    9784, 9787, 9789
+    9784, 9787, 9789, 9826
 """
 
 def apply(ipath, opath, diffs, fuzz:int=10):
@@ -81,8 +81,11 @@ def get_patch(id):
     except: pass
     if not p:
         raise ValueError("Unknown changeset ID: "+str(id))
+    # print date info, which is useful for git blame; can see if upstream branched has changed since then
+    print(f"Patch {p.id}: {p.date}")
     return p
-patches = map(get_patch, sys.argv[1:])
+patches = list(map(get_patch, sys.argv[1:]))
+print()
 
 # cleanup previous
 shutil.rmtree(os.path.join(__dir__, "diff"), ignore_errors=True)

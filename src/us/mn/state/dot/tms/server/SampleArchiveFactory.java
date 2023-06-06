@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2010-2013  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +23,7 @@ import java.io.IOException;
  * archiving by enabling an alternate implementation for testing.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public interface SampleArchiveFactory {
 
@@ -43,4 +45,7 @@ public interface SampleArchiveFactory {
 
 	/** Test if a sample file name has a known extension */
 	boolean hasKnownExtension(String name);
+
+	/** Get a list of all valid extensions */
+	public String getKnownExtensions();
 }
