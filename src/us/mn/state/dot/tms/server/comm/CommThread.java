@@ -61,7 +61,7 @@ public class CommThread<T extends ControllerProperty> {
 	}
 
 	/** Write a message to the comm log */
-	private void clog(String msg) {
+	public void clog(String msg) {
 		if (logger.isOpen())
 			logger.log(thread.getName() + " " + msg);
 	}
