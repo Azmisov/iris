@@ -22,10 +22,6 @@
 import sys, os, shutil, subprocess
 from analyze_patches import Patch, __dir__
 
-""" Complete:
-    9784, 9787, 9789, 9826
-"""
-
 def apply(ipath, opath, diffs, fuzz:int=10):
     """ Apply one diff from a patch file 
         :param ipath (str): path to input to be patched

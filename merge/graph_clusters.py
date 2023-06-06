@@ -1,9 +1,18 @@
 """ Graphs clusters found in `analyze_patches.py` """
-import os
+import os, json
 from collections import defaultdict
 from pathlib import Path
 from analyze_patches import Patch
 from pyvis.network import Network
+
+# patches to exclude from the graph; e.g. those that have been merged already
+excluded = set()
+if True:
+    try:
+        with open("complete.json") as f:
+            excluded = set(json.loads(f.read()))
+    except:
+        print("Couldn't load complete.json to exclude completed patches")
 
 Patch.parse_hg_log()
 clusters = Patch.cluster(None)
@@ -23,6 +32,7 @@ for cluster in clusters:
 
 # build network
 net = Network(height="1000", width="100%")
+# speeds up first load, but at expense of quality
 net.set_options("""
 {
   "physics": {
