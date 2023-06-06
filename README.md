@@ -27,7 +27,8 @@ configuration inside the `./dev/` folder. Main server logs will use stdout/stder
 The class and source paths should be autodetected from the Java Project. Install the recommended
 Java extension pack for VSCode and open `iris.code-workspace`. In the `Java Projects` view, you'll
 see it doing an initial analysis of the code. You may need to manually change the JDK runtime
-setting and restart VSCode.
+setting and restart VSCode. You'll also may need to install `openjdk-source` and `openjdk-javadoc`
+to get intellisense working.
 
 If you're using a different IDE, or the Java Project is not working properly, you may set the source
 and class path manually. Copy the values from `.vscode/settings.json`.

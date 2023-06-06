@@ -259,8 +259,20 @@ function dev(){
 		iris_version=`sed -n 's/^version=\(.*\)/\1/p' ./project.properties`
 		sed -i "s/.*db.version\ =\ .*/db.version\ =\ $iris_version/" ./dev/dev.cfg
 
+		# debug logs only get written if the file exists first; DebugLog.init is
+		# called when server starts with the root logging directory; search for
+		# DevelLog in source code to see what log filenames are being used
+		mkdir ./dev/logs
+		pushd ./dev/logs
+		touch sonar sonar_tls sonar_task sonar_time sched alert device gps kadaptive samples flush \
+			profile sign_msg sql sys_attr toll poll_err modem axisptz canoga cbw clearguide \
+			dinrelay dmsxml dr500 e6_pkt e6 e6_err g4 inc_feed infinova manchester feed mndot170 \
+			gatendorv5 ndotbeacon ntcip2 ntcip mib1202 org815 pelcod snmp ss105 ss125 stc bottleneck
+		popd
+		# fix ownership
+		chown --reference=./dev/iris-server.properties ./dev/logs ./dev/logs/*
+
 		echo -e "\033[0;32mSetup complete!\033[0m"
-		# TODO: logs for sonar, sonar_tls, sonar_task, sonar_time?
 	else
 		echo "Expected $sprops_src file. Try running from the iris root code directory."
 		exit 1
