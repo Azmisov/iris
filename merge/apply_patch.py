@@ -22,7 +22,7 @@
 import sys, os, shutil, subprocess
 from analyze_patches import Patch, __dir__
 
-def apply(ipath, opath, diffs, fuzz:int=10):
+def apply(ipath, opath, diffs, fuzz:int=2):
     """ Apply one diff from a patch file 
         :param ipath (str): path to input to be patched
         :param opath (str): path to patched output file; rejects are the same with .rej extension appended

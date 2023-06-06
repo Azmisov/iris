@@ -2,8 +2,11 @@
 import os, json
 from collections import defaultdict
 from pathlib import Path
-from analyze_patches import Patch
+from analyze_patches import Patch, __dir__
 from pyvis.network import Network
+
+# patch ids or short filenames to highlight
+highlight = set([])
 
 # patches to exclude from the graph; e.g. those that have been merged already
 excluded = set()
@@ -69,6 +72,7 @@ for file in files:
     links_str = ", ".join(sorted(map(lambda p: str(p.id), file_patches)))
     net.add_node(
         file,
+        shape=("star" if label in highlight else "dot"),
         label=label,
         title="\n".join([file, "Affected by: "+links_str]),
         group="files",
@@ -79,7 +83,8 @@ for file in files:
 for patch in patches:
     net.add_node(
         patch.id,
-        label=patch.id,
+        shape=("star" if patch.id in highlight else "dot"),
+        label=str(patch.id),
         title="\n".join([patch.date, patch.user, patch.summary]),
         group="patches",
         level=2
@@ -90,6 +95,6 @@ for patch in patches:
             continue
         net.add_edge(patch.id, file, value=lines)
 
-net.show("./graph.html", notebook=False)
+net.show(os.path.join(__dir__, "graph.html"), notebook=False)
 
 
