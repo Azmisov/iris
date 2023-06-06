@@ -95,6 +95,5 @@ for patch in patches:
             continue
         net.add_edge(patch.id, file, value=lines)
 
-net.show(os.path.join(__dir__, "graph.html"), notebook=False)
-
-
+os.chdir(__dir__)
+net.show("./graph.html", notebook=False)
