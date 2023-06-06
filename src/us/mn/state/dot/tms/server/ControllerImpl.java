@@ -366,6 +366,10 @@ public class ControllerImpl extends BaseObjectImpl implements Controller {
 	/** Set the access password */
 	public void doSetPassword(String pwd) throws TMSException {
 		if (!objectEquals(pwd, password)) {
+			System.err.println("ControllerImpl.doSetPassword: " +
+				"ctl=" + getName() + " new_pw=" + pwd + 
+				" old_pw=" + getPassword() + " time=" + 
+				new Date());
 			store.update(this, "password", pwd);
 			setPassword(pwd);
 		}
