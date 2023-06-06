@@ -28,6 +28,7 @@ import us.mn.state.dot.tms.geo.SphericalMercatorPosition;
  * Helper for creating location transforms.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class MapGeoLoc implements MapObject {
 
@@ -77,7 +78,9 @@ public class MapGeoLoc implements MapObject {
 
 	/** Get the default normal vector */
 	private MapVector defaultNormal() {
-		return GeoLocHelper.normalVector(loc.getRoadDir());
+		// default to NORTH direction if no location
+		int dir = loc == null ? 1 : loc.getRoadDir();
+		return GeoLocHelper.normalVector(dir);
 	}
 
 	/** Transform for drawing device on map */
