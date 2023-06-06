@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2008-2022  Minnesota Department of Transportation
+ * Copyright (C) 2018  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +16,7 @@
 package us.mn.state.dot.tms.server.comm.ntcip;
 
 import java.io.IOException;
+import java.util.Date;
 import org.json.JSONException;
 import org.json.JSONObject;
 import us.mn.state.dot.sched.TimeSteward;
@@ -37,6 +39,7 @@ import us.mn.state.dot.tms.server.comm.snmp.NoSuchName;
  * This operation tests the pixel status of a DMS.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class OpTestDMSPixels extends OpDMS {
 
@@ -79,6 +82,7 @@ public class OpTestDMSPixels extends OpDMS {
 	/** Create the second phase of the operation */
 	@Override 
 	protected Phase phaseTwo() {
+		log("OpTestDMSPixels.PhaseTwo: perform_test=" + perform_test);
 		if (perform_test)
 			return new QueryTestStatus();
 		else
@@ -91,6 +95,7 @@ public class OpTestDMSPixels extends OpDMS {
 		/** Query the status of pixel test activation */
 		@SuppressWarnings("unchecked")
 		protected Phase poll(CommMessage mess) throws IOException {
+			log("Phase: QueryTestStatus");
 			mess.add(activation);
 			mess.queryProps();
 			logQuery(activation);
@@ -107,6 +112,7 @@ public class OpTestDMSPixels extends OpDMS {
 		/** Activate the pixel test */
 		@SuppressWarnings("unchecked")
 		protected Phase poll(CommMessage mess) throws IOException {
+			log("Phase: ActivatePixelTest");
 			activation.setEnum(PixelTestActivation.test);
 			mess.add(activation);
 			logStore(activation);
@@ -125,17 +131,23 @@ public class OpTestDMSPixels extends OpDMS {
 		/** Check for test completion */
 		@SuppressWarnings("unchecked")
 		protected Phase poll(CommMessage mess) throws IOException {
+			log("Phase: CheckTestCompletion");
 			mess.add(activation);
 			mess.queryProps();
 			logQuery(activation);
-			if (activation.getEnum() == PixelTestActivation.noTest)
+			if (activation.getEnum() == PixelTestActivation.noTest){
+				log("pixel test complete");
 				return new QueryRowCount();
+			}
 			if (TimeSteward.currentTimeMillis() > expire) {
 				logError("pixel test timeout expired -- " +
 					"giving up");
 				return new QueryRowCount();
-			} else
+			} else {
+				log("waiting for pix test completion:" +
+					" expire=" + new Date(expire));
 				return this;
+			}
 		}
 	}
 
@@ -145,13 +157,16 @@ public class OpTestDMSPixels extends OpDMS {
 		/** Query the row count in pixel failure table */
 		@SuppressWarnings("unchecked")
 		protected Phase poll(CommMessage mess) throws IOException {
+			log("Phase: QueryRowCount");
 			mess.add(total_rows);
 			mess.queryProps();
 			logQuery(total_rows);
 			if (total_rows.getInteger() > 0)
 				return new QueryTestAndMessageRows();
-			else
+			else {
+				log("Exiting pixel testing");
 				return null;
+			}
 		}
 	}
 
@@ -161,6 +176,7 @@ public class OpTestDMSPixels extends OpDMS {
 		/** Query test/message rows in pixel failure table */
 		@SuppressWarnings("unchecked")
 		protected Phase poll(CommMessage mess) throws IOException {
+			log("Phase: QueryTestAndMessageRows");
 			mess.add(test_rows);
 			mess.add(message_rows);
 			try {
@@ -181,8 +197,10 @@ public class OpTestDMSPixels extends OpDMS {
 			} else if (message_rows.getInteger() > 0) {
 				return new QueryRows(PixelFailureDetectionType.
 					messageDisplay);
-			} else
+			} else {
+				log("Exiting pixel testing");
 				return null;
+			}
 		}
 	}
 
@@ -216,6 +234,7 @@ public class OpTestDMSPixels extends OpDMS {
 		/** Query one row in the pixel failure table */
 		@SuppressWarnings("unchecked")
 		protected Phase poll(CommMessage mess) throws IOException {
+			log("Phase: QueryRows");
 			ASN1Integer x_loc = pixelFailureXLocation.makeInt(
 				detectionType.ordinal(), row);
 			ASN1Integer y_loc = pixelFailureYLocation.makeInt(
@@ -256,8 +275,10 @@ public class OpTestDMSPixels extends OpDMS {
 			if (isPixelTest() && message_rows.getInteger() > 0) {
 				return new QueryRows(PixelFailureDetectionType.
 					messageDisplay);
-			} else
+			} else {
+				log("Exiting pixel testing");
 				return null;
+			}
 		}
 	}
 
