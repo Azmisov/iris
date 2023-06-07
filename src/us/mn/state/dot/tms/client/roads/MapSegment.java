@@ -100,7 +100,7 @@ public class MapSegment implements MapObject {
 
 	/** Calculate the ideal segment width */
 	private float calculateWidth(float scale) {
-		return scale * roadClassScale();
+		return 2 * scale * roadClassScale();
 	}
 
 	/** Get the scale factor for the road class */
