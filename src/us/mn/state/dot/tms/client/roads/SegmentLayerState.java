@@ -43,10 +43,10 @@ public class SegmentLayerState extends ProxyLayerState<R_Node> {
 		MapBean mb, SegmentBuilder sb)
 	{
 		super(l, mb);
-		setTheme(new DensityTheme());
-		addTheme(new DensityTheme());
+		setTheme(new SpeedTheme());
 		addTheme(new SpeedTheme());
 		addTheme(new FlowTheme());
+		addTheme(new DensityTheme());
 		addTheme(new FreewayTheme());
 		manager = m;
 		builder = sb;
