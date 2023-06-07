@@ -163,6 +163,7 @@ public class SensorReader {
 	/** Parse the XML document and notify clients */
 	private void parse() throws IOException, SAXException {
 		URLConnection conn = url.openConnection();
+		conn.setUseCaches(false);
 		conn.setConnectTimeout(URL_TIMEOUT_MS);
 		conn.setReadTimeout(URL_TIMEOUT_MS);
 		InputStream in = new GZIPInputStream(conn.getInputStream());
