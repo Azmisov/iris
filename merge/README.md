@@ -25,7 +25,14 @@ deeper analysis and figure out which changesets will be easiest to tackle. The w
 you search for files/patches, but you can edit the `highlight` variable in `graph_clusters.py` with
 ones you wish to identify. It will display highlighted nodes as stars instead of circles.
 
-File deletions are ommitted from the cluster analysis.
+File deletions are ommitted from the cluster analysis. Additionally, `graph_clusters.py` will ignore:
+- patch ids, full filenames, or shortened filenames that are listed in `complete.json`
+- the same as the previous, but listed in the `excluded` variable inside `graph_clusters.py`
+- patches that have no conflicts with other patches (modify `graph_clusters.py` to disable this)
+
+You can use this to simply ignore certain files/patches in the graph, even if they aren't necessarily
+complete. E.g. if there is a metadata file that gets modified by many patches, it can be helpful to
+exclude it to cleanup the graph visualization.
 
 ## Applying patches
 
@@ -44,16 +51,18 @@ Inside `base`/`patched` are a mirrored directory tree for the patched files.
 - `patched`: patched files; additionally reject files (`.rej` extension) with patches that failed
 - `patches`: linked `###.patch` files, for easy access
 
-This can be used to *stage* the merge. Once you've verified, or manually fixed the files in
-`patched`, you can call `python merge/apply_patch.py commit` to overwrite the source. Use `--dryrun`
-option to preview the copy. Any leftover `.rej` files are ignored.
+This can be used to *stage* the merge. You can run `merge/visual.sh` to launch meld on the staging
+`base`/`patched` to easily verify the merge was correct.
 
-Run `merge/visual.sh` to launch meld on the staging `base`/`patched` to easily verify the merge was
-correct.
+Once you've verified, or manually fixed the files in `patched`, you can call `python
+merge/apply_patch.py commit` to overwrite the source. Use `--dryrun` option to preview the copy. Any
+leftover `.rej` files are ignored. Generally, I will do a 1st pass using the staged files, then
+commit and do a second pass on the actual source if there are any Java errors detected by
+intellisense.
 
 Once merge is complete, commit modified files with the patch number in the commit message.
-Optionally, add the patch numbers to `complete.json` (a JSON list of numbers), to ignore them in
-subsequent cluster analysis runs (`graph_clusters.py`).
+Optionally, add the patch numbers to `complete.json`, to ignore them in subsequent cluster analysis
+runs (`graph_clusters.py`).
 
 ### Patching issues
 Some common merge issues and my strategy for fixing them:

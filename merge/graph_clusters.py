@@ -8,12 +8,13 @@ from pyvis.network import Network
 # patch ids or short filenames to highlight
 highlight = set(["DmsActionModel.java"])
 
-# patches to exclude from the graph; e.g. those that have been merged already
+# patches/files/short files to exclude from the graph; e.g. those that have been merged already
 excluded = set()
 if True:
     try:
         with open(os.path.join(__dir__, "complete.json")) as f:
-            excluded = set(json.loads(f.read()))
+            for key in json.loads(f.read()):
+                excluded.add(key)
     except:
         print("Couldn't load complete.json to exclude completed patches")
 
@@ -31,7 +32,7 @@ for cluster in clusters:
             continue
         patches.append(patch)
         for file in patch.lines:
-            if file == "/dev/null":
+            if file == "/dev/null" or file in excluded:
                 continue
             files[file].append(patch)
 
@@ -70,6 +71,9 @@ for file in files:
         # no conflicts, can use this shortened version
         if files_trimmed_conflicts[trimmed] == 1:
             break
+    if label in excluded:
+        excluded.add(file)
+        continue
     file_patches = files[file]
     links = sorted(map(lambda p: p.id, file_patches))
     links_str = ", ".join(map(lambda p: str(p), links))
@@ -94,7 +98,7 @@ for patch in patches:
     )
     # patch->file edges, weighted by line count
     for file,lines in patch.lines.items():
-        if file == "/dev/null":
+        if file == "/dev/null" or file in excluded:
             continue
         net.add_edge(patch.id, file, value=lines)
 
