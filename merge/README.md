@@ -1,0 +1,71 @@
+# Merge workflow
+
+## Setup
+
+- Install `requirements.txt` in python environment.
+
+- Set the `patch_dir` inside `analyze_patches.py`, as well as the `changeset_range` you are
+  interested in. The directory should hold a flat list of patches in the form `####.patch` and an
+  `hg_log.txt` holding a summary of the patches.
+
+- If desired, modify the `Patch.should_ignore` method in `analyze_patches.py`. By default, it
+  ignores patches outside `changeset_range` and patches whose summary begins with the string
+  "ignore".
+
+## Cluster analysis
+
+Running `python merge/analyze_patches.py` will generate a file `patch_clusters.txt`. It holds
+clusters of changesets, based on the graph of affected files. The first cluster contains patches
+that were independent of any other. The second and greater all have possible file conflicts. The
+first and smaller clusters should theoretically be easier to merge first, since they're more
+isolated/independent.
+
+Run `python merge/graph_clusters.py` to visualize the clusters in your web browser. Use this to do a
+deeper analysis and figure out which changesets will be easiest to tackle. The web view doesn't let
+you search for files/patches, but you can edit the `highlight` variable in `graph_clusters.py` with
+ones you wish to identify. It will display highlighted nodes as stars instead of circles.
+
+File deletions are ommitted from the cluster analysis.
+
+## Applying patches
+
+Run `python merge/apply_patch.py PATCH_ID...` to attempt to apply 1+ patches to the source. It
+generates a directory structure:
+```
++ diff
+|   prefix
+|   + base
+|   + patched
+|   + patches
+```
+Inside `base`/`patched` are a mirrored directory tree for the patched files.
+- `prefix`: path prefix that was stripped from the modified files when creating `base`/`patched` directories
+- `base`: linked files with the source code we're applying patches to
+- `patched`: patched files; additionally reject files (`.rej` extension) with patches that failed
+- `patches`: linked `###.patch` files, for easy access
+
+This can be used to *stage* the merge. Once you've verified, or manually fixed the files in
+`patched`, you can call `python merge/apply_patch.py commit` to overwrite the source. Use `--dryrun`
+option to preview the copy. Any leftover `.rej` files are ignored.
+
+Run `merge/visual.sh` to launch meld on the staging `base`/`patched` to easily verify the merge was
+correct.
+
+Once merge is complete, commit modified files with the patch number in the commit message.
+Optionally, add the patch numbers to `complete.json` (a JSON list of numbers), to ignore them in
+subsequent cluster analysis runs (`graph_clusters.py`).
+
+### Patching issues
+Some common merge issues and my strategy for fixing them:
+- Base file wasn't found, e.g. the file was renamed or deleted. Run the following:
+  ```
+  git log --all --full-history -- "**/FILENAME_HERE.*"
+  ```
+  ... to find where the file was changed. Check the commit history, then modify the `###.patch` file
+  with the new file location.
+- Patch had no changes. This indicates a binary file was replaced. Go find the binary file and copy
+  it over.
+- A patch's hunk couldn't be matched in the source file. You'll need to go in and manually apply the
+  change. You can look through the git timeline to see when the source code did match, then step
+  through the commits to find where they diverged. Or you can use git blame if the line was not
+  deleted, simply modified.

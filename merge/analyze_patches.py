@@ -70,6 +70,7 @@ class Patch:
 		self.date = attrs["date"]
 		self.user = attrs["user"]
 		self.summary = attrs["summary"]
+		self.path = os.path.join(patch_dir, f"{self.id}.patch")
 		self.lines = {}
 		""" mapping from filename to count of lines changed; populuated by `read_patch` """
 		self.diffs = []
@@ -93,7 +94,7 @@ class Patch:
 		""" Read/parse patch file, and add this Patch to the index """
 		Patch.add(self)
 
-		with open(os.path.join(patch_dir, f"{self.id}.patch")) as f:
+		with open(self.path) as f:
 			raw = f.read()
 		# which files were modified, and count of lines that chnaged
 		diffs = list(whatthepatch.parse_patch(raw))

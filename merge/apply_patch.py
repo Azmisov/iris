@@ -35,6 +35,7 @@ def apply(ipath, opath, diffs, fuzz:int=2):
         "patch",
         "-F", str(fuzz),
         "-ul", # universal format, ignore whitespace
+        "--follow-symlinks",
         "--reject-format=unified",
         "-o", opath, # successful patch
         "-r", opath+".rej", # failed patch
@@ -78,19 +79,23 @@ def get_patch(id):
     if not p:
         raise ValueError("Unknown changeset ID: "+str(id))
     # print date info, which is useful for git blame; can see if upstream branched has changed since then
-    print(f"Patch {p.id}: {p.date}")
+    print(f"Patch {p.id}:")
+    print(f"\t{p.summary}")
+    print(f"\t{p.date}")
     return p
 patches = list(map(get_patch, sys.argv[1:]))
 print()
 
 # cleanup previous
 shutil.rmtree(os.path.join(__dir__, "diff"), ignore_errors=True)
-os.makedirs(os.path.join(__dir__, "diff"))
+os.makedirs(os.path.join(__dir__, "diff", "patches"))
 
 # get list of files that will be affected
 # {[filename]: [diff_objects]}
 files = {}
 for patch in patches:
+    # link patch file
+    os.symlink(patch.path, os.path.join(__dir__, "diff", "patches", os.path.basename(patch.path)))
     for diff in patch.diffs:
         file = diff["path"]
         diff = diff["diff"]
@@ -128,7 +133,7 @@ for file, diffs in files.items():
     os.makedirs(os.path.dirname(base), exist_ok=True)
     os.makedirs(os.path.dirname(patched), exist_ok=True)
     # copy source file to base
-    shutil.copy(file, base)
+    os.symlink(os.path.abspath(file), base)
     # run patch
     if not apply(base, patched, diffs):
         fails += 1
