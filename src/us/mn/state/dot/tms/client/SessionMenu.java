@@ -92,6 +92,7 @@ public class SessionMenu extends JMenu {
 	public void setUser(User u) {
 		log_in.setEnabled(u == null);
 		log_out.setEnabled(u != null);
-		pwd_change.setEnabled(u != null && isBlank(u.getDn()));
+		//pwd_change.setEnabled(u != null && isBlank(u.getDn()));
+		pwd_change.setEnabled(u != null);
 	}
 }
