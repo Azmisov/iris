@@ -137,6 +137,7 @@ public enum SystemAttrEnum {
 	VSA_STOP_THRESHOLD(-750, -5000, -200),
 	WEATHER_SENSOR_EVENT_PURGE_DAYS(90, 0),
 	WINDOW_TITLE("IRIS: ", Change.RESTART_CLIENT),
+	WYDOT_TRAC_HOST("wydot:80"),
 	WORK_REQUEST_URL(String.class);
 
 	/** Change action, which indicates what action the admin must

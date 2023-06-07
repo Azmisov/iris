@@ -82,6 +82,9 @@ public class MainServer {
 	/** SQL connection */
 	static private SQLConnection store;
 
+        /** Interface to WYDOT TRAC system */
+        static public WydotTracEvents wydot_trac_events;
+
 	/** Agency district property */
 	static private String district = "tms";
 
@@ -113,6 +116,7 @@ public class MainServer {
 			server = new Server(ns, props, new AccessLogger(FLUSH));
 			auth_provider = new IrisProvider();
 			server.addProvider(auth_provider);
+                        wydot_trac_events = WydotTracEvents.create(server, ns);
 			System.err.println("IRIS Server active");
 			server.join();
 		}
