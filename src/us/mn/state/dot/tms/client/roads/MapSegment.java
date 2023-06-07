@@ -57,9 +57,9 @@ public class MapSegment implements MapObject {
 	/** Segment object */
 	private final Segment segment;
 
-	/** Get the r_node */
-	public R_Node getR_Node() {
-		return segment.getModel().r_node;
+	/** Get the upstream station r_node */
+	public R_Node getStationR_Node() {
+		return segment.getStationR_Node();
 	}
 
 	/** Lane for segment (null for all lanes) */
@@ -105,7 +105,7 @@ public class MapSegment implements MapObject {
 
 	/** Get the scale factor for the road class */
 	private float roadClassScale() {
-		Road r = getR_Node().getGeoLoc().getRoadway();
+		Road r = getStationR_Node().getGeoLoc().getRoadway();
 		RoadClass rc = RoadClass.fromOrdinal(r.getRClass());
 		return rc.scale * UI.scale;
 	}
@@ -211,7 +211,7 @@ public class MapSegment implements MapObject {
 	/** Get the landmark for the associated r_node.
 	 * @return Landmark for associated geoloc or null. */
 	private String getLandmark() {
-		R_Node proxy = getR_Node();
+		R_Node proxy = getStationR_Node();
 		if (proxy != null) {
 			GeoLoc gl = proxy.getGeoLoc();
 			if (gl != null)

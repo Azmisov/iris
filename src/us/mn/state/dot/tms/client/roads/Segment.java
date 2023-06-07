@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2018  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +38,7 @@ import us.mn.state.dot.tms.utils.I18N;
  * A segment is the shape of a roadway segment on a map.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class Segment {
 
@@ -80,9 +82,20 @@ public class Segment {
 	/** Flag indicating whether the segment is good */
 	private final boolean good;
 
+	/** Upstream station node, identified and set by SegmentBuilder. This is
+	 * "upstream" for this segment, but not necessarily the upstream node
+	 * directly connected to this segment
+	 */
+	private final R_Node station;
+
 	/** Get flag indicating whether the segment is good */
 	public boolean isGood() {
 		return good;
+	}
+
+	/** Get the upstream station r_node (possibly beyond segment's upstream node) */
+	public R_Node getStationR_Node() {
+		return station;
 	}
 
 	/** Get the segment label */
@@ -125,6 +138,7 @@ public class Segment {
 	public Segment(R_NodeModel m, MapGeoLoc al, R_Node b, MapGeoLoc bl,
 		R_Node s, MapGeoLoc sl, SampleDataSet sds, DetectorHash dhash)
 	{
+		station = s;
 		model = new R_NodeModel(b, m);
 		pos_a = getPosition(al);
 		pos_b = getPosition(bl);
@@ -305,5 +319,20 @@ public class Segment {
 	/** Get the count of lanes */
 	public int laneCount() {
 		return lane_sensors.size();
+	}
+
+	/** To string */
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("(Segment:");
+		sb.append(" station_label=").append(getStationLabel(station));
+		sb.append(" station=").append(station.getName());
+		sb.append(" loc_up=").append(pos_a);
+		sb.append(" loc_dn=").append(pos_b);
+		sb.append(" shift=").append(shift);
+		sb.append(" good=").append(good);
+		sb.append(" model=").append(model);
+		sb.append(")");
+		return sb.toString();
 	}
 }
