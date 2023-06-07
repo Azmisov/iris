@@ -57,12 +57,14 @@ subsequent cluster analysis runs (`graph_clusters.py`).
 
 ### Patching issues
 Some common merge issues and my strategy for fixing them:
-- Base file wasn't found, e.g. the file was renamed or deleted. Run the following:
+- Base file wasn't found, e.g. the file was renamed or deleted. First, check if the file was newly
+  created. Go to the `###.patch` file and see if the base was `/dev/null`. Otherwise, run the
+  following:
   ```
   git log --all --full-history -- "**/FILENAME_HERE.*"
   ```
-  ... to find where the file was changed. Check the commit history, then modify the `###.patch` file
-  with the new file location.
+  ... to find possible commits where the file was renamed/deleted. Check the commit history, and if
+  renamed, modify the `###.patch` file with the new file location.
 - Patch had no changes. This indicates a binary file was replaced. Go find the binary file and copy
   it over.
 - A patch's hunk couldn't be matched in the source file. You'll need to go in and manually apply the

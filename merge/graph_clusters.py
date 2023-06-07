@@ -6,13 +6,13 @@ from analyze_patches import Patch, __dir__
 from pyvis.network import Network
 
 # patch ids or short filenames to highlight
-highlight = set([])
+highlight = set(["DmsActionModel.java"])
 
 # patches to exclude from the graph; e.g. those that have been merged already
 excluded = set()
 if True:
     try:
-        with open("complete.json") as f:
+        with open(os.path.join(__dir__, "complete.json")) as f:
             excluded = set(json.loads(f.read()))
     except:
         print("Couldn't load complete.json to exclude completed patches")
@@ -27,6 +27,8 @@ patches = []
 files = defaultdict(list) # file -> [patch]
 for cluster in clusters:
     for patch in cluster:
+        if patch.id in excluded:
+            continue
         patches.append(patch)
         for file in patch.lines:
             if file == "/dev/null":
@@ -69,7 +71,8 @@ for file in files:
         if files_trimmed_conflicts[trimmed] == 1:
             break
     file_patches = files[file]
-    links_str = ", ".join(sorted(map(lambda p: str(p.id), file_patches)))
+    links = sorted(map(lambda p: p.id, file_patches))
+    links_str = ", ".join(map(lambda p: str(p), links))
     net.add_node(
         file,
         shape=("star" if label in highlight else "dot"),
