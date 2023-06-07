@@ -35,6 +35,9 @@ abstract public class SegmentTheme extends Theme {
 	/** Color for rendering green stations */
 	static public final Color GREEN = new Color(48, 160, 48);
 
+	/** Color for rendering dark green stations */
+	static public final Color DGREEN = new Color(6, 98, 6);
+
 	/** Color for rendering yellow stations */
 	static public final Color YELLOW = new Color(240, 240, 0);
 

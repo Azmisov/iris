@@ -27,10 +27,10 @@ public class SpeedTheme extends SegmentTheme {
 	/** Speed styles */
 	static private final Style[] S_STYLES = new Style[] {
 		new Style(I18N.get("units.speed.low"), OUTLINE, RED),
-		new Style(I18N.get("units.speed.low.med"), OUTLINE, ORANGE),
+		new Style(I18N.get("units.speed.low.med"), OUTLINE, VIOLET),
 		new Style(I18N.get("units.speed.medium"), OUTLINE, YELLOW),
 		new Style(I18N.get("units.speed.med.high"), OUTLINE, GREEN),
-		new Style(I18N.get("units.speed.high"), OUTLINE, VIOLET)
+		new Style(I18N.get("units.speed.high"), OUTLINE, DGREEN)
 	};
 
 	/** Create a new speed theme */
@@ -44,16 +44,16 @@ public class SpeedTheme extends SegmentTheme {
 	@Override
 	protected Style getSegmentStyle(MapSegment ms) {
 		Integer spd = ms.getSpeed();
-		if (spd == null)
-			return DEFAULT_STYLE;
-		if (spd < 25)
-			return S_STYLES[0];
-		if (spd < 40)
-			return S_STYLES[1];
-		if (spd < 55)
-			return S_STYLES[2];
-		if (spd < 90)
-			return S_STYLES[3];
-		return S_STYLES[4];
+		if(spd == null)
+			return DEFAULT_STYLE;	// gray
+		if(spd <= 35)
+			return S_STYLES[0];	// red
+		if(spd <= 45)
+			return S_STYLES[1];	// violet
+		if(spd <= 55)
+			return S_STYLES[2];	// yellow
+		if(spd <= 65)
+			return S_STYLES[3];	// green
+		return S_STYLES[4];		// dark green
 	}
 }
