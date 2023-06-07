@@ -47,9 +47,14 @@ public class SpeedTheme extends SegmentTheme {
 	/** Get the style to draw a given segment */
 	@Override
 	protected Style getSegmentStyle(MapSegment ms) {
+		Integer f = ms.getFlow();
+		// no detection
+		if(f == null)
+			return NO_DETECTION_STYLE;
 		Integer spd = ms.getSpeed();
+		// detection but no speed
 		if(spd == null)
-			return DEFAULT_STYLE;	// gray
+			return NO_DATA_STYLE;	// gray
 		SpeedBand sb = SpeedBand.getBand(spd);
 		return S_STYLES[sb.ordinal()];
 	}

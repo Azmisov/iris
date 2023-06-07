@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2019  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +27,7 @@ import us.mn.state.dot.tms.utils.I18N;
  * A simple theme which uses one symbol to draw all segment objects.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 abstract public class SegmentTheme extends Theme {
 
@@ -54,9 +56,14 @@ abstract public class SegmentTheme extends Theme {
 	static public final Outline OUTLINE = Outline.createSolid(
 		new Color(0, 0, 0, 192), 0.6f);
 
-	/** Default segment style theme */
-	static protected final Style DEFAULT_STYLE = new Style(I18N.get(
+	/** Segment style theme for no data */
+	static protected final Style NO_DATA_STYLE = new Style(I18N.get(
 		"detector.no.data"), OUTLINE, GRAY);
+
+	/** Segment style theme for no detection */
+	static protected final Style NO_DETECTION_STYLE = new Style(I18N.get(
+		"detector.no.detection"), OUTLINE, Color.WHITE);
+
 
 	/** R_Node color */
 	static public final Color R_NODE_COLOR = new Color(128, 64, 255, 128);
@@ -67,7 +74,9 @@ abstract public class SegmentTheme extends Theme {
 
 	/** Create a new segment theme */
 	protected SegmentTheme(String name) {
-		super(name, new SegmentSymbol(), DEFAULT_STYLE);
+		super(name, new SegmentSymbol(), R_NODE_STYLE);
+		addStyle(NO_DETECTION_STYLE);
+		addStyle(NO_DATA_STYLE);
 		addStyle(R_NODE_STYLE);
 	}
 
@@ -87,7 +96,7 @@ abstract public class SegmentTheme extends Theme {
 	private Style getStyle(ParkingSpace ps) {
 		Float o = ps.getOcc();
 		if (null == o)
-			return DEFAULT_STYLE;
+			return NO_DATA_STYLE;
 		else {
 			int s = Math.round(o * 18);
 			if (s < 150)
