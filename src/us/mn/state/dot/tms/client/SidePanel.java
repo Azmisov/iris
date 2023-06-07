@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2007-2021  Minnesota Department of Transportation
+ * Copyright (C) 2020 Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +32,7 @@ import static us.mn.state.dot.tms.client.widget.Widgets.UI;
  * The side panel contains the tab panel on the left side of the IRIS client.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class SidePanel extends JPanel {
 
@@ -56,8 +58,8 @@ public class SidePanel extends JPanel {
 	public SidePanel(MapBean m) {
 		super(new BorderLayout());
 		map = m;
-		setMinimumSize(UI.dimension(500, 200));
-		setPreferredSize(UI.dimension(540, 200));
+		setMinimumSize(UI.dimension(580, 200));
+		setPreferredSize(UI.dimension(580, 200));
 		tab_pane = new JTabbedPane(JTabbedPane.TOP);
 		add(tab_pane, BorderLayout.CENTER);
 		tab_pane.addChangeListener(new ChangeListener() {
