@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2018  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +37,7 @@ import us.mn.state.dot.tms.client.proxy.MapGeoLoc;
  * SegmentBuilder is a class for building roadway segments.
  *
  * @author Douglas Lau
+ * @author Michael Darter
   */
 public class SegmentBuilder implements Iterable<Segment> {
 
@@ -95,6 +97,11 @@ public class SegmentBuilder implements Iterable<Segment> {
 	public void completeSamples() {
 		samples.swapSamples();
 		updateStatus();
+	}
+
+	/** Get the segment corresponding to the specified station id */
+	public SensorSample getSample(String sid) {
+		return samples.getSample(sid);
 	}
 
 	/** Clear all sample data */

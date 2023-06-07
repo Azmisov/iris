@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2006-2019  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +54,7 @@ import us.mn.state.dot.tms.utils.I18N;
  * combo box and displaying all r_nodes of the selected corridor in a list.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class CorridorList extends IPanel {
 
@@ -207,7 +209,7 @@ public class CorridorList extends IPanel {
 		corridor_cbx.setAction(corr_act);
 		corridor_cbx.setModel(manager.getCorridorModel());
 		sel_mdl = manager.getSelectionModel();
-		n_list.setCellRenderer(new R_NodeCellRenderer());
+		n_list.setCellRenderer(new R_NodeCellRenderer(manager));
 		n_list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		setBorder(BorderFactory.createTitledBorder(
 			I18N.get("r_node.corridor.selected")));
@@ -281,6 +283,14 @@ public class CorridorList extends IPanel {
 				});
 			}
 		}
+	}
+
+	/** Update all entries in R_Node JList for the current corridor. 
+	 * The name of the updated attribute doesn't matter */
+	public void updateCorridor() {
+		if(corridor != null)
+			for(R_Node proxy: corridor)
+				nodeChanged(proxy, "speedLimit");
 	}
 
 	/** Called when a GeoLoc proxy attribute has changed */

@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2000-2018  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +38,7 @@ import us.mn.state.dot.sched.Scheduler;
  * to the segment layer.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class SensorReader {
 
@@ -44,7 +46,7 @@ public class SensorReader {
 	static private final Scheduler READER = new Scheduler("reader");
 
 	/** Seconds to offset each read from start of interval */
-	static private final int OFFSET_SECS = 4;
+	static public final int OFFSET_SECS = 4;
 
 	/** Time (ms) to consider sample data valid */
 	static private final long SAMPLE_VALID_MS = 5 * 60 * 1000;

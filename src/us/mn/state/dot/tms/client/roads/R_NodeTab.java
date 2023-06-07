@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2006-2014  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,6 +16,9 @@
 package us.mn.state.dot.tms.client.roads;
 
 import java.awt.BorderLayout;
+import java.util.Calendar;
+import us.mn.state.dot.sched.Job;
+import us.mn.state.dot.sched.Scheduler;
 import us.mn.state.dot.tms.R_Node;
 import us.mn.state.dot.tms.client.MapTab;
 import us.mn.state.dot.tms.client.Session;
@@ -23,6 +27,7 @@ import us.mn.state.dot.tms.client.Session;
  * The R_NodeTab class provides the GUI for editing roadway nodes.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class R_NodeTab extends MapTab<R_Node> {
 
@@ -32,6 +37,23 @@ public class R_NodeTab extends MapTab<R_Node> {
 	/** Corridor list */
 	private final CorridorList clist;
 
+	/** Corridor list updater thread */
+	static private final Scheduler CLIST_UPDATER = 
+		new Scheduler("clist_updater");
+
+	/** Seconds to offset each read from start of interval */
+	static public final int OFFSET_SECS = SensorReader.OFFSET_SECS + 5;
+
+	/** Job to perform */
+	private final Job job = 
+		new Job(Calendar.SECOND, 30, Calendar.SECOND, OFFSET_SECS)
+	{
+		public void perform() {
+			if(clist != null)
+				clist.updateCorridor();
+		}
+	};
+
 	/** Create a new roadway node tab */
 	public R_NodeTab(Session session, R_NodeManager man) {
 		super(man);
@@ -39,6 +61,7 @@ public class R_NodeTab extends MapTab<R_Node> {
 		clist = new CorridorList(session, man, panel);
 		add(panel, BorderLayout.NORTH);
 		add(clist, BorderLayout.CENTER);
+		CLIST_UPDATER.addJob(job);
 	}
 
 	/** Initialize the roadway node tab */
@@ -54,6 +77,7 @@ public class R_NodeTab extends MapTab<R_Node> {
 		super.dispose();
 		clist.dispose();
 		panel.dispose();
+		CLIST_UPDATER.removeJob(job);
 	}
 
 	/** Get the tab ID */

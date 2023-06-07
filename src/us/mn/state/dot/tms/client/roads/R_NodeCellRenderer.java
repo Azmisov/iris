@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2000-2018  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +29,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
+import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
+import us.mn.state.dot.tms.Detector;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import us.mn.state.dot.tms.GeoLoc;
@@ -42,6 +45,7 @@ import static us.mn.state.dot.tms.client.widget.Widgets.UI;
  * Renderer for roadway node cells in a list.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class R_NodeCellRenderer extends DefaultListCellRenderer {
 
@@ -96,6 +100,15 @@ public class R_NodeCellRenderer extends DefaultListCellRenderer {
 
 	/** R_Node type */
 	private R_NodeType node_type;
+
+	/** Roadway node manager */
+	private final R_NodeManager manager;
+
+	/** Constructor */
+	public R_NodeCellRenderer(R_NodeManager rnm) {
+		super();
+		manager = rnm;
+	}
 
 	/** Set the r_node model */
 	private void setModel(R_NodeModel m) {
@@ -167,15 +180,41 @@ public class R_NodeCellRenderer extends DefaultListCellRenderer {
 		fillRoadway(g2, height);
 		drawSkipStripes(g2, height);
 		drawDetectors(g2, height);
-		drawSpeedLimit(g2, height);
-		String xl = GeoLocHelper.getCrossLandmark(
-			r_node.getGeoLoc());
+		final Integer sp = getSpeed(manager.lookupDets(r_node));
+		drawSpeedSign(g2, height, 0, r_node.getSpeedLimit(), true);
+		drawSpeedSign(g2, height, 25, sp, false);
+		String xl = GeoLocHelper.getCrossLandmark(r_node.getGeoLoc());
 		if (xl.length() > 0)
 			drawCrossLandmark(g2, xl, width, height);
 		if (selected) {
 			drawMarker(g2, height);
 			drawShiftHandle(g2, height);
 		}
+	}
+
+	/** Calculate station speed per lane
+	 * @param ds A set of detectors in the station
+	 * @return Null on error else speed per lane */
+	public Integer getSpeed(Set<Detector> ds) {
+		int total = 0;
+		int count = 0;
+		for(Detector d : ds) {
+			if(d == null)
+				continue;
+			String did = d.getName();
+			SensorSample ss = manager.getSample(did);
+			if(ss ==  null)
+				continue;
+			Integer sp = ss.getSpeed();
+			if(sp != null) {
+				total += sp;
+				count++;
+			}
+		}
+		if(count > 0)
+			return total / count;
+		else
+			return null;
 	}
 
 	/** Fill the background */
@@ -481,14 +520,26 @@ public class R_NodeCellRenderer extends DefaultListCellRenderer {
 		g.drawGlyphVector(gv, x + tx, y + ty);
 	}
 
-	/** Draw the speed limit */
-	private void drawSpeedLimit(Graphics2D g, int height) {
+	/** Draw a speed sign with a number in the middle.
+	 * @param g Graphics handle
+	 * @param height Height of box
+	 * @param margin Margin to the left of the box
+	 * @param sp Speed to draw in box
+	 * @param white True for white background else SpeedBand colors
+	 */
+	protected void drawSpeedSign(Graphics2D g, int height, int margin, 
+		Integer sp, boolean white) 
+	{
+		if (sp == null)
+			return;
 		switch (node_type) {
 		case STATION:
-			int x = getDownstreamLine(false) + LANE_WIDTH;
+			int x = getDownstreamLine(false) + LANE_WIDTH + margin;
 			int y = 2;
-			String slim = String.valueOf(r_node.getSpeedLimit());
-			drawText(g, x, y, slim, Color.WHITE, Color.BLACK);
+			String slim = String.valueOf(sp);
+			Color c = (white ? Color.WHITE : 
+				SpeedBand.getBand(sp).color);
+			drawText(g, x, y, slim, c, Color.BLACK);
 			break;
 		}
 	}

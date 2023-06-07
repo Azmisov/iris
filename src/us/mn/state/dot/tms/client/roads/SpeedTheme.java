@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2016  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,17 +22,20 @@ import us.mn.state.dot.tms.utils.I18N;
  * A theme for drawing segment objects based on speed thresholds.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class SpeedTheme extends SegmentTheme {
 
 	/** Speed styles */
-	static private final Style[] S_STYLES = new Style[] {
-		new Style(I18N.get("units.speed.low"), OUTLINE, RED),
-		new Style(I18N.get("units.speed.low.med"), OUTLINE, VIOLET),
-		new Style(I18N.get("units.speed.medium"), OUTLINE, YELLOW),
-		new Style(I18N.get("units.speed.med.high"), OUTLINE, GREEN),
-		new Style(I18N.get("units.speed.high"), OUTLINE, DGREEN)
-	};
+	static protected final Style[] S_STYLES = 
+		new Style[SpeedBand.values().length];
+	static {
+		SpeedBand[] sbs = SpeedBand.toArray();
+		for(int i = 0; i < sbs.length; ++i) {
+			SpeedBand b = sbs[i];
+			S_STYLES[i] = new Style(b.getDesc(), OUTLINE, b.color);
+		}
+	}
 
 	/** Create a new speed theme */
 	public SpeedTheme() {
@@ -46,14 +50,7 @@ public class SpeedTheme extends SegmentTheme {
 		Integer spd = ms.getSpeed();
 		if(spd == null)
 			return DEFAULT_STYLE;	// gray
-		if(spd <= 35)
-			return S_STYLES[0];	// red
-		if(spd <= 45)
-			return S_STYLES[1];	// violet
-		if(spd <= 55)
-			return S_STYLES[2];	// yellow
-		if(spd <= 65)
-			return S_STYLES[3];	// green
-		return S_STYLES[4];		// dark green
+		SpeedBand sb = SpeedBand.getBand(spd);
+		return S_STYLES[sb.ordinal()];
 	}
 }

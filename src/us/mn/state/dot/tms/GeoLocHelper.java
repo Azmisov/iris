@@ -114,7 +114,7 @@ public class GeoLocHelper extends BaseHelper {
 		String lm = getLandmark(l);
 		if (lm.length() > 0)
 			list.add(lm);
-		return String.join(" ", list);
+		return String.join(" / ", list);
 	}
 
 	/** Get a description of the cross-street location.
