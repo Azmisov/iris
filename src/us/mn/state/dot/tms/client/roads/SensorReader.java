@@ -138,7 +138,7 @@ public class SensorReader {
 			parse();
 		}
 		catch (Exception e) {
-			logErr(e.getMessage());
+			logErr("ex=" + e.getMessage());
 		}
 		finally {
 			long now = System.currentTimeMillis();
@@ -147,8 +147,10 @@ public class SensorReader {
 				builder.completeSamples();
 			} else {
 				logErr("lastStamp: " + last_stamp);
-				if (now - receive_stamp > SAMPLE_VALID_MS)
+				if (now - receive_stamp > SAMPLE_VALID_MS) {
 					builder.clearSamples();
+					logErr("sample time in file too old");
+				}
 			}
 		}
 	}
@@ -182,6 +184,7 @@ public class SensorReader {
 	/** Handle a traffic_sample element */
 	private void handleTrafficSample(Attributes attrs) {
 		String stamp = attrs.getValue("time_stamp");
+		// for traffic simulation, set time_changed to true
 		time_changed = !stamp.equals(last_stamp);
 		last_stamp = stamp;
 	}
