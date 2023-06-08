@@ -18,6 +18,7 @@ package us.mn.state.dot.tms;
 
 import java.util.Iterator;
 import us.mn.state.dot.sched.TimeSteward;
+import us.mn.state.dot.tms.units.Pressure;
 
 /**
  * Helper class for weather sensors.
@@ -129,5 +130,27 @@ public class WeatherSensorHelper extends BaseHelper {
 				return "heavy";
 		} else
 			return "";
+	}
+
+	/** Calculate sea-level pressure or null on error */
+	static public Pressure calcSeaLevelPressure(WeatherSensor wsp) {
+		if (wsp == null)
+			return null;
+		Integer php = wsp.getPressure();
+		if (php == null)
+			return null;
+		double phpd = php / 100;
+		Integer atc = wsp.getAirTemp();
+		if (atc == null)
+			return null;
+
+		// calculate elevation of pressure sensor
+		Integer elm = wsp.getElevation();
+		if (elm == null)
+			return null;
+		Integer shm = wsp.getPressureSensorHeight();
+		double altmd = (double)elm + (shm != null ? (double)shm : 0);
+
+		return Pressure.toSeaLevel(altmd, phpd, (double)atc);
 	}
 }

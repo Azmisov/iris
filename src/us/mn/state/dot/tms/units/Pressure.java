@@ -151,4 +151,33 @@ final public class Pressure {
 			return sb.toString();
 		}
 	}
+
+	/** Calculate sea-level pressure
+	 * @param altm Altitude in meters corresponding to php
+	 * @param php Pressure in hPa
+	 * @param tc Temperature in C
+	 * @return Pressure at sea-level or null on error */
+	static public Pressure toSeaLevel(double altm, double php, double tc) {
+		if (tc < -273.15)
+			return null;
+		final double den = tc + .0065 * altm + 273.15;
+		if (den != 0) {
+			final double base = 1 - .0065 * altm / den;
+			if (base != 0) {
+				final double hpa = php * Math.pow(base, -5.257);
+				final int hpai = (int)Math.round(hpa);
+				return create(hpai, Units.HECTOPASCALS);
+			}
+		}
+		return null;
+	}
+
+	/** Convert to sea-level pressure
+	 * @param altm Altitude in meters corresponding to pressure
+	 * @param tc Temperature in C
+	 * @return Pressure at sea-level or null on error */
+	public Pressure toSeaLevel(double altm, double tc) {
+		final double php = convert(Units.HECTOPASCALS).value;
+		return toSeaLevel(altm, php, tc);
+	}
 }

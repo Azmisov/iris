@@ -112,6 +112,12 @@ public interface WeatherSensor extends Device {
 	/** Get the subsurface temperature (null for missing) */
 	Integer getSubSurfTemp();
 
+	/** Get the station elevation in meters (null for missing) */
+	Integer getElevation();
+
+	/** Get the pressure sensor height w.r.t. elevation (null for missing)*/
+	Integer getPressureSensorHeight();
+
 	/** Get the latest sample time stamp */
 	Long getStamp();
 }

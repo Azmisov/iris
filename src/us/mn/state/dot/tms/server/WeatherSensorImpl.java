@@ -31,6 +31,7 @@ import us.mn.state.dot.tms.TMSException;
 import us.mn.state.dot.tms.WeatherSensor;
 import us.mn.state.dot.tms.WeatherSensorHelper;
 import us.mn.state.dot.tms.geo.Position;
+import us.mn.state.dot.tms.units.Pressure;
 import us.mn.state.dot.tms.utils.SString;
 import static us.mn.state.dot.tms.server.Constants.MISSING_DATA;
 import static us.mn.state.dot.tms.server.XmlWriter.createAttribute;
@@ -670,6 +671,51 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		}
 	}
 
+	/** Station elevation in meters (null for missing) */
+	private transient Integer elevation;
+
+	/** Get station elevation in meters (null for missing) */
+	@Override
+	public Integer getElevation() {
+		return elevation;
+	}
+
+	/** Set subsurface temperature (null for missing) */
+	public void setElevationNotify(Integer e) {
+		if (!objectEquals(e, elevation)) {
+			elevation = e;
+			notifyAttribute("elevation");
+		}
+	}
+
+	/** Pressure sensor height in meters (null for missing) */
+	private transient Integer pressure_sensor_height;
+
+	/** Get pressure sensor height in meters (null for missing) */
+	@Override
+	public Integer getPressureSensorHeight() {
+		return pressure_sensor_height;
+	}
+
+	/** Set pressure sensor height in meters (null for missing) */
+	public void setPressureSensorHeightNotify(Integer h) {
+		if (!objectEquals(h, pressure_sensor_height)) {
+			pressure_sensor_height = h;
+			notifyAttribute("pressureSensorHeight");
+		}
+	}
+
+	/** Get pressure adjusted to sea-level
+	 * @return Pressure in pascals or null on error */
+	private Integer getSeaLevelPressure() {
+		Pressure slp = WeatherSensorHelper.calcSeaLevelPressure(this);
+		if (slp != null) {
+			double pi = slp.convert(Pressure.Units.PASCALS).value;
+			return new Integer((int)Math.round(pi));
+		} else
+			return null;
+	}
+
 	/** Time stamp from the last sample */
 	private transient Long stamp;
 
@@ -756,6 +802,8 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		sb.append(" visibility_m=").append(getVisibility());
 		sb.append(" humidity_perc=").append(getHumidity());
 		sb.append(" atmos_pressure_pa=").append(getPressure());
+		sb.append(" atmos_pressure_sealevel_pa=").append(
+			getSeaLevelPressure());
 		sb.append(" pvmt_surf_temp_c=").append(getPvmtSurfTemp());
 		sb.append(" surf_temp_c=").append(getSurfTemp());
 		sb.append(" pvmt_surf_status=").append(getPvmtSurfStatus());
@@ -802,6 +850,8 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		w.write(createAttribute("precip_1h_mm", getPrecipOneHour()));
 		w.write(createAttribute("visibility_m", getVisibility()));
 		w.write(createAttribute("atmos_pressure_pa", getPressure()));
+		w.write(createAttribute("atmos_pressure_sealevel_pa", 
+			getSeaLevelPressure()));
 		w.write(createAttribute("pvmt_surf_temp_c", 
 			getPvmtSurfTemp()));
 		w.write(createAttribute("surf_temp_c", getSurfTemp()));

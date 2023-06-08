@@ -57,10 +57,11 @@ public class EssRec {
 
 	/** Store the atmospheric values */
 	private void storeAtmospheric(WeatherSensorImpl ws) {
-		ws.setPressureNotify(atmospheric_values
-			.getAtmosphericPressure());
-		Integer vis = atmospheric_values.getVisibility();
-		ws.setVisibilityNotify(vis);
+		ws.setPressureNotify(atmospheric_values.getAtmosphericPressure());
+		ws.setVisibilityNotify(atmospheric_values.getVisibility());
+		ws.setPressureSensorHeightNotify(
+			atmospheric_values.pressure_sensor_height.getHeightM());
+		ws.setElevationNotify(atmospheric_values.getReferenceElevation());
 	}
 
 	/** Store the wind sensor data */

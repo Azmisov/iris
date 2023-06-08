@@ -54,5 +54,27 @@ public class PressureTest extends TestCase {
 		assertTrue(new Pressure(22.8, Pressure.Units.INHG).
 			convert(Pressure.Units.PASCALS).
 			toString().equals("77,210 Pa"));
+
+		// Sea-level conversion
+		assertTrue(Pressure.toSeaLevel(1000, 1000, 25).
+			convert(Pressure.Units.HECTOPASCALS).
+			toString().equals("1,120 hPa"));
+		// check if temperature is less than absolute zero
+		assertNull(Pressure.toSeaLevel(1000, 1000, -273.15 - .01));
+	}
+
+	/** Sea-level pressure conversion */
+	public void testSeaLevelConversion() {
+		// check if temperature is less than absolute zero
+		assertNull(Pressure.toSeaLevel(1000, 1000, -273.15 - .01));
+
+		// check accuracy of conversion
+		assertTrue(Pressure.toSeaLevel(1000, 1000, 25).
+			convert(Pressure.Units.HECTOPASCALS).
+			toString().equals("1,120 hPa"));
+		assertTrue(new Pressure(1000, Pressure.Units.HECTOPASCALS).
+			toSeaLevel(1000, 25).
+			convert(Pressure.Units.HECTOPASCALS).
+			toString().equals("1,120 hPa"));
 	}
 }

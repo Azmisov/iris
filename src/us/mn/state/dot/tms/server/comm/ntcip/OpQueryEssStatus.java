@@ -71,11 +71,14 @@ public class OpQueryEssStatus extends OpEss {
 
 		@SuppressWarnings("unchecked")
 		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(ess_rec.atmospheric_values
-				.atmospheric_pressure);
+			mess.add(ess_rec.atmospheric_values.atmospheric_pressure);
+			// also query pressure height (which depends on reference height)
+			mess.add(ess_rec.atmospheric_values.reference_elevation);
+			mess.add(ess_rec.atmospheric_values.pressure_sensor_height.node);
 			mess.queryProps();
-			logQuery(ess_rec.atmospheric_values
-				.atmospheric_pressure);
+			logQuery(ess_rec.atmospheric_values.atmospheric_pressure);
+			logQuery(ess_rec.atmospheric_values.reference_elevation);
+			logQuery(ess_rec.atmospheric_values.pressure_sensor_height.node);
 			return new QueryVisibility();
 		}
 	}

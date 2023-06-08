@@ -19,6 +19,7 @@ import java.util.Date;
 import java.awt.Color;
 import us.mn.state.dot.tms.ItemStyle;
 import us.mn.state.dot.tms.WeatherSensor;
+import us.mn.state.dot.tms.WeatherSensorHelper;
 import us.mn.state.dot.tms.client.ToolTipBuilder;
 import us.mn.state.dot.tms.client.map.MapObject;
 import us.mn.state.dot.tms.client.proxy.ProxyManager;
@@ -76,6 +77,8 @@ public class WeatherSensorTheme extends ProxyTheme<WeatherSensor> {
 			p.getHumidity(), "%");
 		ttb.addLine("Barometric pressure",
 			Pressure.create(p.getPressure()));
+		ttb.addLine("Barometric sea-level pressure",
+			WeatherSensorHelper.calcSeaLevelPressure(p));
 		ttb.addLine("Precipitation rate", 
 			p.getPrecipRate(), "mm/hr");
 		ttb.addLine("Precipitation 1h", 
