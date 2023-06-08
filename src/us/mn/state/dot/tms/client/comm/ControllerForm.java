@@ -2,6 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2008-2022  Minnesota Department of Transportation
  * Copyright (C) 2014  AHMCT, University of California
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,11 +56,15 @@ import us.mn.state.dot.tms.utils.I18N;
  *
  * @author Douglas Lau
  * @author Travis Swanston
+ * @author Michael Darter
  */
 public class ControllerForm extends SonarObjectForm<Controller> {
 
 	/** Table row height */
 	static private final int ROW_HEIGHT = 24;
+
+	/** Hide the password text in the form */
+	static private final boolean hide_password = true;
 
 	/** Comm link combo box model */
 	private final IComboBoxModel<CommLink> comm_link_mdl;
@@ -234,6 +239,8 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 			reset.setEnabled(false);
 		}
 		setBackground(Color.LIGHT_GRAY);
+		if (!hide_password)
+			password.setEchoChar((char)0);
 		super.initialize();
 	}
 
@@ -283,8 +290,11 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 			public void focusLost(FocusEvent e) {
 				String pwd = new String(
 					password.getPassword()).trim();
-				password.setText("");
-				if (pwd.length() > 0)
+				if (hide_password) {
+					password.setText("");
+					if (pwd.length() > 0)
+						proxy.setPassword(pwd);
+				} else
 					proxy.setPassword(pwd);
 			}
 		});
@@ -374,6 +384,9 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 		}
 		if (a == null || a.equals("drop"))
 			drop_spn.setValue(proxy.getDrop());
+		if (!hide_password)
+			if (a == null || a.equals("password"))
+				password.setText(proxy.getPassword());
 		if (a == null || a.equals("cabinetStyle"))
 			cab_style_act.updateSelected();
 		if (a == null || a.equals("notes"))
