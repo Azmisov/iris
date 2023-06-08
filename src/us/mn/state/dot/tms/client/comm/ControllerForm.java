@@ -2,7 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2008-2022  Minnesota Department of Transportation
  * Copyright (C) 2014  AHMCT, University of California
- * Copyright (C) 2017-2018  Iteris Inc.
+ * Copyright (C) 2017-2019  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -97,15 +97,6 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 
 	/** Access password */
 	private final JTextField password = new JTextField(16);
-
-	/** Action to clear the access password */
-	private final IAction clear_pwd = new IAction(
-		"controller.password.clear")
-	{
-		protected void doActionPerformed(ActionEvent e) {
-			proxy.setPassword(null);
-		}
-	};
 
 	/** Condition action */
 	private final IAction condition_act = new IAction(
@@ -261,7 +252,6 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 		p.add(uri_lbl, Stretch.LAST);
 		p.add("controller.password");
 		p.add(password);
-		p.add(new JButton(clear_pwd), Stretch.RIGHT);
 		p.add("device.notes");
 		p.add(notes_txt, Stretch.FULL);
 		p.add("controller.condition");
@@ -361,7 +351,6 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 		notes_txt.setEnabled(canWrite("notes"));
 		condition_act.setEnabled(canWrite("condition"));
 		password.setEnabled(canWrite("password"));
-		clear_pwd.setEnabled(canWrite("password"));
 	}
 
 	/** Update one attribute on the form */
