@@ -288,8 +288,7 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 		password.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				String pwd = new String(
-					password.getPassword()).trim();
+				String pwd = new String(password.getPassword());
 				if (hide_password) {
 					password.setText("");
 					if (pwd.length() > 0)
