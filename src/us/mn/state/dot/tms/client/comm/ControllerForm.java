@@ -26,7 +26,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
@@ -63,9 +62,6 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 	/** Table row height */
 	static private final int ROW_HEIGHT = 24;
 
-	/** Hide the password text in the form */
-	static private final boolean hide_password = false;
-
 	/** Comm link combo box model */
 	private final IComboBoxModel<CommLink> comm_link_mdl;
 
@@ -100,7 +96,7 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 	private final JTextArea notes_txt = new JTextArea(3, 24);
 
 	/** Access password */
-	private final JPasswordField password = new JPasswordField(16);
+	private final JTextField password = new JTextField(16);
 
 	/** Action to clear the access password */
 	private final IAction clear_pwd = new IAction(
@@ -242,8 +238,6 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 			reset.setEnabled(false);
 		}
 		setBackground(Color.LIGHT_GRAY);
-		if (!hide_password)
-			password.setEchoChar((char)0);
 		super.initialize();
 	}
 
@@ -292,13 +286,8 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 		password.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				String pwd = new String(password.getPassword());
-				if (hide_password) {
-					password.setText("");
-					if (pwd.length() > 0)
-						proxy.setPassword(pwd);
-				} else
-					proxy.setPassword(pwd);
+				String pwd = new String(password.getText());
+				proxy.setPassword(pwd);
 			}
 		});
 		notes_txt.addFocusListener(new FocusAdapter() {
@@ -387,9 +376,8 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 		}
 		if (a == null || a.equals("drop"))
 			drop_spn.setValue(proxy.getDrop());
-		if (!hide_password)
-			if (a == null || a.equals("password"))
-				password.setText(proxy.getPassword());
+		if (a == null || a.equals("password"))
+			password.setText(proxy.getPassword());
 		if (a == null || a.equals("cabinetStyle"))
 			cab_style_act.updateSelected();
 		if (a == null || a.equals("notes"))

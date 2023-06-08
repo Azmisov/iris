@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2000-2021  Minnesota Department of Transportation
+ * Copyright (C) 2019  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +28,7 @@ import us.mn.state.dot.tms.server.comm.ParsingException;
  * Simple Network Management Protocol (SNMP)
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class SNMP extends BER {
 
@@ -53,9 +55,6 @@ public class SNMP extends BER {
 
 	/** SNMP version number */
 	static public final int SNMP_VERSION = 0;
-
-	/** Public community name */
-	static public final String PUBLIC = "Public";
 
 	/** Ledstar firmware bug workaround. Instead of 128,129,130,..., it
 	 * returns -128,-127,-126,... */
@@ -109,7 +108,7 @@ public class SNMP extends BER {
 		public Message(OutputStream o, InputStream i, String c) {
 			os = o;
 			is = i;
-			community = (c != null) ? c : PUBLIC;
+			community = (c != null) ? c : "";
 			request_id = last_request++;
 			if (last_request > REQUEST_ID_MAX_LEDSTAR_BUG)
 				last_request = 0;
