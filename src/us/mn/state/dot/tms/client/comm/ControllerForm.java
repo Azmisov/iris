@@ -64,7 +64,7 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 	static private final int ROW_HEIGHT = 24;
 
 	/** Hide the password text in the form */
-	static private final boolean hide_password = true;
+	static private final boolean hide_password = false;
 
 	/** Comm link combo box model */
 	private final IComboBoxModel<CommLink> comm_link_mdl;
