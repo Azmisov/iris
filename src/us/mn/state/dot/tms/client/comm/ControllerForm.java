@@ -2,7 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2008-2022  Minnesota Department of Transportation
  * Copyright (C) 2014  AHMCT, University of California
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2018  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,6 +83,9 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 	/** Comm link combo box */
 	private final JComboBox<CommLink> comm_link_cbx =
 		new JComboBox<CommLink>();
+
+	/** Comm link name label */
+	private final JLabel cl_name_lbl = new JLabel();
 
 	/** Comm link URI label */
 	private final JLabel uri_lbl = new JLabel();
@@ -258,9 +261,10 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 		IPanel p = new IPanel();
 		p.add("comm.link");
 		p.add(comm_link_cbx);
-		p.add(uri_lbl, Stretch.LAST);
+		p.add(cl_name_lbl, Stretch.LAST);
 		p.add("controller.drop");
-		p.add(drop_spn, Stretch.LAST);
+		p.add(drop_spn);
+		p.add(uri_lbl, Stretch.LAST);
 		p.add("controller.password");
 		p.add(password);
 		p.add(new JButton(clear_pwd), Stretch.RIGHT);
@@ -437,9 +441,12 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 	private void updateCommLink() {
 		CommLink cl = proxy.getCommLink();
 		comm_link_mdl.setSelectedItem(cl);
-		if (cl != null)
+		if (cl != null) {
+			cl_name_lbl.setText("Comm Link: " + cl.getName());
 			uri_lbl.setText(cl.getUri());
-		else
+		} else {
+			cl_name_lbl.setText("");
 			uri_lbl.setText("");
+		}
 	}
 }
