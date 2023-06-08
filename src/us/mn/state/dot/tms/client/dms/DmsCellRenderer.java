@@ -48,11 +48,20 @@ import static us.mn.state.dot.tms.client.widget.Widgets.UI;
  */
 public class DmsCellRenderer extends JPanel implements ListCellRenderer<DMS> {
 
+	/** Cell sizes */
+	static private final double SIZE_MULT = 1.0;
+	static private final int SIZE_SX = (int)(0 * SIZE_MULT);
+	static private final int SIZE_SY = (int)(0 * SIZE_MULT);
+	static private final int SIZE_MX = (int)(80 * SIZE_MULT);
+	static private final int SIZE_MY = (int)(26 * SIZE_MULT);
+	static private final int SIZE_LX = (int)(160 * SIZE_MULT);
+	static private final int SIZE_LY = (int)(52 * SIZE_MULT);
+
 	/** DMS cell renderer mode */
 	private enum DmsRendererMode {
-		SMALL(0, 0, 1, CellRendererSize.SMALL),
-		MEDIUM(80, 26, 1, CellRendererSize.MEDIUM),
-		LARGE(160, 52, 2, CellRendererSize.LARGE);
+		SMALL(SIZE_SX, SIZE_SY, 1, CellRendererSize.SMALL),
+		MEDIUM(SIZE_MX, SIZE_MY, 1, CellRendererSize.MEDIUM),
+		LARGE(SIZE_LX, SIZE_LY, 2, CellRendererSize.LARGE);
 
 		/** Fixed pixel panel size */
 		public final Dimension pixel_panel_size;
