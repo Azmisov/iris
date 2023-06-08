@@ -49,7 +49,7 @@ import static us.mn.state.dot.tms.client.widget.Widgets.UI;
 public class DmsCellRenderer extends JPanel implements ListCellRenderer<DMS> {
 
 	/** Cell sizes */
-	static private final double SIZE_MULT = 1.0;
+	static private final double SIZE_MULT = 1.5;
 	static private final int SIZE_SX = (int)(0 * SIZE_MULT);
 	static private final int SIZE_SY = (int)(0 * SIZE_MULT);
 	static private final int SIZE_MX = (int)(80 * SIZE_MULT);
