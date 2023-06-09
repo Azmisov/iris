@@ -48,6 +48,10 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		String notes = ws.getNotes();
 		if (notes == null)
 			return ws.getName();
+		notes = notes.replace("\n", " ");
+		notes = notes.replace("\r", " ");
+		notes = notes.replace("\t", " ");
+		notes = notes.trim();
 		String[] words = notes.split(" ");
 		if (words == null)
 			return ws.getName();
