@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2018  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,6 +37,30 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 
 	/** CSV file name */
 	static private final String OUTPUT_FNAME_2 = "weather_sensor2.csv";
+
+	/** Get the site id from the notes field.
+	 * @param ws Weather sensor
+	 * @return The string X extracted from the word "siteid=X" 
+	 * 	   within the notes field or the sensor's name. */
+	static private String getSiteId(WeatherSensorImpl ws) {
+		if (ws == null)
+			return "";
+		String notes = ws.getNotes();
+		if (notes == null)
+			return ws.getName();
+		String[] words = notes.split(" ");
+		if (words == null)
+			return ws.getName();
+		for (String w : words) {
+			if (!w.contains("siteid="))
+				continue;
+			String[] kv = w.split("=");
+			if (kv == null || kv.length != 2)
+				continue;
+			return kv[1].trim();
+		}
+		return ws.getName();
+	}
 
 	/** File type to generate */
 	final private int f_type;
@@ -232,7 +256,7 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		throws IOException
 	{
 		StringBuilder sb = new StringBuilder();
-		append(sb, w.getName());		//Siteid
+		append(sb, getSiteId(w));		//Siteid
 		append(sb, formatDate(w.getStamp()));	//DtTm
 		append(sb, tToN(w.getAirTemp()));	//AirTemp
 		append(sb, tToN(w.getDewPointTemp()));	//Dewpoint
@@ -259,8 +283,8 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		throws IOException
 	{
 		StringBuilder sb = new StringBuilder();
-		append(sb, w.getName());		//Siteid
-		append(sb, "0");			//senid
+		append(sb, getSiteId(w));		//Siteid
+		append(sb, w.getName());		//senid
 		append(sb, formatDate(w.getStamp()));	//DtTm
 		append(sb, pssToN(w));			//sfcond
 		append(sb, tToN(w.getPvmtSurfTemp()));	//sftemp
