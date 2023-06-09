@@ -442,7 +442,13 @@ public class OpQueryEssStatus extends OpEss {
 		protected Phase poll(CommMessage mess) throws IOException {
 			mess.add(sr.temp.node);
 			mess.add(sr.sensor_error);
-			mess.queryProps();
+			try {
+				mess.queryProps();
+			} catch(NoSuchName ex) {
+				// High Sierra RWIS controller generates this
+				// exception: essSubSurfaceSensorError
+				log("Caught and ignored NoSuchName: ex=" + ex);
+			}
 			logQuery(sr.temp.node);
 			logQuery(sr.sensor_error);
 			return new QuerySubSurfaceMoisture(sr);
