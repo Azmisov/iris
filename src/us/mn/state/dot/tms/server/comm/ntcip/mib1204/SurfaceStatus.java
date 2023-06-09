@@ -37,4 +37,12 @@ public enum SurfaceStatus {
 	dew,                  // 12
 	frost,                // 13
 	absorptionAtDewpoint; // 14
+
+	/** Values array */
+	static private final SurfaceStatus[] VALUES = values();
+
+	/** Get a SurfaceStatus from an ordinal value */
+	static public SurfaceStatus fromOrdinal(int o) {
+		return (o >= 0 && o < VALUES.length) ? VALUES[o] : undefined;
+	}
 }

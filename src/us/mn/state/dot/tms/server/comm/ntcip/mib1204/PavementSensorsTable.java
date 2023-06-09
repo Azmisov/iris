@@ -171,6 +171,16 @@ public class PavementSensorsTable {
 			return (ess != SurfaceStatus.undefined) ? ess : null;
 		}
 
+		/** Get surface status as a string */
+		public String getSurfStatusString() {
+			// I consider this the same kind of type conversion method as
+			// getSurfTempC, so is okay to be put in this class
+			var status = getSurfStatus();
+			if (status == null)
+				return SurfaceStatus.undefined.toString();
+			return status.toString();
+		}
+
 		/** Get surface temp or null on error */
 		public Integer getSurfTempC() {
 			return surface_temp.getTempC();

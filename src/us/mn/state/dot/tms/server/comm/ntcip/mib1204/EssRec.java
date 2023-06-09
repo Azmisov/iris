@@ -102,26 +102,50 @@ public class EssRec {
 	/** Store pavement sensor related values */
 	private void storePavement(WeatherSensorImpl ws) {
 		PavementSensorsTable.Row row = ps_table.getRow(1);
-		if (row != null) {
-			ws.setPvmtSurfTempNotify(row.getPvmtTempC());
-			ws.setSurfTempNotify(row.getSurfTempC());
-			SurfaceStatus ss = row.getSurfStatus();
-			ws.setPvmtSurfStatusNotify((ss != null)
-				? ss.toString()
-				: SurfaceStatus.undefined.toString());
-			ws.setSurfFreezeTempNotify(row.getFreezePointC());
-		} else {
-			ws.setPvmtSurfTempNotify(null);
-			ws.setSurfTempNotify(null);
-			ws.setPvmtSurfStatusNotify(null);
-			ws.setSurfFreezeTempNotify(null);
+		// default is null if not available, or e.g. High Sierra has an error
+		Integer pvmt_surf_temp = null,
+			surf_temp = null,
+			surf_freeze_temp = null;
+		String pvmt_surf_status = null;
+
+		if (row != null){
+			// High Sierra device value mapping is a little different
+			if (ws.getType() == EssType.HIGH_SIERRA){
+				// Note: Subsurf is stored in essPavementTemperature for this
+				// device, e.g. row.getPvmtTempC() (not currently used)
+
+				// High Sierra stores surface temp in sensors 3 and 4.
+				// Try sensor 3 then 4
+				for (int row_num = 3; row_num <=4; ++row_num) {
+					row = ps_table.getRow(row_num);
+					if (row.getPavementSensorError() != null) {
+						surf_temp = row.getSurfTempC();
+						pvmt_surf_status = row.getSurfStatusString();
+						break;
+					}
+				}
+			}
+			// Otherwise generic type; ignore all but first sensor
+			else{
+				pvmt_surf_temp = row.getPvmtTempC();
+				surf_temp = row.getSurfTempC();
+				surf_freeze_temp = row.getFreezePointC();
+				pvmt_surf_status = row.getSurfStatusString();
+			}
 		}
+		ws.setPvmtSurfTempNotify(pvmt_surf_temp);
+		ws.setSurfTempNotify(surf_temp);
+		ws.setPvmtSurfStatusNotify(pvmt_surf_status);
+		ws.setSurfFreezeTempNotify(surf_freeze_temp);
 	}
 
 	/** Store subsurface sensor values */
 	private void storeSubSurface(WeatherSensorImpl ws) {
 		SubSurfaceSensorsTable.Row row = ss_table.getRow(1);
-		Integer t = (row != null) ? row.getTempC() : null;
+		Integer t = null;
+		// High Sierra stores nothing in this table
+		if (row != null && ws.getType() != EssType.HIGH_SIERRA)
+			t = row.getTempC();
 		ws.setSubSurfTempNotify(t);
 	}
 

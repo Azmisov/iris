@@ -43,4 +43,12 @@ public enum PavementSensorError {
 				return false;
 		}
 	}
+
+	/** Values array */
+	static private final PavementSensorError[] VALUES = values();
+
+	/** Get a PavementSensorError from an ordinal value */
+	static public PavementSensorError fromOrdinal(int o) {
+		return (o >= 0 && o < VALUES.length) ? VALUES[o] : undefined;
+	}
 }

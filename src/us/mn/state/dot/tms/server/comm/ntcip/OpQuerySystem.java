@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2022  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +26,7 @@ import static us.mn.state.dot.tms.server.comm.snmp.MIB.*;
  * Operation to query system values.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class OpQuerySystem extends OpNtcip {
 
@@ -66,6 +68,8 @@ public class OpQuerySystem extends OpNtcip {
 			mess.add(sys_name.node);
 			mess.add(sys_location.node);
 			mess.queryProps();
+			// Needed to identify High Sierra weather devices
+			controller.setSetupNotify("sys_descr", sys_descr.node.toString());
 			logQuery(sys_descr.node);
 			logQuery(sys_contact.node);
 			logQuery(sys_name.node);

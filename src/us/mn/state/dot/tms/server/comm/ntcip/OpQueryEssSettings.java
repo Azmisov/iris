@@ -21,7 +21,9 @@ import us.mn.state.dot.tms.server.comm.CommMessage;
 import us.mn.state.dot.tms.server.comm.PriorityLevel;
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssRec;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.TemperatureSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.WindSensorsTable;
@@ -62,6 +64,11 @@ public class OpQueryEssSettings extends OpEss {
 	/** Create the second phase of the operation */
 	@Override
 	protected Phase phaseTwo() {
+		// before any queries, identify EssType from sys_descr system setting
+		w_sensor.setType(EssType.create(controller));
+		log("Inferring EssType:" + 
+			" rwis_type=" + w_sensor.getType() + 
+			" sys_descr=" + controller.getSetup("sys_descr"));
 		return new QueryElevation();
 	}
 
@@ -200,6 +207,8 @@ public class OpQueryEssSettings extends OpEss {
 			mess.queryProps();
 			logQuery(pr.location);
 			logQuery(pr.pavement_type);
+			log("   PavementSensorType=" + 
+				PavementSensorType.fromOrdinal(pr.pavement_type.getInteger()));
 			logQuery(pr.height.node);
 			logQuery(pr.exposure.node);
 			logQuery(pr.sensor_type);

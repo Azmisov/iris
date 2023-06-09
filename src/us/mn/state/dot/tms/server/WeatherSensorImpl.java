@@ -37,6 +37,7 @@ import static us.mn.state.dot.tms.server.Constants.MISSING_DATA;
 import static us.mn.state.dot.tms.server.XmlWriter.createAttribute;
 import us.mn.state.dot.tms.server.comm.DevicePoller;
 import us.mn.state.dot.tms.server.comm.WeatherPoller;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssType;;
 
 /**
  * A weather sensor is a device for sampling weather data, such as 
@@ -745,6 +746,19 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		}
 	}
 
+	/** ESS type for vendor specific functionality */
+	private EssType ess_type = EssType.UNKNOWN;
+
+	/** Set the ESS type */
+	public void setType(EssType esst) {
+		ess_type = esst;
+	}
+
+	/** Get the ESS type */
+	public EssType getType() {
+		return ess_type;
+	}
+
 	/** Get a weather sensor poller */
 	private WeatherPoller getWeatherPoller() {
 		DevicePoller dp = getPoller();
@@ -855,7 +869,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		w.write(createAttribute("pvmt_surf_temp_c", 
 			getPvmtSurfTemp()));
 		w.write(createAttribute("surf_temp_c", getSurfTemp()));
-		w.write(createAttribute("pvmt_surf_status=", 
+		w.write(createAttribute("pvmt_surf_status", 
 			getPvmtSurfStatus()));
 		w.write(createAttribute("surf_freeze_temp_c", 
 			getSurfFreezeTemp()));
