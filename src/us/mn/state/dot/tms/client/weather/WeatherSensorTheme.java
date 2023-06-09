@@ -83,11 +83,12 @@ public class WeatherSensorTheme extends ProxyTheme<WeatherSensor> {
 			p.getPrecipRate(), "mm/hr");
 		ttb.addLine("Precipitation 1h", 
 			p.getPrecipRate(), "mm");
+		ttb.addLine("Precip. situation",
+			formatEnum(p.getPrecipSituation()));
 		ttb.addLine("Dew point temperature", 
 			Temperature.create(p.getDewPointTemp()));
-		String pvmt_status = p.getPvmtSurfStatus();
 		ttb.addLine("Pavement surface status", 
-			pvmt_status.equals("undefined") ? "" : pvmt_status);
+			formatEnum(p.getPvmtSurfStatus()));
 		ttb.addLine("Pavement surface temperature", 
 			Temperature.create(p.getPvmtSurfTemp()));
 		ttb.addLine("Surface temperature", 
@@ -98,6 +99,11 @@ public class WeatherSensorTheme extends ProxyTheme<WeatherSensor> {
 			formatDateString(p.getStamp()));
 		ttb.setLast();
 		return ttb.get();
+	}
+
+	/** If enum value was "undefined", output an empty string */
+	static private String formatEnum(String val){
+		return val.equals("undefined") ? "" : val;
 	}
 
 	/** Return the specified date as a string in local time.
