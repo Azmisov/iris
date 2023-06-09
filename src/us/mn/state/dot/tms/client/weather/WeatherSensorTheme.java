@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2018  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -85,6 +85,9 @@ public class WeatherSensorTheme extends ProxyTheme<WeatherSensor> {
 			p.getPrecipRate(), "mm");
 		ttb.addLine("Dew point temperature", 
 			Temperature.create(p.getDewPointTemp()));
+		String pvmt_status = p.getPvmtSurfStatus();
+		ttb.addLine("Pavement surface status", 
+			pvmt_status.equals("undefined") ? "" : pvmt_status);
 		ttb.addLine("Pavement surface temperature", 
 			Temperature.create(p.getPvmtSurfTemp()));
 		ttb.addLine("Surface temperature", 
