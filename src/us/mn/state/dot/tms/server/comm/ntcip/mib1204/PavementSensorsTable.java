@@ -46,7 +46,14 @@ public class PavementSensorsTable implements Iterable<PavementSensorsTable.Row>{
 	static private Distance convertDepthV1(ASN1Integer d) {
 		if (d != null) {
 			int id = d.getInteger();
-			if (id < DEPTH_V1_ERROR_MISSING)
+			// enforcing valid range now
+			if (id < 0 || id > DEPTH_V1_ERROR_MISSING){
+				System.err.println(
+					"PavementSensorTable, invalid essSurfaceWaterDepth: "+
+					Integer.toString(id)
+				); 
+			}
+			else if (id != DEPTH_V1_ERROR_MISSING)
 				return new Distance(id, MILLIMETERS);
 		}
 		return null;
