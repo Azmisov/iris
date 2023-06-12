@@ -91,6 +91,9 @@ public interface WeatherSensor extends Device {
 	/** Get visibility in meters (null for missing) */
 	Integer getVisibility();
 
+	/** Get water depth in cm (null for missing) */
+	Integer getWaterDepth();
+
 	/** Get relative humidity as a percent (null for missing) */
 	Integer getHumidity();
 

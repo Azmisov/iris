@@ -75,6 +75,9 @@ public class PrecipitationValues {
 		return Num.format(convertPrecipTotal(pt), 1);
 	}
 
+	/** Water depth (cm) */
+	public final ASN1Integer water_depth = essWaterDepth.makeInt();
+
 	/** Relative humidity */
 	public final PercentObject relative_humidity = new PercentObject(
 		"relative_humidity", essRelativeHumidity.makeInt());
@@ -109,6 +112,7 @@ public class PrecipitationValues {
 
 	/** Create precipitation values */
 	public PrecipitationValues() {
+		water_depth.setInteger(PRECIP_ERROR_MISSING);
 		precip_rate.setInteger(PRECIP_ERROR_MISSING);
 		precip_1_hour.setInteger(PRECIP_ERROR_MISSING);
 		precip_3_hours.setInteger(PRECIP_ERROR_MISSING);
@@ -116,6 +120,17 @@ public class PrecipitationValues {
 		precip_12_hours.setInteger(PRECIP_ERROR_MISSING);
 		precip_24_hours.setInteger(PRECIP_ERROR_MISSING);
 	}
+
+	/** Get the water depth in cm, else null if missing/invalid */
+	public Integer getWaterDepth() {
+		if (water_depth != null){
+			int val = water_depth.getInteger();
+			if (val != PRECIP_ERROR_MISSING)
+				return val;
+		}
+		return null;		
+	}
+
 
 	/** Get the precipitation rate in mm/hr */
 	public Integer getPrecipRate() {
@@ -141,6 +156,7 @@ public class PrecipitationValues {
 	/** Get JSON representation */
 	public String toJson() {
 		StringBuilder sb = new StringBuilder();
+		sb.append(Json.num("water_depth_cm", getWaterDepth()));
 		sb.append(relative_humidity.toJson());
 		sb.append(Json.num("precip_rate", formatPrecipRate(
 			precip_rate)));

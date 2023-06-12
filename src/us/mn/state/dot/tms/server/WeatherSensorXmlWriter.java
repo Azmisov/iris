@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2018  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -70,6 +70,8 @@ public class WeatherSensorXmlWriter extends XmlWriter {
 			"lat CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
 			"air_temp_c CDATA #IMPLIED>\n");
+		w.write("<!ATTLIST weather_sensor " + 
+			"water_depth_cm CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
 			"humidity_perc CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 

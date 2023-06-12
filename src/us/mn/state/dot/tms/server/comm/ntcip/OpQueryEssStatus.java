@@ -254,6 +254,7 @@ public class OpQueryEssStatus extends OpEss {
 		/** Query values */
 		@SuppressWarnings("unchecked")
 		protected Phase poll(CommMessage mess) throws IOException {
+			mess.add(ess_rec.precip_values.water_depth);
 			mess.add(ess_rec.precip_values.relative_humidity.node);
 			mess.add(ess_rec.precip_values.precip_rate);
 			mess.add(ess_rec.precip_values.precip_1_hour);
@@ -263,6 +264,7 @@ public class OpQueryEssStatus extends OpEss {
 			mess.add(ess_rec.precip_values.precip_24_hours);
 			mess.add(ess_rec.precip_values.precip_situation);
 			mess.queryProps();
+			logQuery(ess_rec.precip_values.water_depth);
 			logQuery(ess_rec.precip_values.relative_humidity.node);
 			logQuery(ess_rec.precip_values.precip_rate);
 			logQuery(ess_rec.precip_values.precip_1_hour);

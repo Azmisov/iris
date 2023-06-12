@@ -91,8 +91,8 @@ public class EssRec {
 
 	/** Store precipitation samples */
 	private void storePrecip(WeatherSensorImpl ws) {
-		ws.setHumidityNotify(precip_values.relative_humidity
-			.getPercent());
+		ws.setWaterDepthNotify(precip_values.getWaterDepth());
+		ws.setHumidityNotify(precip_values.relative_humidity.getPercent());
 		ws.setPrecipRateNotify(precip_values.getPrecipRate());
 		ws.setPrecipOneHourNotify(precip_values.getPrecip1Hour());
 		PrecipSituation ps = precip_values.getPrecipSituation();

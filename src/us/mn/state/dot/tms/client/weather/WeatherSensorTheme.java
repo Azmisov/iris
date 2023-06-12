@@ -75,6 +75,8 @@ public class WeatherSensorTheme extends ProxyTheme<WeatherSensor> {
 		ttb.addLine("Visibility", 
 			Distance.create(p.getVisibility(), 
 			Distance.Units.METERS));
+		ttb.addLine("Water depth", 
+			p.getWaterDepth(), "cm");
 		ttb.addLine("Relative humidity", 
 			p.getHumidity(), "%");
 		ttb.addLine("Barometric pressure",

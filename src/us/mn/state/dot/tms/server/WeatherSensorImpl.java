@@ -235,6 +235,24 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		}
 	}
 
+	/** Water depth in cm (null for missing) */
+	private transient Integer water_depth;
+
+	/** Get the water depth in cm (null if missing) */
+	@Override
+	public Integer getWaterDepth() {
+		return water_depth;
+	}
+
+	/** Set the water depth.
+	 * @param wad Water depth in cm or null for missing */
+	public void setWaterDepthNotify(Integer wad) {
+		if (!objectEquals(wad, water_depth)) {
+			water_depth = wad;
+			notifyAttribute("waterDepth");
+		}
+	}
+
 	/** Humidity as a percentage (null for missing) */
 	private transient Integer humidity;
 
@@ -844,6 +862,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		sb.append(" precip_situation=").append(getPrecipSituation());
 		sb.append(" precip_1h_mm=").append(getPrecipOneHour());
 		sb.append(" visibility_m=").append(getVisibility());
+		sb.append(" water_depth_cm=").append(getWaterDepth());
 		sb.append(" humidity_perc=").append(getHumidity());
 		sb.append(" atmos_pressure_pa=").append(getPressure());
 		sb.append(" atmos_pressure_sealevel_pa=").append(
@@ -875,6 +894,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		w.write(createAttribute("site_id", getSiteId()));
 		w.write(createAttribute("alt_id", getAltId()));
 		w.write(createAttribute("air_temp_c", getAirTemp()));
+		w.write(createAttribute("water_depth_cm", getWaterDepth()));
 		w.write(createAttribute("humidity_perc", getHumidity()));
 		w.write(createAttribute("dew_point_temp_c", 
 			getDewPointTemp()));
