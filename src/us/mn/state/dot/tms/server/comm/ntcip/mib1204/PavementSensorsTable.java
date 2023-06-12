@@ -188,14 +188,21 @@ public class PavementSensorsTable implements Iterable<PavementSensorsTable.Row>{
 			return (pse != null && pse.isError()) ? pse : null;
 		}
 
-		/** Get surface water depth formatted to meter units */
-		private String getWaterDepth() {
+		/** Get surface water depth formatted to meter units, mulitplied by
+		 * the `multiplier` to do on-the-fly conversion to another format
+		 */
+		public String getWaterDepth(float multiplier){
 			Distance d = convertDepthV1(water_depth);
 			if (d != null) {
-				Float mm = d.asFloat(METERS);
+				Float mm = d.asFloat(METERS)*multiplier;
 				return Num.format(mm, 3); // mm
-			} else
-				return null;
+			}
+			return null;
+		}
+
+		/** Get surface water depth formatted to meter units */
+		private String getWaterDepth(){
+			return getWaterDepth(1);
 		}
 
 		/** Get surface ice or water depth formatted to meter units */
@@ -298,6 +305,8 @@ public class PavementSensorsTable implements Iterable<PavementSensorsTable.Row>{
 				append(row.getSurfTempC());
 			sb.append(" pvmttemp(").append(idx).append(")=").
 				append(row.getSurfTempC());
+			sb.append(" pvmtsurfdepth(").append(idx).append(")=").
+				append(row.getWaterDepth());
 			++idx;
 		}
 		return sb.toString();

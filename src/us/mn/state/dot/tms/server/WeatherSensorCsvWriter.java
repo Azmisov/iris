@@ -128,12 +128,22 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 	}
 
 	/** Convert pavement surface status to CSV string
-	 * @arg status - pavement surface status
+	 * @arg status - surface status
 	 * @return Pavement surface status description or empty if missing. */
-	static private String pssToN(WeatherSensorImpl ws) {
-		var status = SurfaceStatus.from(ws);
+	static private String pssToN(SurfaceStatus status) {
 		if (status != null && status != SurfaceStatus.undefined)
 			return SString.splitCamel(status.toString());
+		return MISSING;
+	}
+
+	/** Convert surface water depth to CSV string
+	 * @arg row - row to fetch from
+	 * @return Pavement surface water depth in .1mm or empty if missing */
+	static private String swdToN(PavementSensorsTable.Row row) {
+		// meters given; want to convert to 1/10th of mm
+		String val = row.getWaterDepth(100);
+		if (val != null)
+			return val;
 		return MISSING;
 	}
 
@@ -322,34 +332,35 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		throws IOException
 	{
 		String sid = getSiteId(w);
-		String dat = formatDate(w.getStamp());
-		PavementSensorsTable ps_t = w.getPavementSensorsTable();
-		SubSurfaceSensorsTable ss_t = w.getSubsurfaceSensorsTable();
-		String sfc = pssToN(w);
-		//String sft = tToCsv(w.getPvmtSurfTemp());
-		String fzt = tToCsv(w.getSurfFreezeTemp());
-		//String sst = tToCsv(w.getSubSurfTemp());
 		int senid = 0;
-		// iterate through pavement sensors
+		String dat = formatDate(w.getStamp());
+		// iterate through pavement sensor table
+		PavementSensorsTable ps_t = w.getPavementSensorsTable();
 		for (var row: ps_t){
+			String pss = pssToN(row.getSurfStatus());
 			String sft = tToCsv(row.getSurfTempC());
+			String fzt = tToCsv(row.getFreezePointC());
+			String swd = swdToN(row);
 			String sst = MISSING;
-			writeLine2(wr, sid, senid, dat, sfc, sft, fzt, sst);
+			writeLine2(wr, sid, senid, dat, pss, sft, fzt, sst, swd);
 			++senid;
 		}
-		// iterate through subsurface sensors
+		// iterate through subsurface sensors table
+		SubSurfaceSensorsTable ss_t = w.getSubsurfaceSensorsTable();
 		for (var row: ss_t){
-			String sft = tToCsv(row.getTempC());
-			String sst = MISSING;
-			writeLine2(wr, sid, senid, dat, sfc, sft, fzt, sst);
+			String pss = MISSING;
+			String sft = MISSING;
+			String fzt = MISSING;
+			String swd = MISSING;
+			String sst = tToCsv(row.getTempC());
+			writeLine2(wr, sid, senid, dat, pss, sft, fzt, sst, swd);
 			++senid;
 		}
 	}
 
 	/** Write a CSV line for the surface file */
-	private void writeLine2(Writer wr, String sid, 
-		int senid, String dat, String sfc, 
-		String sft, String fzt, String sst) 
+	private void writeLine2(Writer wr, String sid, int senid, String dat, 
+		String sfc, String sft, String fzt, String sst, String swd)
 		throws IOException
 	{
 		String ssenid = String.valueOf(senid);
@@ -362,7 +373,7 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		append(sb, fzt);	//frztemp
 		append(sb, MISSING);	//chemfactor
 		append(sb, MISSING);	//chempct
-		append(sb, MISSING);	//depth
+		append(sb, swd);	//depth
 		append(sb, MISSING);	//icepct
 		append(sb, sst);	//subsftemp
 		append(sb, MISSING);	//waterlevel

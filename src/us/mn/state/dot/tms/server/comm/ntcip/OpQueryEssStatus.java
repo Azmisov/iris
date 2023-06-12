@@ -254,6 +254,9 @@ public class OpQueryEssStatus extends OpEss {
 		/** Query values */
 		@SuppressWarnings("unchecked")
 		protected Phase poll(CommMessage mess) throws IOException {
+			// essWaterDepth is V1 NTCIP only and was replaced
+			// subsequently with the water level sensor table, but
+			// may be supported by RWIS for compatibility.
 			mess.add(ess_rec.precip_values.water_depth);
 			mess.add(ess_rec.precip_values.relative_humidity.node);
 			mess.add(ess_rec.precip_values.precip_rate);
@@ -307,6 +310,7 @@ public class OpQueryEssStatus extends OpEss {
 			mess.add(pr.surface_status);
 			mess.add(pr.surface_temp.node);
 			mess.add(pr.pavement_temp.node);
+			mess.add(pr.water_depth);
 			mess.add(pr.freeze_point.node);
 			mess.add(pr.sensor_error);
 			mess.add(pr.salinity);
@@ -317,6 +321,7 @@ public class OpQueryEssStatus extends OpEss {
 				SurfaceStatus.fromOrdinal(pr.surface_status.getInteger()));
 			logQuery(pr.surface_temp.node);
 			logQuery(pr.pavement_temp.node);
+			logQuery(pr.water_depth);
 			logQuery(pr.freeze_point.node);
 			logQuery(pr.sensor_error);
 			log("   PavementSensorError=" + 
