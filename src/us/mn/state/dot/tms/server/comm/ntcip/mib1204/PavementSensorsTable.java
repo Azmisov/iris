@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2018  Iteris Inc.
  * Copyright (C) 2019-2023  Minnesota Department of Transportation
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,6 +16,7 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
 import us.mn.state.dot.tms.server.comm.snmp.ASN1Enum;
 import us.mn.state.dot.tms.server.comm.snmp.ASN1Integer;
@@ -33,7 +34,7 @@ import us.mn.state.dot.tms.utils.Json;
  * @author Michael Darter
  * @author Douglas Lau
  */
-public class PavementSensorsTable {
+public class PavementSensorsTable implements Iterable<PavementSensorsTable.Row>{
 
 	/** A depth of 255 is an error condition or missing value */
 	static private final int DEPTH_V1_ERROR_MISSING = 255;
@@ -171,16 +172,6 @@ public class PavementSensorsTable {
 			return (ess != SurfaceStatus.undefined) ? ess : null;
 		}
 
-		/** Get surface status as a string */
-		public String getSurfStatusString() {
-			// I consider this the same kind of type conversion method as
-			// getSurfTempC, so is okay to be put in this class
-			var status = getSurfStatus();
-			if (status == null)
-				return SurfaceStatus.undefined.toString();
-			return status.toString();
-		}
-
 		/** Get surface temp or null on error */
 		public Integer getSurfTempC() {
 			return surface_temp.getTempC();
@@ -283,11 +274,33 @@ public class PavementSensorsTable {
 		return tr;
 	}
 
-	/** Get one table row */
+	/** Get one table row, where row indices start with 1 */
 	public Row getRow(int row) {
 		return (row >= 1 && row <= table_rows.size())
 		      ? table_rows.get(row - 1)
 		      : null;
+	}
+
+	/** Public interface for iterating through rows */
+	@Override
+	public Iterator<Row> iterator(){
+		return table_rows.iterator();
+	}
+
+	/** To string */
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("PavementSensorsTable: ");
+		sb.append(" size=").append(size());
+		int idx = 1;
+		for (Row row : table_rows){
+			sb.append(" surftemp(").append(idx).append(")=").
+				append(row.getSurfTempC());
+			sb.append(" pvmttemp(").append(idx).append(")=").
+				append(row.getSurfTempC());
+			++idx;
+		}
+		return sb.toString();
 	}
 
 	/** Get JSON representation */

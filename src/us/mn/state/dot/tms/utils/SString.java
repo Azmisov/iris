@@ -2,7 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2008-2011  AHMCT, University of California
  * Copyright (C) 2013-2020  Minnesota Department of Transportation
- * Copyright (C) 2017 Iteris Inc.
+ * Copyright (C) 2017-2018 Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -331,5 +331,18 @@ public class SString {
 			return sb.toString().trim();
 		}
 		return null;
+	}
+
+	/** Remove CR, LF, tabs and excess whitespace
+	 * @param str String that may be null
+	 * @return Argument with CR, LF tabs and extra spaces removed */
+	static public String stripCrLf(String str) {
+		if (str != null) {
+			str = str.replace("\n", " ");
+			str = str.replace("\r", " ");
+			str = str.replace("\t", " ");
+			str = str.trim();
+		}
+		return str;
 	}
 }

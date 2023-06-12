@@ -29,6 +29,8 @@ import us.mn.state.dot.tms.units.Distance;
 import us.mn.state.dot.tms.units.Temperature;
 import us.mn.state.dot.tms.units.Pressure;
 import us.mn.state.dot.tms.units.Speed;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SurfaceStatus;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PrecipSituation;
 
 /**
  * Theme for weather sensor objects on the map.
@@ -84,11 +86,11 @@ public class WeatherSensorTheme extends ProxyTheme<WeatherSensor> {
 		ttb.addLine("Precipitation 1h", 
 			p.getPrecipRate(), "mm");
 		ttb.addLine("Precip. situation",
-			formatEnum(p.getPrecipSituation()));
+			PrecipSituation.toStringValid(PrecipSituation.from(p)));
 		ttb.addLine("Dew point temperature", 
 			Temperature.create(p.getDewPointTemp()));
 		ttb.addLine("Pavement surface status", 
-			formatEnum(p.getPvmtSurfStatus()));
+			SurfaceStatus.toStringValid(SurfaceStatus.from(p)));
 		ttb.addLine("Pavement surface temperature", 
 			Temperature.create(p.getPvmtSurfTemp()));
 		ttb.addLine("Surface temperature", 
@@ -99,11 +101,6 @@ public class WeatherSensorTheme extends ProxyTheme<WeatherSensor> {
 			formatDateString(p.getStamp()));
 		ttb.setLast();
 		return ttb.get();
-	}
-
-	/** If enum value was "undefined", output an empty string */
-	static private String formatEnum(String val){
-		return val.equals("undefined") ? "" : val;
 	}
 
 	/** Return the specified date as a string in local time.

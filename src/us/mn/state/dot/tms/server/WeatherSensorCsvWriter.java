@@ -18,15 +18,20 @@ import java.io.IOException;
 import java.io.Writer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.Iterator;
 import us.mn.state.dot.tms.WeatherSensor;
 import us.mn.state.dot.tms.WeatherSensorHelper;
 import us.mn.state.dot.tms.units.Pressure;
 import us.mn.state.dot.tms.units.Speed;
 import us.mn.state.dot.tms.utils.SString;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SurfaceStatus;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PrecipSituation;
 
 /**
- * Write SSI CSV weather export files.
+ * Write SSI ScanWeb CSV weather export files.
  *
  * @author Michael Darter
  */
@@ -38,20 +43,20 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 	/** CSV file name */
 	static private final String OUTPUT_FNAME_2 = "weather_sensor2.csv";
 
+	/** CSV missing value */
+	static private final String MISSING = "";
+
 	/** Get the site id from the notes field.
 	 * @param ws Weather sensor
 	 * @return The string X extracted from the word "siteid=X" 
 	 * 	   within the notes field or the sensor's name. */
 	static private String getSiteId(WeatherSensorImpl ws) {
 		if (ws == null)
-			return "";
+			return MISSING;
 		String notes = ws.getNotes();
 		if (notes == null)
 			return ws.getName();
-		notes = notes.replace("\n", " ");
-		notes = notes.replace("\r", " ");
-		notes = notes.replace("\t", " ");
-		notes = notes.trim();
+		notes = SString.stripCrLf(notes);
 		String[] words = notes.split(" ");
 		if (words == null)
 			return ws.getName();
@@ -69,14 +74,27 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 	/** File type to generate */
 	final private int f_type;
 
-	/** Return the specified date as a string in local time.
+	/** Capitalize the specified string, e.g. "aBC" becomes "Abc". Null or
+	 * empty string is returned as empty string
+	 */
+	static private String capitalizeFirstLetter(String str) {
+		if (str == null || str.length() == 0)
+			return MISSING;
+		return str.substring(0, 1).toUpperCase() + 
+			str.substring(1).toLowerCase();
+	}
+
+	/** Return the specified date as a string in UTC.
 	 * @param stamp A time stamp, null or < 0 for missing
-	 * @return A string in local time as MM-dd-yyyy HH:mm:ss */
+	 * @return A string in UTC as MM/dd/yyyy HH:mm:ss */
 	static private String formatDate(Long stamp) {
 		if (stamp == null || stamp < 0)
-			return "";
+			return MISSING;
 		Date d = new Date(stamp);
-		return new SimpleDateFormat("MM-dd-yyyy HH:mm:ss").format(d);
+		SimpleDateFormat sdf = 
+			new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+		return sdf.format(d);
 	}
 
 	/** Factory to create a new CSV file writer and write the file.
@@ -97,16 +115,129 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		return wsw;
 	}
 
+	/** Convert a temperature to CSV temperature.
+	 * @arg v Temperature in C or null if missing.
+	 * @return Temperature as hundredths of a degree C or 
+	 * 	   the empty string for missing */
+	static private String tToCsv(Integer v) {
+		if (v != null) {
+			int i = v.intValue() * 100;
+			return String.valueOf(i);
+		}	
+		return MISSING;
+	}
+
+	/** Convert pavement surface status to CSV string
+	 * @arg status - pavement surface status
+	 * @return Pavement surface status description or empty if missing. */
+	static private String pssToN(WeatherSensorImpl ws) {
+		var status = SurfaceStatus.from(ws);
+		if (status != null && status != SurfaceStatus.undefined)
+			return SString.splitCamel(status.toString());
+		return MISSING;
+	}
+
+	/** Convert pressure in pascals to CSV pressure.
+	 * @arg v Pressure in Pascals or null.
+	 * @return Pressure Pressure in .1 millibar, which are tenths 
+	 *                  of hectoPascal or empty if missing */
+	static private String prToCsv(Integer v) {
+		if (v != null)
+			return String.valueOf(new Pressure((double)v).ntcip());
+		return MISSING;
+	}
+
+	/** Convert precip rate to CSV units. See essPrecipRate.
+	 * @arg v Precip rate in mm/hr, null for missing.
+	 * @return Precip rate as .025 mm/hr or empty for missing */
+	static private String praToCsv(Integer v) {
+		if (v != null)
+			return String.valueOf(Math.round((double)v * 40));
+		return MISSING;
+	}
+
+	/** Convert visibility to CSV units, see essVisibility.
+	 * @arg v Distance in meters, null for missing.
+	 * @return Distance in meters or empty for missing. */
+	static private String visToCsv(Integer v) {
+		if (v != null)
+			return String.valueOf(v);
+		return MISSING;
+	}
+
+	/** Convert precipitation accumulation to CSV units.
+	 * @arg v Precip accum in mm, null for missing.
+	 * @return Precip accumulation in .025 mm or empty for missing. 
+	 *         See essPrecipitationOneHour */
+	static private String pToCsv(Integer v) {
+		return (v != null ? String.valueOf(v * 40) : MISSING);
+	}
+
+	/** Convert speed to CSV units.
+	 * @arg v Speed in KPH, null for missing.
+	 * @return Speed in KPH or empty for missing. See essAvgWindSpeed. */
+	static private String sToCsv(Integer v) {
+		if (v != null)
+			return String.valueOf(v);
+		else
+			return MISSING;
+	}
+
+	/** Get the precipitation situation */
+	static private String psToCsv(WeatherSensorImpl w) {
+		var ps = PrecipSituation.from(w);
+		return (ps != null ? ps.desc_csv : MISSING);
+	}
+
+	/** Get 1h accum precip in .025 mm or empty for missing */ 
+	static private String apToCsv(WeatherSensorImpl w) {
+		return pToCsv(w.getPrecipOneHour());
+	}
+
+	/** Append a CSV value to a StringBuffer */
+	static private StringBuilder append(StringBuilder sb, String value) {
+		if (value != null)
+			sb.append(value);
+		sb.append(",");
+		return sb;
+	}
+
+	/** Append a CSV value to a StringBuffer */
+	static private StringBuilder append(StringBuilder sb, Integer value) {
+		if (value != null)
+			sb.append(value);
+		sb.append(",");
+		return sb;
+	}
+
+	/** Append a CSV value to a StringBuffer */
+	static private StringBuilder append(StringBuilder sb, Long value) {
+		if (value != null)
+			sb.append(value);
+		sb.append(",");
+		return sb;
+	}
+
+	/** Append a CSV value to a StringBuffer */
+	static private StringBuilder append(StringBuilder sb, Double value) {
+		if (value != null)
+			sb.append(value);
+		sb.append(",");
+		return sb;
+	}
+
+	/** Append a CSV value to a StringBuffer */
+	static private StringBuilder append(StringBuilder sb, PrecipSituation value){
+		if (value != null && value != PrecipSituation.undefined)
+			sb.append(value);
+		sb.append(",");
+		return sb;
+	}
+
 	/** Constructor */
 	public WeatherSensorCsvWriter(String fn, int ft) {
 		super(fn, true);
 		f_type = ft;
-	}
-
-	/** Write the weather sensor CSV file */
-	@Override protected void write(Writer w) throws IOException {
-		writeHead(w);
-		writeBody(w);
 	}
 
 	/** Write the head of the CSV file */
@@ -133,108 +264,6 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		}
 	}
 
-	/** Convert a temperature to an NTCIP temperature.
-	 * @param v Temperature in C or null if missing.
-	 * @return Temperature as tenths of a degree C or 1001 for missing. */
-	private String tToN(Integer v) {
-		if (v != null) {
-			int i = v.intValue() * 10;
-			return String.valueOf(i);
-		} else {
-			return "1001"; // missing
-		}
-	}
-
-	/** Convert pavement surface status to NTCIP string
-	 * @param w Weather sensor
-	 * @return Pavement surface status description or empty if missing. */
-	private String pssToN(WeatherSensorImpl w) {
-		String ess = w.getPvmtSurfStatus();
-		return (ess != null && !ess.equals("undefined"))
-		      ? SString.splitCamel(ess)
-		      : "";
-	}
-
-	/** Convert pressure in pascals to NTCIP pressure.
-	 * @param v Pressure in Pascals or null.
-	 * @return Pressure Pressure in 1/10ths of millibar, which are tenths 
-	 *                  of hectoPascal or 65535 if missing. */
-	private String prToN(Integer v) {
-		if (v != null) {
-			return String.valueOf(
-				new Pressure((double)v).ntcip());
-		} else
-			return "65535";
-	}
-
-	/** Convert precip rate to NTCIP units (essPrecipRate).
-	 * @param v Precip rate in mm/hr, null for missing.
-	 * @return Precip rate as .36 mm/hr or 65535 for missing. */
-	private String praToN(Integer v) {
-		if (v != null)
-			return String.valueOf(Math.round((double)v / .36));
-		else
-			return "65535";
-	}
-
-	/** Convert distance to NTCIP units (e.g. essVisibility).
-	 * @param v Distance in meters, null for missing.
-	 * @return Distance in tenths of a meter or 1000001 for missing. */
-	private String dToN(Integer v) {
-		return (v != null ? String.valueOf(v * 10) : "65535");
-	}
-
-	/** Convert precipitation accumulation to NTCIP units.
-	 * @param v Precip accum in mm, null for missing.
-	 * @return Precip accumulation in tenths of mm or 65535 for 
-	 *         missing. See essPrecipitationOneHour */
-	private String pToN(Integer v) {
-		return (v != null ? String.valueOf(v * 10) : "65535");
-	}
-
-	/** Convert speed to NTCIP units.
-	 * @param v Speed in KPH, null for missing.
-	 * @return Speed in tenths of a meter per second or 65535 
-	 *         for missing. See essAvgWindSpeed. */
-	private String sToN(Integer v) {
-		if (v != null)
-			return String.valueOf(new Speed((double)v).ntcip());
-		else
-			return "65535";
-	}
-
-	/** Append a CSV value to a StringBuffer */
-	private StringBuilder append(StringBuilder sb, String value) {
-		if (value != null)
-			sb.append(value);
-		sb.append(",");
-		return sb;
-	}
-
-	/** Append a CSV value to a StringBuffer */
-	private StringBuilder append(StringBuilder sb, Integer value) {
-		if (value != null)
-			sb.append(value);
-		sb.append(",");
-		return sb;
-	}
-
-	/** Append a CSV value to a StringBuffer */
-	private StringBuilder append(StringBuilder sb, Long value) {
-		if (value != null)
-			sb.append(value);
-		sb.append(",");
-		return sb;
-	}
-
-	/** Append a CSV value to a StringBuffer */
-	private StringBuilder append(StringBuilder sb, Double value) {
-		if (value != null)
-			sb.append(value);
-		sb.append(",");
-		return sb;
-	}
-
 	/** Write a terminated line */
 	private void writeLine(Writer wr, String line) 
 		throws IOException
@@ -255,6 +284,12 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 			writeLine2(wr, w);
 	}
 
+	/** Write the weather sensor CSV file */
+	@Override protected void write(Writer w) throws IOException {
+		writeHead(w);
+		writeBody(w);
+	}
+
 	/** Write a CSV line for the atmospheric file */
 	private void writeLine1(Writer wr, WeatherSensorImpl w) 
 		throws IOException
@@ -262,22 +297,22 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		StringBuilder sb = new StringBuilder();
 		append(sb, getSiteId(w));		//Siteid
 		append(sb, formatDate(w.getStamp()));	//DtTm
-		append(sb, tToN(w.getAirTemp()));	//AirTemp
-		append(sb, tToN(w.getDewPointTemp()));	//Dewpoint
+		append(sb, tToCsv(w.getAirTemp()));	//AirTemp
+		append(sb, tToCsv(w.getDewPointTemp()));	//Dewpoint
 		append(sb, w.getHumidity());		//Rh
-		append(sb, sToN(w.getWindSpeed()));	//SpdAvg
-		append(sb, sToN(
+		append(sb, sToCsv(w.getWindSpeed()));	//SpdAvg
+		append(sb, sToCsv(
 			w.getMaxWindGustSpeed()));	//SpdGust
-		append(sb, "");				//DirMin
+		append(sb, MISSING);				//DirMin
 		append(sb, w.getWindDir());		//DirAvg
 		append(sb, w.getMaxWindGustDir());	//DirMax
-		append(sb, prToN(w.getPressure()));	//Pressure
-		append(sb, WeatherSensorHelper.
-			getPrecipRateIntensity(w));	//PcIntens
-		append(sb, w.getPrecipSituation());     //PcType
-		append(sb, praToN(w.getPrecipRate()));	//PcRate
-		append(sb, pToN(w.getPrecipOneHour()));	//PcAccum
-		append(sb, dToN(w.getVisibility()));	//Visibility
+		append(sb, prToCsv(w.getPressure()));	//Pressure
+		append(sb, capitalizeFirstLetter(
+			WeatherSensorHelper.getPrecipRateIntensity(w)));	//PcIntens
+		append(sb, psToCsv(w));     //PcType
+		append(sb, praToCsv(w.getPrecipRate()));	//PcRate
+		append(sb, apToCsv(w));	//PcAccum
+		append(sb, visToCsv(w.getVisibility()));	//Visibility
 		sb.setLength(sb.length() - 1);
 		writeLine(wr, sb.toString());
 	}
@@ -286,19 +321,51 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 	private void writeLine2(Writer wr, WeatherSensorImpl w) 
 		throws IOException
 	{
+		String sid = getSiteId(w);
+		String dat = formatDate(w.getStamp());
+		PavementSensorsTable ps_t = w.getPavementSensorsTable();
+		SubSurfaceSensorsTable ss_t = w.getSubsurfaceSensorsTable();
+		String sfc = pssToN(w);
+		//String sft = tToCsv(w.getPvmtSurfTemp());
+		String fzt = tToCsv(w.getSurfFreezeTemp());
+		//String sst = tToCsv(w.getSubSurfTemp());
+		int senid = 0;
+		// iterate through pavement sensors
+		for (var row: ps_t){
+			String sft = tToCsv(row.getSurfTempC());
+			String sst = MISSING;
+			writeLine2(wr, sid, senid, dat, sfc, sft, fzt, sst);
+			++senid;
+		}
+		// iterate through subsurface sensors
+		for (var row: ss_t){
+			String sft = tToCsv(row.getTempC());
+			String sst = MISSING;
+			writeLine2(wr, sid, senid, dat, sfc, sft, fzt, sst);
+			++senid;
+		}
+	}
+
+	/** Write a CSV line for the surface file */
+	private void writeLine2(Writer wr, String sid, 
+		int senid, String dat, String sfc, 
+		String sft, String fzt, String sst) 
+		throws IOException
+	{
+		String ssenid = String.valueOf(senid);
 		StringBuilder sb = new StringBuilder();
-		append(sb, getSiteId(w));		//Siteid
-		append(sb, w.getName());		//senid
-		append(sb, formatDate(w.getStamp()));	//DtTm
-		append(sb, pssToN(w));			//sfcond
-		append(sb, tToN(w.getPvmtSurfTemp()));	//sftemp
-		append(sb, tToN(w.getSurfFreezeTemp()));//frztemp
-		append(sb, "101");			//chemfactor
-		append(sb, "101");			//chempct
-		append(sb, "32767");			//depth
-		append(sb, "101");			//icepct
-		append(sb, tToN(w.getSubSurfTemp()));	//subsftemp
-		append(sb, "");				//waterlevel
+		append(sb, sid);	//Siteid
+		append(sb, ssenid);	//senid
+		append(sb, dat);	//DtTm
+		append(sb, sfc);	//sfcond
+		append(sb, sft);	//sftemp
+		append(sb, fzt);	//frztemp
+		append(sb, MISSING);	//chemfactor
+		append(sb, MISSING);	//chempct
+		append(sb, MISSING);	//depth
+		append(sb, MISSING);	//icepct
+		append(sb, sst);	//subsftemp
+		append(sb, MISSING);	//waterlevel
 		sb.setLength(sb.length() - 1);
 		writeLine(wr, sb.toString());
 	}

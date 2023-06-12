@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2018  Iteris Inc.
  * Copyright (C) 2019-2022  Minnesota Department of Transportation
  *
  * This program is free software; you can redistribute it and/or modify
@@ -96,7 +96,7 @@ public class EssRec {
 		ws.setPrecipRateNotify(precip_values.getPrecipRate());
 		ws.setPrecipOneHourNotify(precip_values.getPrecip1Hour());
 		PrecipSituation ps = precip_values.getPrecipSituation();
-		ws.setPrecipSituationNotify((ps != null) ? ps.toString() : null);
+		ws.setPrecipSituationNotify((ps != null) ? ps.ordinal() : null);
 	}
 
 	/** Store pavement sensor related values */
@@ -106,7 +106,7 @@ public class EssRec {
 		Integer pvmt_surf_temp = null,
 			surf_temp = null,
 			surf_freeze_temp = null;
-		String pvmt_surf_status = null;
+		SurfaceStatus pvmt_surf_status = null;
 
 		if (row != null){
 			// High Sierra device value mapping is a little different
@@ -120,7 +120,7 @@ public class EssRec {
 					row = ps_table.getRow(row_num);
 					if (row.getPavementSensorError() != null) {
 						surf_temp = row.getSurfTempC();
-						pvmt_surf_status = row.getSurfStatusString();
+						pvmt_surf_status = row.getSurfStatus();
 						break;
 					}
 				}
@@ -130,13 +130,15 @@ public class EssRec {
 				pvmt_surf_temp = row.getPvmtTempC();
 				surf_temp = row.getSurfTempC();
 				surf_freeze_temp = row.getFreezePointC();
-				pvmt_surf_status = row.getSurfStatusString();
+				pvmt_surf_status = row.getSurfStatus();
 			}
 		}
 		ws.setPvmtSurfTempNotify(pvmt_surf_temp);
 		ws.setSurfTempNotify(surf_temp);
-		ws.setPvmtSurfStatusNotify(pvmt_surf_status);
+		ws.setPvmtSurfStatusNotify(
+			pvmt_surf_status == null ? null : pvmt_surf_status.ordinal());
 		ws.setSurfFreezeTempNotify(surf_freeze_temp);
+		ws.setPavementSensorsTable(ps_table);
 	}
 
 	/** Store subsurface sensor values */
@@ -147,6 +149,7 @@ public class EssRec {
 		if (row != null && ws.getType() != EssType.HIGH_SIERRA)
 			t = row.getTempC();
 		ws.setSubSurfTempNotify(t);
+		ws.setSubsurfaceSensorsTable(ss_table);
 	}
 
 	/** Store all sample values */

@@ -37,7 +37,9 @@ import static us.mn.state.dot.tms.server.Constants.MISSING_DATA;
 import static us.mn.state.dot.tms.server.XmlWriter.createAttribute;
 import us.mn.state.dot.tms.server.comm.DevicePoller;
 import us.mn.state.dot.tms.server.comm.WeatherPoller;
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssType;;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssType;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
 
 /**
  * A weather sensor is a device for sampling weather data, such as 
@@ -59,6 +61,12 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 
 	/** Sample period for weather sensors (ms) */
 	static private final int SAMPLE_PERIOD_MS = SAMPLE_PERIOD_SEC * 1000;
+
+	/** Pavement sensors table, never null */
+	private PavementSensorsTable ps_table = new PavementSensorsTable();
+
+	/** Subsurface sensors table, never null */
+	private SubSurfaceSensorsTable ss_table = new SubSurfaceSensorsTable();
 
 	/** Round an integer to the nearest 45 */
 	static private Integer round45(Integer d) {
@@ -494,16 +502,16 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 	}
 
 	/** Precipitation situation (null for missing) */
-	private transient String precip_situation;
+	private transient Integer precip_situation;
 
 	/** Get precipitation situation (null for missing) */
 	@Override
-	public String getPrecipSituation() {
+	public Integer getPrecipSituation() {
 		return precip_situation;
 	}
 
 	/** Set precipitation situation (null for missing) */
-	public void setPrecipSituationNotify(String prs) {
+	public void setPrecipSituationNotify(Integer prs) {
 		if (!objectEquals(prs, precip_situation)) {
 			precip_situation = prs;
 			notifyAttribute("precipSituation");
@@ -596,16 +604,16 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 	}
 
 	/** Pavement surface status (null for missing) */
-	private transient String pvmt_surf_status;
+	private transient Integer pvmt_surf_status;
 
 	/** Get pavement surface status (null for missing) */
 	@Override
-	public String getPvmtSurfStatus() {
+	public Integer getPvmtSurfStatus() {
 		return pvmt_surf_status;
 	}
 
 	/** Set pavement surface status (null for missing) */
-	public void setPvmtSurfStatusNotify(String v) {
+	public void setPvmtSurfStatusNotify(Integer v) {
 		if (!objectEquals(v, pvmt_surf_status)) {
 			pvmt_surf_status = v;
 			notifyAttribute("pvmtSurfStatus");
@@ -759,6 +767,28 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		return ess_type;
 	}
 
+	/** Set pavement sensors table */
+	public void setPavementSensorsTable(PavementSensorsTable pst) {
+		if (pst != null)
+			ps_table = pst;
+	}
+
+	/** Get pavement sensors table */
+	public PavementSensorsTable getPavementSensorsTable() {
+		return ps_table;
+	}
+
+	/** Set subsurface sensors table */
+	public void setSubsurfaceSensorsTable(SubSurfaceSensorsTable sst) {
+		if (sst != null)
+			ss_table = sst;
+	}
+
+	/** Get subsurface sensors table */
+	public SubSurfaceSensorsTable getSubsurfaceSensorsTable() {
+		return ss_table;
+	}
+
 	/** Get a weather sensor poller */
 	private WeatherPoller getWeatherPoller() {
 		DevicePoller dp = getPoller();
@@ -833,6 +863,8 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		w.write(createAttribute("name", getName()));
 		w.write(createAttribute("description",
 			GeoLocHelper.getLocation(geo_loc)));
+		w.write(createAttribute("notes", 
+			SString.stripCrLf(getNotes())));
 		Position pos = GeoLocHelper.getWgs84Position(geo_loc);
 		if (pos != null) {
 			w.write(createAttribute("lon",

@@ -83,7 +83,7 @@ public interface WeatherSensor extends Device {
 	Integer getPrecipRate();
 
 	/** Get precip situation essPrecipSituation (null for missing) */
-	String getPrecipSituation();
+	Integer getPrecipSituation();
 
 	/** Get precipitation accumulation for 1h in mm (null for missing) */
 	Integer getPrecipOneHour();
@@ -104,7 +104,7 @@ public interface WeatherSensor extends Device {
 	Integer getSurfTemp();
 
 	/** Get the pavement surface status (null for missing) */
-	String getPvmtSurfStatus();
+	Integer getPvmtSurfStatus();
 
 	/** Get the pavement surface freeze temperature (null for missing) */
 	Integer getSurfFreezeTemp();

@@ -14,6 +14,7 @@
  * GNU General Public License for more details.
  */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
+import us.mn.state.dot.tms.WeatherSensor;
 
 /**
  * Pavement surface status as defined by essSurfaceStatus in NTCIP 1204.
@@ -44,5 +45,32 @@ public enum SurfaceStatus {
 	/** Get a SurfaceStatus from an ordinal value */
 	static public SurfaceStatus fromOrdinal(int o) {
 		return (o >= 0 && o < VALUES.length) ? VALUES[o] : undefined;
+	}
+
+	/** Get an enum from an ordinal value */
+	static public SurfaceStatus fromOrdinal(Integer o) {
+		return (o != null ? fromOrdinal(o.intValue()) : undefined);
+    }
+
+	/** Get the surface status as an enum */
+	static public SurfaceStatus from(WeatherSensor ws) {
+		if (ws != null) {
+			Integer ss = ws.getPvmtSurfStatus();
+			if (ss != null)
+				return fromOrdinal(ss);
+		}
+		return undefined;
+	}
+
+	/** Convert to string, with empty string if null/empty */
+	static public String toStringValid(SurfaceStatus value){
+		return toStringValid(value, "");
+	}
+	/** Convert to string, with custom string if null/empty
+	 * @arg invalid - string to use if status is invalid */
+	static public String toStringValid(SurfaceStatus value, String invalid){
+		if (value != null && value != undefined)
+			return value.toString();
+		return invalid;
 	}
 }

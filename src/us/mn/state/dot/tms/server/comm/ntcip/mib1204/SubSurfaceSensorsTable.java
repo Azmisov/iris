@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2018  Iteris Inc.
  * Copyright (C) 2019-2023  Minnesota Department of Transportation
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,6 +16,8 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
 import us.mn.state.dot.tms.server.comm.snmp.ASN1Enum;
 import us.mn.state.dot.tms.server.comm.snmp.ASN1Integer;
@@ -33,7 +35,7 @@ import static us.mn.state.dot.tms.units.Distance.Units.METERS;
  * @author Michael Darter
  * @author Douglas Lau
  */
-public class SubSurfaceSensorsTable {
+public class SubSurfaceSensorsTable implements Iterable<SubSurfaceSensorsTable.Row>{
 
 	/** Depth of 1001 indicates error or missing value */
 	static private final int DEPTH_ERROR_MISSING = 1001;
@@ -154,11 +156,31 @@ public class SubSurfaceSensorsTable {
 		return tr;
 	}
 
-	/** Get one table row */
+	/** Get one table row, where row indices start with 1 */
 	public Row getRow(int row) {
 		return (row >= 1 && row <= table_rows.size())
 		      ? table_rows.get(row - 1)
 		      : null;
+	}
+
+	/** Iterator for rows in the table */
+	@Override
+	public Iterator<Row> iterator() {
+		return table_rows.iterator();
+	}
+
+	/** To string */
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SubsurfaceSensorsTable: ");
+		sb.append(" size=").append(size());
+		int idx = 1;
+		for (Row row : table_rows){
+			sb.append(" subsurftemp(").append(idx).append(")=").
+				append(row.getTempC());
+			++idx;
+		}
+		return sb.toString();
 	}
 
 	/** Get JSON representation */
