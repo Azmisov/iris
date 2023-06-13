@@ -228,6 +228,7 @@ public class MainServer {
 		FLUSH.addJob(new SignMessageXmlJob());
 		FLUSH.addJob(new IncidentXmlJob());
 		FLUSH.addJob(new WeatherSensorXmlJob());
+		FLUSH.addJob(new WeatherSensorPikalertJob());
 		FLUSH.addJob(new EventPurgeJob());
 	}
 

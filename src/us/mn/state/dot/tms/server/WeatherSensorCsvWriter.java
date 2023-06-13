@@ -29,6 +29,9 @@ import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SurfaceStatus;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PrecipSituation;
+import us.mn.state.dot.tms.GeoLoc;
+import us.mn.state.dot.tms.GeoLocHelper;
+import us.mn.state.dot.tms.geo.Position;
 
 /**
  * Write SSI ScanWeb CSV weather export files.
@@ -42,6 +45,10 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 
 	/** CSV file name */
 	static private final String OUTPUT_FNAME_2 = "weather_sensor2.csv";
+
+	/** Pikalert CSV file name */
+	static private final String OUTPUT_FNAME_3 = 
+		"weather_sensor_pikalert.csv";
 
 	/** CSV missing value */
 	static private final String MISSING = "";
@@ -97,6 +104,20 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		return sdf.format(d);
 	}
 
+	/** Return the specified date as a string in UTC.
+	 * @param stamp A time stamp, null or < 0 for missing
+	 * @return A string in UTC as yyyy-MM-dd HH:mm:ss */
+	static private String formatDate2(Long stamp) {
+		if (stamp == null || stamp < 0)
+			return MISSING;
+		Date d = new Date(stamp);
+		SimpleDateFormat sdf = 
+			new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+		return sdf.format(d);
+	}
+
+
 	/** Factory to create a new CSV file writer and write the file.
 	 * @param ft File type
 	 * @return Null on error or a new file writer */
@@ -110,22 +131,59 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		// surface data
 		else if (ft == 2)
 			wsw = new WeatherSensorCsvWriter(OUTPUT_FNAME_2, 2);
+		// pikalert
+		else if (ft == 3)
+			wsw = new WeatherSensorCsvWriter(OUTPUT_FNAME_3, 3);
 		if (wsw != null)
 			wsw.write();
 		return wsw;
 	}
 
 	/** Convert a temperature to CSV temperature.
-	 * @arg v Temperature in C or null if missing.
+	 * @arg v Integer temperature in C or null if missing.
 	 * @return Temperature as hundredths of a degree C or 
 	 * 	   the empty string for missing */
-	static private String tToCsv(Integer v) {
+	static private String tIntToCsv100(Integer v) {
 		if (v != null) {
 			int i = v.intValue() * 100;
 			return String.valueOf(i);
 		}	
 		return MISSING;
 	}
+
+	/** Convert an NTCIP temperature to C.
+	 * @arg v Temperature in tenths of deg C else 1001 or null if missing.
+	 * @return Temperature in C or null for missing */
+	static private Double tNtcipToDouble(ASN1Integer v) {
+		if (v != null) {
+			Integer iv = v.getInteger();
+			if (iv != null && iv != 1001) {
+				Double degc = .1 * iv.doubleValue();
+				return degc;
+			}
+		}
+		return null;
+	}
+
+	/** Convert an NTCIP temperature to CSV temperature.
+ 	 * @arg v Temperature in tenths of deg C else 1001 or null if missing.
+ 	 * @return Temperature as hundredths of a degree C or 
+ 	 * 	   the empty string for missing */
+	static private String tNtcipToCsvString(ASN1Integer v) {
+		Double tc = tNtcipToDouble(v);
+		if (tc != null) {
+			return String.valueOf(Math.round(tc * 100));
+		} else {
+			return MISSING;
+		}
+	}
+
+	/** Convert a temperature in C to a string.
+	 * @arg tc NTCIP temp in C or null on error.
+	 * @return Temperature in degrees C or empty string for missing */
+	static private String tToCsv(Double tc) {
+		return (tc != null ? SString.doubleToString(tc, 4) : MISSING);
+ 	}
 
 	/** Convert pavement surface status to CSV string
 	 * @arg status - surface status
@@ -138,7 +196,7 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 
 	/** Convert surface water depth to CSV string
 	 * @arg row - row to fetch from
-	 * @return Pavement surface water depth in .1mm or empty if missing */
+	 * @return Pavement surface water depth in .1 mm or empty if missing */
 	static private String swdToN(PavementSensorsTable.Row row) {
 		// meters given; want to convert to 1/10th of mm
 		String val = row.getWaterDepth(100);
@@ -157,23 +215,28 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		return MISSING;
 	}
 
-	/** Convert precip rate to CSV units. See essPrecipRate.
-	 * @arg v Precip rate in mm/hr, null for missing.
+	/** Return precip rate in CSV units. See essPrecipRate.
 	 * @return Precip rate as .025 mm/hr or empty for missing */
-	static private String praToCsv(Integer v) {
-		if (v != null)
-			return String.valueOf(Math.round((double)v * 40));
-		return MISSING;
+	static private String praToCsv(WeatherSensorImpl w) {
+		Integer v = w.getPrecipRate(); // mm/hr or null
+		return (v != null ? String.valueOf(v * 40): MISSING);
 	}
 
+	/** Convert precip rate to Pikalert CSV units. See essPrecipRate.
+ 	 * @arg v Precip rate in mm/hr, null for missing.
+	 * @return Precip rate in mm over 1 hour or empty for missing */
+	static private String praToCsvPikalert(WeatherSensorImpl w) {
+		Integer v = w.getPrecipRate(); // mm/hr or null
+		return (v != null ? String.valueOf(v): MISSING);
+ 	}
+
 	/** Convert visibility to CSV units, see essVisibility.
-	 * @arg v Distance in meters, null for missing.
+	 * @arg w Weather sensor
 	 * @return Distance in meters or empty for missing. */
-	static private String visToCsv(Integer v) {
-		if (v != null)
-			return String.valueOf(v);
-		return MISSING;
-	}
+	static private String visToCsv(WeatherSensorImpl w) {
+		Integer v = w.getVisibility();
+		return (v != null ? String.valueOf(v) : MISSING);
+		}
 
 	/** Convert precipitation accumulation to CSV units.
 	 * @arg v Precip accum in mm, null for missing.
@@ -186,9 +249,19 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 	/** Convert speed to CSV units.
 	 * @arg v Speed in KPH, null for missing.
 	 * @return Speed in KPH or empty for missing. See essAvgWindSpeed. */
-	static private String sToCsv(Integer v) {
+	static private String spToCsv(Integer v) {
 		if (v != null)
 			return String.valueOf(v);
+		else
+			return MISSING;
+	}
+
+	/** Convert speed to Pikalert CSV units.
+	 * @arg v Speed in KPH, null for missing.
+	 * @return Speed in m/s or empty for missing. See essAvgWindSpeed. */
+	static private String spToPikalertCsv(Integer v) {
+		if (v != null)
+			return SString.doubleToString(v * .2777777778, 4);
 		else
 			return MISSING;
 	}
@@ -203,6 +276,53 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 	static private String apToCsv(WeatherSensorImpl w) {
 		return pToCsv(w.getPrecipOneHour());
 	}
+
+	/** Get altitude from the RWIS sensor.
+	 * @param w Weather sensor to read altitude from
+	 * @return Altitude in meters above sealevel or empty 
+	 * 	   string if missing */
+	static private String getAltitude(WeatherSensorImpl w) {
+		Integer elv = w.getElevation();
+		return (elv != null ? Integer.toString(elv) : MISSING);
+	}
+
+	/** Get Pikalert road surface temperature of the nth active sensor.
+	 * @param rown One-based nth active sensor
+	 * @param w Weather sensor
+	 * @return Road surface temperature in degrees C or empty */
+	static private String getRoadTempPikalert(int arown, 
+		WeatherSensorImpl w) 
+	{
+		PavementSensorsTable pst = w.getPavementSensorsTable();
+		if (pst == null)
+			return MISSING;
+		int row = pst.getNthActive(arown);
+		return tToCsv(pst.getSurfTemp(row));
+	}
+
+	/** Get the Pikalert road state ordinal, which is the road state of
+	 * of the first active sensor */
+	static private int getPikalertRoadState(WeatherSensorImpl w) {
+		PavementSensorsTable pst = w.getPavementSensorsTable();
+		if (pst != null) {
+			int row = pst.getNthActive(1);
+			if (row >= 0) {
+				PavementSurfaceStatus pss = 
+					pst.getPvmtSurfStatusEnum(row);
+				BlackIceSignal bis = 
+					pst.getBlackIceSignalEnum(row);
+				return PikalertRoadState.
+					convert(pss, bis).ordinal();
+			}
+		}
+		return PikalertRoadState.RS_NO_REPORT.ordinal();
+	}
+
+	/** Get the Pikalert present weather code */
+	static private String getPikalertPresWx(WeatherSensorImpl w) {
+		return PresWx.create(w).toString();
+	}
+
 
 	/** Append a CSV value to a StringBuffer */
 	static private StringBuilder append(StringBuilder sb, String value) {
@@ -261,6 +381,13 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 			writeLine(wr, "Siteid,senid,DtTm,sfcond,sftemp," + 
 				"frztemp,chemfactor,chempct,depth,icepct," + 
 				"subsftemp,waterlevel");
+		} else if (f_type == 3) {
+			writeLine(wr, "stationID,observationTime,latitude," +
+				"longitude,altitude,dewpoint,precipRate," +
+				"relHumidity,roadTemperature1," +
+				"roadTemperature2,temperature,visibility," +
+				"windDir,windDirMax,windGust,windSpeed," +
+				"roadState1,presWx");
 		}
 	}
 
@@ -292,6 +419,8 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 			writeLine1(wr, w);
 		else if (f_type == 2)
 			writeLine2(wr, w);
+		else if (f_type == 3)
+			writeLinePikalert(wr, w);
 	}
 
 	/** Write the weather sensor CSV file */
@@ -307,11 +436,11 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		StringBuilder sb = new StringBuilder();
 		append(sb, getSiteId(w));		//Siteid
 		append(sb, formatDate(w.getStamp()));	//DtTm
-		append(sb, tToCsv(w.getAirTemp()));	//AirTemp
-		append(sb, tToCsv(w.getDewPointTemp()));	//Dewpoint
+		append(sb, tIntToCsv100(w.getAirTemp()));	//AirTemp
+		append(sb, tIntToCsv100(w.getDewPointTemp()));	//Dewpoint
 		append(sb, w.getHumidity());		//Rh
-		append(sb, sToCsv(w.getWindSpeed()));	//SpdAvg
-		append(sb, sToCsv(
+		append(sb, spToCsv(w.getWindSpeed()));	//SpdAvg
+		append(sb, spToCsv(
 			w.getMaxWindGustSpeed()));	//SpdGust
 		append(sb, MISSING);				//DirMin
 		append(sb, w.getWindDir());		//DirAvg
@@ -320,9 +449,9 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		append(sb, capitalizeFirstLetter(
 			WeatherSensorHelper.getPrecipRateIntensity(w)));	//PcIntens
 		append(sb, psToCsv(w));     //PcType
-		append(sb, praToCsv(w.getPrecipRate()));	//PcRate
+		append(sb, praToCsv(w));	//PcRate
 		append(sb, apToCsv(w));	//PcAccum
-		append(sb, visToCsv(w.getVisibility()));	//Visibility
+		append(sb, visToCsv(w));	//Visibility
 		sb.setLength(sb.length() - 1);
 		writeLine(wr, sb.toString());
 	}
@@ -338,10 +467,10 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		PavementSensorsTable ps_t = w.getPavementSensorsTable();
 		for (var row: ps_t){
 			String pss = pssToN(row.getSurfStatus());
-			String sft = tToCsv(row.getSurfTempC());
-			String fzt = tToCsv(row.getFreezePointC());
+			String sft = tNtcipToCsvString(row.getSurfTempC());
+			String fzt = tNtcipToCsvString(row.getFreezePointC());
 			String swd = swdToN(row);
-			String sst = MISSING;
+			String sst = MISSING; // pvmt temp is not subsurf
 			writeLine2(wr, sid, senid, dat, pss, sft, fzt, sst, swd);
 			++senid;
 		}
@@ -373,10 +502,43 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		append(sb, fzt);	//frztemp
 		append(sb, MISSING);	//chemfactor
 		append(sb, MISSING);	//chempct
-		append(sb, swd);	//depth
+		append(sb, swd);	//depth .1mm
 		append(sb, MISSING);	//icepct
 		append(sb, sst);	//subsftemp
 		append(sb, MISSING);	//waterlevel
+		sb.setLength(sb.length() - 1);
+		writeLine(wr, sb.toString());
+	}
+
+	/** Write a CSV line for Pikalert */
+	private void writeLinePikalert(Writer wr, WeatherSensorImpl w) 
+		throws IOException
+	{
+		StringBuilder sb = new StringBuilder();
+		Position pos = GeoLocHelper.getWgs84Position(w.getGeoLoc());
+		String lat = SString.doubleToString(pos.getLatitude(), 8); //1mm
+		String lon = SString.doubleToString(pos.getLongitude(), 8); //1mm
+
+		append(sb, getSiteId(w));		//stationID
+		append(sb, formatDate2(w.getStamp()));	//observationTime
+		append(sb, lat);			//latitude
+		append(sb, lon);			//longitude
+		append(sb, getAltitude(w));		//altitude
+		append(sb, w.getDewPointTemp());	//dewpoint
+		append(sb, praToCsvPikalert(w));	//precipRate
+		append(sb, w.getHumidity());		//relHumidity
+		append(sb, getRoadTempPikalert(1, w));	//roadTemperature1
+		append(sb, getRoadTempPikalert(2, w));	//roadTemperature2
+		append(sb, w.getAirTemp());		//temperature
+		append(sb, visToCsv(w));		//visibility
+		append(sb, w.getWindDir());		//windDir
+		append(sb, w.getMaxWindGustDir());	//windDirMax
+		append(sb, spToPikalertCsv(
+			w.getMaxWindGustSpeed()));	//windGust
+		append(sb, spToPikalertCsv(
+			w.getWindSpeed()));		//windSpeed
+		append(sb, getPikalertRoadState(w));	//roadState1
+		append(sb, getPikalertPresWx(w));	//presWx
 		sb.setLength(sb.length() - 1);
 		writeLine(wr, sb.toString());
 	}

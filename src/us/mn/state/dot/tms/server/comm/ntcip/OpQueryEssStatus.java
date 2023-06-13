@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017 Iteris Inc.
+ * Copyright (C) 2017-2019 Iteris Inc.
  * Copyright (C) 2019-2023  Minnesota Department of Transportation
  *
  * This program is free software; you can redistribute it and/or modify
@@ -92,13 +92,13 @@ public class OpQueryEssStatus extends OpEss {
 		@SuppressWarnings("unchecked")
 		protected Phase poll(CommMessage mess) throws IOException {
 			mess.add(ess_rec.atmospheric_values.visibility);
-			mess.add(ess_rec.atmospheric_values
-				.visibility_situation);
+			mess.add(ess_rec.atmospheric_values.visibility_situation);
 			try {
 				mess.queryProps();
 				logQuery(ess_rec.atmospheric_values.visibility);
-				logQuery(ess_rec.atmospheric_values
-					.visibility_situation);
+				logQuery(ess_rec.atmospheric_values.visibility_situation);
+				log("   essVisibilitySituation=" + 
+					ess_rec.atmospheric_values.getVisibilitySituation());
 			}
 			catch (NoSuchName e) {
 				// Note: some vendors do not support these
@@ -242,9 +242,11 @@ public class OpQueryEssStatus extends OpEss {
 				return new QueryPrecipitation();
 			}
 			logQuery(tr.air_temp.node);
-			return ts_table.isDone()
-			      ? new QueryPrecipitation()
-			      : new QueryTemperatureTable();
+			if (ts_table.isDone()){
+				log(" ts_table=" + ts_table);
+				return new QueryPrecipitation();
+			}
+			return new QueryTemperatureTable();
 		}
 	}
 
@@ -276,6 +278,8 @@ public class OpQueryEssStatus extends OpEss {
 			logQuery(ess_rec.precip_values.precip_12_hours);
 			logQuery(ess_rec.precip_values.precip_24_hours);
 			logQuery(ess_rec.precip_values.precip_situation);
+			log("   essPrecipSituation=" +
+				ess_rec.precip_values.getPrecipSituation());
 			return new QueryPavement();
 		}
 	}

@@ -133,7 +133,7 @@ public class EssRec {
 				pvmt_surf_status = row.getSurfStatus();
 			}
 		}
-		ws.setPvmtSurfTempNotify(pvmt_surf_temp);
+		ws.setPvmtTempNotify(pvmt_surf_temp);
 		ws.setSurfTempNotify(surf_temp);
 		ws.setPvmtSurfStatusNotify(
 			pvmt_surf_status == null ? null : pvmt_surf_status.ordinal());
@@ -145,7 +145,8 @@ public class EssRec {
 	private void storeSubSurface(WeatherSensorImpl ws) {
 		SubSurfaceSensorsTable.Row row = ss_table.getRow(1);
 		Integer t = null;
-		// High Sierra stores nothing in this table
+		// High Sierra stores nothing in this table;
+		// Subsurface temps are stored in pvmt table. (not currently!)
 		if (row != null && ws.getType() != EssType.HIGH_SIERRA)
 			t = row.getTempC();
 		ws.setSubSurfTempNotify(t);

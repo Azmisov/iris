@@ -91,6 +91,20 @@ public class PavementSensorsTable implements Iterable<PavementSensorsTable.Row>{
 		return null;
 	}
 
+	/** Convert depth to Distance.
+	 * @param d Depth in 0-10 of millimeters with 65,535 indicating an
+	 *          error or missing value.
+	 * @return Depth distance in cm or null for out-of-range */
+	static private Distance convertTempDepth(ASN1Integer d){
+
+	}
+
+	/** A conductivity of 65,535 is an error condition or missing value */
+	static private final int CONDUCTIVITY_ERROR_MISSING = 65535;
+
+	/** Temperature depth is between 2-10, with 11 indicating missing value */
+	static private final int TEMP_DEPTH_ERROR_MISSING = 11;
+	
 	/** Number of sensors in table */
 	public final ASN1Integer num_sensors = numEssPavementSensors.makeInt();
 
@@ -112,6 +126,9 @@ public class PavementSensorsTable implements Iterable<PavementSensorsTable.Row>{
 		public final TemperatureObject freeze_point;
 		public final ASN1Enum<SurfaceBlackIceSignal> black_ice_signal;
 		public final PercentObject friction;
+		public final ASN1Integer conductivity;
+		public final ASN1Integer sensor_model_info;
+		public final ASN1Integer temp_depth;
 
 		/** Create a table row */
 		private Row(int row) {
@@ -151,6 +168,10 @@ public class PavementSensorsTable implements Iterable<PavementSensorsTable.Row>{
 				essSurfaceBlackIceSignal.node, row);
 			friction = new PercentObject("friction",
 				pavementSensorFrictionCoefficient.makeInt(row));
+			conductivity = essSurfaceConductivityV2.makeInt(row);
+			conductivity.setInteger(CONDUCTIVITY_ERROR_MISSING);
+			temp_depth = pavementSensorTemperatureDepth.makeInt(row);
+			temp_depth.setInteger(TEMP_DEPTH_ERROR_MISSING);
 		}
 
 		/** Get the sensor location */

@@ -91,6 +91,10 @@ public interface WeatherSensor extends Device {
 	/** Get visibility in meters (null for missing) */
 	Integer getVisibility();
 
+	/** Get visibility situation code essVisibilitySituation 
+	 * (null for missing) */
+	Integer getVisibilitySituation();
+
 	/** Get water depth in cm (null for missing) */
 	Integer getWaterDepth();
 
@@ -100,8 +104,8 @@ public interface WeatherSensor extends Device {
 	/** Get the atmospheric pressure in pascals (null for missing) */
 	Integer getPressure();
 
-	/** Get the pavement surface temperature (null for missing) */
-	Integer getPvmtSurfTemp();
+	/** Get the pavement temp 2-10 cm below surface (null for missing) */
+	Integer getPvmtTemp();
 
 	/** Get the surface temperature (null for missing) */
 	Integer getSurfTemp();

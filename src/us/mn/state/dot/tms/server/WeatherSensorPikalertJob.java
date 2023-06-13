@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017-2019  Iteris Inc.
+ * Copyright (C) 2019  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,25 +19,22 @@ import java.util.Calendar;
 import us.mn.state.dot.sched.Job;
 
 /**
- * Job to write out weather sensor XML file.
+ * Job to write out weather sensor Pikalert CSV file every 5m.
  *
  * @author Michael Darter
  */
-public class WeatherSensorXmlJob extends Job {
+public class WeatherSensorPikalertJob extends Job {
 
 	/** Seconds to offset each poll from start of interval */
 	static protected final int OFFSET_SECS = 20;
 
 	/** Create a new job */
-	public WeatherSensorXmlJob() {
-		super(Calendar.MINUTE, 1, Calendar.SECOND, OFFSET_SECS);
+	public WeatherSensorPikalertJob() {
+		super(Calendar.MINUTE, 5, Calendar.SECOND, OFFSET_SECS);
 	}
 
 	/** Perform the job */
 	public void perform() throws IOException {
-		WeatherSensorXmlWriter writer = new WeatherSensorXmlWriter();
-		writer.write();
-		WeatherSensorCsvWriter.createWrite(1);
-		WeatherSensorCsvWriter.createWrite(2);
+		WeatherSensorCsvWriter.createWrite(3);
 	}
 }

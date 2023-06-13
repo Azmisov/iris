@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017-2018  Iteris Inc.
+ * Copyright (C) 2017-2019  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ import us.mn.state.dot.tms.units.Temperature;
 import us.mn.state.dot.tms.units.Pressure;
 import us.mn.state.dot.tms.units.Speed;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SurfaceStatus;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.VisibilitySituation;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PrecipSituation;
 
 /**
@@ -75,6 +76,8 @@ public class WeatherSensorTheme extends ProxyTheme<WeatherSensor> {
 		ttb.addLine("Visibility", 
 			Distance.create(p.getVisibility(), 
 			Distance.Units.METERS));
+		ttb.addLine("Visibility Situation",
+			VisibilitySituation.toStringValid(VisibilitySituation.from(p)));
 		ttb.addLine("Water depth", 
 			p.getWaterDepth(), "cm");
 		ttb.addLine("Relative humidity", 
@@ -93,8 +96,8 @@ public class WeatherSensorTheme extends ProxyTheme<WeatherSensor> {
 			Temperature.create(p.getDewPointTemp()));
 		ttb.addLine("Pavement surface status", 
 			SurfaceStatus.toStringValid(SurfaceStatus.from(p)));
-		ttb.addLine("Pavement surface temperature", 
-			Temperature.create(p.getPvmtSurfTemp()));
+		ttb.addLine("Pavement temperature", 
+			Temperature.create(p.getPvmtTemp()));
 		ttb.addLine("Surface temperature", 
 			Temperature.create(p.getSurfTemp()));
 		ttb.addLine("Subsurface temperature", 

@@ -40,6 +40,7 @@ import us.mn.state.dot.tms.server.comm.WeatherPoller;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.VisibilitySituation;
 
 /**
  * A weather sensor is a device for sampling weather data, such as 
@@ -570,6 +571,24 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		}
 	}
 
+	/** Visiblity situation (null for missing) */
+	private transient Integer vis_situ;
+
+	/** Get visibility situation (null for missing) */
+	@Override
+	public Integer getVisibilitySituation() {
+		return vis_situ;
+	}
+
+	/** Set visibility in meters (null for missing) */
+	public void setVisibilitySituationNotify(Integer vs) {
+		if (!objectEquals(vs, vis_situ)) {
+			vis_situ = vs;
+			notifyAttribute("visibilitySituation");
+		}
+	}
+
+
 	/** Atmospheric pressure in pascals (null for missing) */
 	private transient Integer pressure;
 
@@ -588,19 +607,19 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 	}
 
 	/** Pavement surface temperature (null for missing) */
-	private transient Integer pvmt_surf_temp;
+	private transient Integer pvmt_temp;
 
-	/** Get pavement surface temperature (null for missing) */
+	/** Get pavement temp 2-10 cm below surface (null for missing) */
 	@Override
-	public Integer getPvmtSurfTemp() {
-		return pvmt_surf_temp;
+	public Integer getPvmtTemp() {
+		return pvmt_temp;
 	}
 
 	/** Set pavement surface temperature (null for missing) */
-	public void setPvmtSurfTempNotify(Integer v) {
-		if (!objectEquals(v, pvmt_surf_temp)) {
-			pvmt_surf_temp = v;
-			notifyAttribute("pvmtSurfTemp");
+	public void setPvmtTempNotify(Integer v) {
+		if (!objectEquals(v, pvmt_temp)) {
+			pvmt_temp = v;
+			notifyAttribute("pvmtTemp");
 		}
 	}
 
@@ -862,12 +881,14 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		sb.append(" precip_situation=").append(getPrecipSituation());
 		sb.append(" precip_1h_mm=").append(getPrecipOneHour());
 		sb.append(" visibility_m=").append(getVisibility());
+		sb.append(" visibility_situation=").append(
+			VisibilitySituation.from(this));
 		sb.append(" water_depth_cm=").append(getWaterDepth());
 		sb.append(" humidity_perc=").append(getHumidity());
 		sb.append(" atmos_pressure_pa=").append(getPressure());
 		sb.append(" atmos_pressure_sealevel_pa=").append(
 			getSeaLevelPressure());
-		sb.append(" pvmt_surf_temp_c=").append(getPvmtSurfTemp());
+		sb.append(" pvmt_temp_c=").append(getPvmtTemp());
 		sb.append(" surf_temp_c=").append(getSurfTemp());
 		sb.append(" pvmt_surf_status=").append(getPvmtSurfStatus());
 		sb.append(" surf_freeze_temp_c=").append(getSurfFreezeTemp());
@@ -893,6 +914,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		}
 		w.write(createAttribute("site_id", getSiteId()));
 		w.write(createAttribute("alt_id", getAltId()));
+		w.write(createAttribute("alt_m", getElevation()));
 		w.write(createAttribute("air_temp_c", getAirTemp()));
 		w.write(createAttribute("water_depth_cm", getWaterDepth()));
 		w.write(createAttribute("humidity_perc", getHumidity()));
@@ -918,8 +940,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		w.write(createAttribute("atmos_pressure_pa", getPressure()));
 		w.write(createAttribute("atmos_pressure_sealevel_pa", 
 			getSeaLevelPressure()));
-		w.write(createAttribute("pvmt_surf_temp_c", 
-			getPvmtSurfTemp()));
+		w.write(createAttribute("pvmt_temp_c", getPvmtTemp()));
 		w.write(createAttribute("surf_temp_c", getSurfTemp()));
 		w.write(createAttribute("pvmt_surf_status", 
 			getPvmtSurfStatus()));

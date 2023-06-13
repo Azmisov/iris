@@ -13,6 +13,7 @@
  * GNU General Public License for more details.
  */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
+import us.mn.state.dot.tms.WeatherSensor;
 
 /**
  * Visibility situation as defined by essVisibilitySituation in NTCIP 1204.
@@ -33,4 +34,39 @@ public enum VisibilitySituation {
 	blowingDustOrSand, // 10
 	sunGlare,          // 11
 	swarmOfInsects;    // 12
+
+	/** Values array */
+	static private final VisibilitySituation[] VALUES = values();
+
+	/** Get a SurfaceStatus from an ordinal value */
+	static public VisibilitySituation fromOrdinal(int o) {
+		return (o >= 0 && o < VALUES.length) ? VALUES[o] : undefined;
+	}
+
+	/** Get an enum from an ordinal value */
+	static public VisibilitySituation fromOrdinal(Integer o) {
+		return (o != null ? fromOrdinal(o.intValue()) : undefined);
+    }
+
+	/** Get the surface status as an enum */
+	static public VisibilitySituation from(WeatherSensor ws) {
+		if (ws != null) {
+			Integer val = ws.getVisibilitySituation();
+			if (val != null)
+				return fromOrdinal(val);
+		}
+		return undefined;
+	}
+
+	/** Convert to string, with empty string if null/empty */
+	static public String toStringValid(VisibilitySituation value){
+		return toStringValid(value, "");
+	}
+	/** Convert to string, with custom string if null/empty
+	 * @arg invalid - string to use if status is invalid */
+	static public String toStringValid(VisibilitySituation value, String invalid){
+		if (value != null && value != undefined)
+			return value.toString();
+		return invalid;
+	}
 }
