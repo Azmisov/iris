@@ -61,6 +61,7 @@ commit and do a second pass on the actual source if there are any Java errors de
 intellisense.
 
 Once merge is complete, commit modified files with the patch number in the commit message.
+Committing the changes immediately allows you to easily revert when working on the next patch.
 Optionally, add the patch numbers to `complete.json`, to ignore them in subsequent cluster analysis
 runs (`graph_clusters.py`).
 
@@ -80,3 +81,8 @@ Some common merge issues and my strategy for fixing them:
   change. You can look through the git timeline to see when the source code did match, then step
   through the commits to find where they diverged. Or you can use git blame if the line was not
   deleted, simply modified.
+
+## TODO
+- script that automatically runs apply_patches.py on every patch sequentially to see which ones
+  can be merged easily without conflicts; maybe set fuzz factor to zero; possibly run without
+  cleaning up directory, to get cases where file is modified multiple times by different patches
