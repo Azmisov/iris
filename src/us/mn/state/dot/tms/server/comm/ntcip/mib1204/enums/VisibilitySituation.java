@@ -12,13 +12,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
+package us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums;
 import us.mn.state.dot.tms.WeatherSensor;
 
 /**
  * Visibility situation as defined by essVisibilitySituation in NTCIP 1204.
  *
  * @author Douglas Lau
+ * @author Isaac Nygaard
  */
 public enum VisibilitySituation {
 	undefined,         // 0
@@ -56,6 +57,11 @@ public enum VisibilitySituation {
 				return fromOrdinal(val);
 		}
 		return undefined;
+	}
+
+	/** Whether value is known/defiend */
+	static public boolean isValid(VisibilitySituation v){
+		return v != null && v != undefined && v != unknown;
 	}
 
 	/** Convert to string, with empty string if null/empty */

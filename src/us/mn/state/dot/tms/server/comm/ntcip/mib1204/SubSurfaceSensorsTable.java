@@ -1,84 +1,58 @@
-/*
- * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017-2018  Iteris Inc.
- * Copyright (C) 2019-2023  Minnesota Department of Transportation
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
-
-import java.util.ArrayList;
-import java.util.Iterator;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
 import us.mn.state.dot.tms.server.comm.snmp.ASN1Enum;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Integer;
 import us.mn.state.dot.tms.server.comm.snmp.DisplayString;
-import us.mn.state.dot.tms.units.Distance;
 import us.mn.state.dot.tms.utils.Json;
-
-import static us.mn.state.dot.tms.units.Distance.Units.CENTIMETERS;
-import static us.mn.state.dot.tms.units.Distance.Units.METERS;
+import us.mn.state.dot.tms.server.comm.ntcip.EssValues;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceSensorError;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceType;
+import us.mn.state.dot.tms.units.Distance;
 
 /**
  * SubSurface sensors data table, where each table row contains data read from a
  * single sensor within the same controller.
  *
- * @author Michael Darter
+ * @author Michael Darter, Isaac Nygaard
+ * @copyright 2017-2023 Iteris, Inc
  * @author Douglas Lau
+ * @copyright 2019-2023  Minnesota Department of Transportation
+ * @license GPL-2.0
  */
-public class SubSurfaceSensorsTable implements Iterable<SubSurfaceSensorsTable.Row>{
-
-	/** Depth of 1001 indicates error or missing value */
-	static private final int DEPTH_ERROR_MISSING = 1001;
-
-	/** Convert depth to Distance.
-	 * @param d Depth in centimeters with 1001 indicating an error or
-	 *          missing value.
-	 * @return Depth distance or null for missing */
-	static private Distance convertDepth(ASN1Integer d) {
-		if (d != null) {
-			int id = d.getInteger();
-			if (id != DEPTH_ERROR_MISSING)
-				return new Distance(id, CENTIMETERS);
-		}
-		return null;
-	}
-
+public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>{
 	/** Number of temperature sensors in table */
-	public final ASN1Integer num_sensors =
-		numEssSubSurfaceSensors.makeInt();
+	public final EssNumber num_sensors =
+		EssNumber.Count("subsurface_sensors", numEssSubSurfaceSensors)
+			.setRange(0, 255, null);
 
 	/** Table row */
-	static public class Row {
+	static public class Row extends EssValues{
+		public final int number;
 		public final DisplayString location;
 		public final ASN1Enum<SubSurfaceType> sub_surface_type;
-		public final ASN1Integer depth;
-		public final TemperatureObject temp;
-		public final PercentObject moisture;
+		/** Subsurface depth in meters */
+		public final EssDistance depth;
+		/** Subsurface temperature in celcius */
+		public final EssTemperature temp;
+		/** Moisture in percent 0-100 */
+		public final EssNumber moisture;
 		public final ASN1Enum<SubSurfaceSensorError> sensor_error;
 
 		/** Create a table row */
 		private Row(int row) {
+			number = row;
 			location = new DisplayString(
 				essSubSurfaceSensorLocation.node, row);
 			sub_surface_type = new ASN1Enum<SubSurfaceType>(
-				SubSurfaceType.class, essSubSurfaceType.node,
-				row);
-			depth = essSubSurfaceSensorDepth.makeInt(row);
-			depth.setInteger(DEPTH_ERROR_MISSING);
-			temp = new TemperatureObject("temp",
-				essSubSurfaceTemperature.makeInt(row));
-			moisture = new PercentObject("moisture",
-				essSubSurfaceMoisture.makeInt(row));
+				SubSurfaceType.class, essSubSurfaceType.node, row);
+			depth = 
+				new EssDistance("depth", essSubSurfaceSensorDepth, row)
+					.setUnits(1, Distance.Units.CENTIMETERS)
+					.setOutput(1, Distance.Units.METERS, 2);
+			temp =
+				new EssTemperature("temp", essSubSurfaceTemperature, row);
+			moisture =
+				EssNumber.Percent("moisture", essSubSurfaceMoisture, row);
 			sensor_error = new ASN1Enum<SubSurfaceSensorError>(
 				SubSurfaceSensorError.class,
 				essSubSurfaceSensorError.node, row);
@@ -98,17 +72,12 @@ public class SubSurfaceSensorsTable implements Iterable<SubSurfaceSensorsTable.R
 
 		/** Get sub-surface sensor depth in meters */
 		private String getDepth() {
-			Distance d = convertDepth(depth);
-			if (d != null) {
-				Float dm = d.asFloat(METERS);
-				return Num.format(dm, 2); // cm
-			} else
-				return null;
+			return depth.toString();
 		}
 
 		/** Get sub-surface temp or null on error */
 		public Integer getTempC() {
-			return temp.getTempC();
+			return temp.toInteger();
 		}
 
 		/** Get sensor error or null on error */
@@ -117,8 +86,11 @@ public class SubSurfaceSensorsTable implements Iterable<SubSurfaceSensorsTable.R
 			return (se != null && se.isError()) ? se : null;
 		}
 
+		public String toString() {
+			return " subsurftemp(%d)=%d".formatted(number, getTempC());	
+		}
 		/** Get JSON representation */
-		private String toJson() {
+		public String toJson() {
 			StringBuilder sb = new StringBuilder();
 			sb.append('{');
 			sb.append(Json.str("location", getSensorLocation()));
@@ -136,37 +108,9 @@ public class SubSurfaceSensorsTable implements Iterable<SubSurfaceSensorsTable.R
 		}
 	}
 
-	/** Rows in table */
-	private final ArrayList<Row> table_rows = new ArrayList<Row>();
-
-	/** Get number of rows in table reported by ESS */
-	private int size() {
-		return num_sensors.getInteger();
-	}
-
-	/** Check if all rows have been read */
-	public boolean isDone() {
-		return table_rows.size() >= size();
-	}
-
-	/** Add a row to the table */
-	public Row addRow() {
-		Row tr = new Row(table_rows.size() + 1);
-		table_rows.add(tr);
-		return tr;
-	}
-
-	/** Get one table row, where row indices start with 1 */
-	public Row getRow(int row) {
-		return (row >= 1 && row <= table_rows.size())
-		      ? table_rows.get(row - 1)
-		      : null;
-	}
-
-	/** Iterator for rows in the table */
 	@Override
-	public Iterator<Row> iterator() {
-		return table_rows.iterator();
+	protected Row createRow(int row_num) {
+		return new Row(row_num);
 	}
 
 	/** To string */
@@ -174,27 +118,15 @@ public class SubSurfaceSensorsTable implements Iterable<SubSurfaceSensorsTable.R
 		StringBuilder sb = new StringBuilder();
 		sb.append("SubsurfaceSensorsTable: ");
 		sb.append(" size=").append(size());
-		int idx = 1;
-		for (Row row : table_rows){
-			sb.append(" subsurftemp(").append(idx).append(")=").
-				append(row.getTempC());
-			++idx;
-		}
+		sb.append(super.toString());
 		return sb.toString();
 	}
 
 	/** Get JSON representation */
 	public String toJson() {
-		StringBuilder sb = new StringBuilder();
-		if (table_rows.size() > 0) {
-			sb.append("\"sub_surface_sensor\":[");
-			for (Row row : table_rows)
-				sb.append(row.toJson());
-			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-			sb.append("],");
-		}
-		return sb.toString();
+		String rows = super.toJson();
+		if (!rows.isEmpty())
+			rows = "\"sub_surface_sensor\":["+rows+"],";
+		return rows;
 	}
 }

@@ -12,25 +12,22 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
+package us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums;
 
 /**
- * Sub-surface type as defined by NTCIP 1204 essSubSurfaceType.
+ * Pavement type as defined by essPavementType in NTCIP 1204.
  *
  * @author Douglas Lau
  */
-public enum SubSurfaceType {
-	undefined,         // 0
-	other,             // 1
-	unknown,           // 2
-	concrete,          // 3
-	asphalt,           // 4
-	openGradedAsphalt, // 5
-	gravel,            // 6
-	clay,              // 7
-	loam,              // 8
-	sand,              // 9
-	permafrost,        // 10
-	variousAggregates, // 11
-	air;               // 12
+public enum PavementType {
+	undefined,            // 0
+	other,                // 1
+	unknown,              // 2
+	asphalt,              // 3
+	openGradedAsphalt,    // 4
+	concrete,             // 5
+	steelBridge,          // 6
+	concreteBridge,       // 7
+	asphaltOverlayBridge, // 8
+	timberBridge;         // 9
 }

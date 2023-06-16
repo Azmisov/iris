@@ -1,18 +1,3 @@
-/*
- * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2012-2020  Minnesota Department of Transportation
- * Copyright (C) 2017       Iteris Inc.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
 package us.mn.state.dot.tms.units;
 
 import java.text.NumberFormat;
@@ -22,7 +7,10 @@ import us.mn.state.dot.tms.SystemAttrEnum;
  * Distance between two points.
  *
  * @author Douglas Lau
- * @author Michael Darter
+ * @copyright 2012-2020  Minnesota Department of Transportation
+ * @author Michael Darter, Isaac Nygaard
+ * @copyright 2017-2023  Iteris Inc.
+ * @license GPL-2.0
  */
 public final class Distance implements Comparable<Distance> {
 
@@ -112,20 +100,23 @@ public final class Distance implements Comparable<Distance> {
 	 * @param u Units to return.
 	 * @return Distance as a float value. */
 	public float asFloat(Units u) {
+		return (float) asDouble(u);
+	}
+
+	/** Get a distance as a double in specified units.
+	 * @param u Units to return.
+	 * @return Distance as a double value. */
+	public double asDouble(Units u) {
 		if (u == units)
-			return (float) value;
-		else
-			return (float) (m() / u.meters);
+			return value;
+		return (m() / u.meters);
 	}
 
 	/** Round a distance to nearest whole unit.
 	 * @param u Units to return.
 	 * @return Distance rounded to nearest whole unit. */
 	public int round(Units u) {
-		if (u == units)
-			return (int) Math.round(value);
-		else
-			return (int) Math.round(m() / u.meters);
+		return (int) Math.round(asDouble(u));
 	}
 
 	/** Add another distance.

@@ -23,10 +23,10 @@ import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssRec;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.TemperatureSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.WindSensorsTable;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PavementSensorType;
 import us.mn.state.dot.tms.server.comm.snmp.NoSuchName;
 
 /**

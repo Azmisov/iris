@@ -1,17 +1,3 @@
-/*
- * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2012-2020  Minnesota Department of Transportation
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
 package us.mn.state.dot.tms.units;
 
 import java.text.NumberFormat;
@@ -20,6 +6,10 @@ import java.text.NumberFormat;
  * Time interval values.
  *
  * @author Douglas Lau
+ * @author Isaac Nygaard
+ * @copyright 2012-2020 Minnesota Department of Transportation
+ * @copyright 2023 Iteris, Inc
+ * @license GPL-2.0
  */
 public final class Interval implements Comparable<Interval> {
 
@@ -74,20 +64,27 @@ public final class Interval implements Comparable<Interval> {
 
 	/** Get the interval in milliseconds */
 	public long ms() {
-		if (units == Units.MILLISECONDS)
-			return Math.round(value);
-		else {
-			return Math.round(value * units.seconds /
-				Units.MILLISECONDS.seconds);
-		}
+		return asLong(Units.MILLISECONDS);
 	}
 
 	/** Number of seconds in interval */
 	public double seconds() {
-		if (units == Units.SECONDS)
-			return value;
-		else
-			return value * units.seconds;
+		return asDouble(Units.SECONDS);
+	}
+
+	/** Get rounded, long representation of interval, converted to specified units */
+	public long asLong(Units units){
+		return (long) Math.round(asDouble(units));
+	}
+
+	/** Get float representation of interval, converted to specified units */
+	public float asFloat(Units units){
+		return (float) asDouble(units);
+	}
+
+	/** Get double representation of interval, converted to specified units */
+	public double asDouble(Units units){
+		return convert(units).value;
 	}
 
 	/** Convert an interval to specified units.

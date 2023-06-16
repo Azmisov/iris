@@ -14,8 +14,8 @@
  */
 package us.mn.state.dot.tms.server.comm.ntcip;
 
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SurfaceStatus;
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SurfaceBlackIceSignal;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceBlackIceSignal;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
 
 /**
  * Pikalert Road State

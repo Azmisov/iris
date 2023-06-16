@@ -40,7 +40,7 @@ import us.mn.state.dot.tms.server.comm.WeatherPoller;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.VisibilitySituation;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.VisibilitySituation;
 
 /**
  * A weather sensor is a device for sampling weather data, such as 

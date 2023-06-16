@@ -1,7 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2013-2020  Minnesota Department of Transportation
- * Copyright (C) 2017       Iteris Inc.
+ * Copyright (C) 2017-2023  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ import us.mn.state.dot.tms.SystemAttrEnum;
  * Temperature values.
  *
  * @author Douglas Lau
- * @author Michael Darter
+ * @author Michael Darter, Isaac Nygaard
  */
 public final class Temperature {
 
@@ -104,6 +104,11 @@ public final class Temperature {
 			return (value + units.k_offset) * units.k_scale;
 	}
 
+	/** Get the temperature as double in the specified */
+	public double asDouble(Units u){
+		return convert(u).value;
+	}
+
 	/** Convert an temperature to specified units.
 	 * @param u Units to convert to.
 	 * @return Temperature in specified units. */
@@ -121,7 +126,7 @@ public final class Temperature {
 	 * @param u Units to return.
 	 * @return Temperature rounded to nearest whole unit. */
 	public int round(Units u) {
-		return (int)Math.round(convert(u).value);
+		return (int) Math.round(asDouble(u));
 	}
 
 	/** Compare for equality */

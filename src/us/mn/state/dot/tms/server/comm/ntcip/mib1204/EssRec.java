@@ -1,29 +1,19 @@
-/*
- * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017-2018  Iteris Inc.
- * Copyright (C) 2019-2022  Minnesota Department of Transportation
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import us.mn.state.dot.sched.TimeSteward;
 import us.mn.state.dot.tms.server.WeatherSensorImpl;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
 
 /**
  * A collection of weather condition values which can be converted to JSON.
  * Only values which have been successfully read will be included.
  *
- * @author Michael Darter
+ * @author Michael Darter, Isaac Nygaard
+ * @copyright 2017-2023 Iteris Inc.
  * @author Douglas Lau
+ * @copyright 2019-2022 Minnesota Department of Transportation
+ * @license GPL-2.0
  */
 public class EssRec {
 
@@ -60,21 +50,18 @@ public class EssRec {
 		ws.setPressureNotify(atmospheric_values.getAtmosphericPressure());
 		ws.setVisibilityNotify(atmospheric_values.getVisibility());
 		ws.setPressureSensorHeightNotify(
-			atmospheric_values.pressure_sensor_height.getHeightM());
+			atmospheric_values.pressure_sensor_height.toInteger());
 		ws.setElevationNotify(atmospheric_values.getReferenceElevation());
 	}
 
 	/** Store the wind sensor data */
 	private void storeWinds(WeatherSensorImpl ws) {
-		ws.setWindSpeedNotify(ws_table.getAvgSpeed().getSpeedKPH());
-		ws.setWindDirNotify(ws_table.getAvgDir().getDirection());
-		ws.setSpotWindSpeedNotify(ws_table.getSpotSpeed()
-			.getSpeedKPH());
-		ws.setSpotWindDirNotify(ws_table.getSpotDir().getDirection());
-		ws.setMaxWindGustSpeedNotify(ws_table.getGustSpeed()
-			.getSpeedKPH());
-		ws.setMaxWindGustDirNotify(ws_table.getGustDir()
-			.getDirection());
+		ws.setWindSpeedNotify(ws_table.getAvgSpeed().getKPH());
+		ws.setWindDirNotify(ws_table.getAvgDir().get());
+		ws.setSpotWindSpeedNotify(ws_table.getSpotSpeed().getKPH());
+		ws.setSpotWindDirNotify(ws_table.getSpotDir().get());
+		ws.setMaxWindGustSpeedNotify(ws_table.getGustSpeed().getKPH());
+		ws.setMaxWindGustDirNotify(ws_table.getGustDir().get());
 	}
 
 	/** Store the temperatures */
@@ -85,14 +72,14 @@ public class EssRec {
 		// Air temperature is assumed to be the first sensor
 		// in the table.  Additional sensors are ignored.
 		TemperatureSensorsTable.Row row = ts_table.getRow(1);
-		Integer t = (row != null) ? row.air_temp.getTempC() : null;
+		Integer t = (row != null) ? row.air_temp.toInteger() : null;
 		ws.setAirTempNotify(t);
 	}
 
 	/** Store precipitation samples */
 	private void storePrecip(WeatherSensorImpl ws) {
 		ws.setWaterDepthNotify(precip_values.getWaterDepth());
-		ws.setHumidityNotify(precip_values.relative_humidity.getPercent());
+		ws.setHumidityNotify(precip_values.relative_humidity.toInteger());
 		ws.setPrecipRateNotify(precip_values.getPrecipRate());
 		ws.setPrecipOneHourNotify(precip_values.getPrecip1Hour());
 		PrecipSituation ps = precip_values.getPrecipSituation();

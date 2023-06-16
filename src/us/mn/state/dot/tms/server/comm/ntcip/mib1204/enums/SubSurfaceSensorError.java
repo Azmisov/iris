@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2022  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2019-2022  Minnesota Department of Transportation
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -12,18 +13,32 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
+package us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums;
 
 /**
- * Cloud situation as defined by essCloudSituation in NTCIP 1204
+ * Subsurface sensor errors as defined by NTCIP 1204 essSubSurfaceSensorError.
  *
+ * @author Michael Darter
  * @author Douglas Lau
  */
-public enum CloudSituation {
+public enum SubSurfaceSensorError {
 	undefined,    // 0
-	overcast,     // 1 (100% cloud cover)
-	cloudy,       // 2 (62.5% - 99% cover)
-	partlyCloudy, // 3 (37.5% - 62.5% cover)
-	mostlyClear,  // 4 (1% - 37.5% cover)
-	clear;        // 5 (0% cover)
+	other,        // 1
+	none,         // 2
+	noResponse,   // 3
+	cutCable,     // 4
+	shortCircuit; // 5
+
+	/** Is there an error? */
+	public boolean isError() {
+		switch (this) {
+			case other:
+			case noResponse:
+			case cutCable:
+			case shortCircuit:
+				return true;
+			default:
+				return false;
+		}
+	}
 }

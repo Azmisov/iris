@@ -1,28 +1,72 @@
-/*
- * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2011  AHMCT, University of California
- * Copyright (C) 2017  Iteris Inc.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
-
 package us.mn.state.dot.tms.units;
 
 /**
  * Immutable angle with methods that return the angle in
  * radians or degrees.
  *
- * @author Michael Darter
+ * @author Michael Darter, Isaac Nygaard
+ * @copyright 2011 AHMCT, University of California
+ * @copyright 2017 Iteris Inc.
+ * @license GPL-2.0
  */
 final public class Angle {
+
+	/** Enumeration of distance units */
+	public enum Units {
+		RADIANS(1.0, "rad"),
+		DEGREES(Math.PI/180.0, "deg"),
+		REVOLUTIONS(2*Math.PI, "rev");
+
+		/** Conversion rate to meters */
+		public final double rads;
+
+		/** Unit label */
+		public final String label;
+
+		/** Create units */
+		private Units(double rads, String lbl) {
+			this.rads = rads;
+			label = lbl;
+		}
+	}
+
+	/** Angular value in {@link #units} */
+	public final double value;
+	/** Units for {@link #value} */
+	public final Units units;
+
+	/** Create a new angle
+	 * @param value the angular value
+	 * @param units the units for `value`
+	 */
+	public Angle(double value, Units units){
+		this.value = value;
+		this.units = units;
+	}
+	/** Create a new angle with default unit of degrees
+	 * @param value the angular value
+	 */
+	public Angle(double value){
+		this.value = value;
+		this.units = Units.DEGREES;
+	}
+	/** Create new zero degree angle */
+	public Angle(){ this(0); }
+
+	/** Convert a distance to specified units.
+	 * @param u Units to convert to.
+	 */
+	public Angle convert(Units u) {
+		if (u == units)
+			return this;
+		return new Angle(asDouble(u), u);
+	}
+	/** Get double representation when converted to specified units */
+	public double asDouble(Units u){
+		if (u == units)
+			return value;
+		return value*(units.rads/u.rads);
+	}
 
 	/** Factory which handles the null case.
 	 * @param ang Angle in degrees or null
@@ -32,12 +76,7 @@ final public class Angle {
 	}
 
 	/** One complete revolution in radians */
-	final static double REV = 2 * Math.PI;
-
-	/** Convert radians to degs */
-	static private double radsToDegs(double r) {
-		return r * 180 / Math.PI;
-	}
+	final static double REV = Units.REVOLUTIONS.rads;
 
 	/** Return the ceiling revolution in radians.
 	 * @param rads Angle in radians.
@@ -63,7 +102,7 @@ final public class Angle {
 	 * @param d Angle in degrees.
 	 * @return Angle in degrees 0 - 359. */
 	static public int toNormalizedDegs(double d) {
-		int i = (int)round(d);
+		int i = (int) round(d);
 		return i < 0 ? 360 + (i % 360) : (i % 360);
 	}
 
@@ -80,25 +119,6 @@ final public class Angle {
 		return Math.round(num / (double)p) * (double)p;
 	}
 
-	/** Convert degrees to radians */
-	static private double degsToRads(double d) {
-		return d * Math.PI / 180d;
-	}
-
-	/** Angle in radians */
-	private final double angle_rads;
-
-	/** Constructor
-	 * @param d Angle in degrees */
-	public Angle(double d) {
-		angle_rads = degsToRads(d);
-	}
-
-	/** Constructor */
-	public Angle() {
-		angle_rads = 0;
-	}
-
 	/** Get units, which are degrees */
 	public String getUnits() {
 		return "\u00B0";
@@ -112,56 +132,40 @@ final public class Angle {
 
 	/** Equals */
 	public boolean equals(Angle a) {
-		if(a == null)
+		if (a == null)
 			return false;
-		else 
-			return a.toRads() == toRads();
-	}
-
-	/** Get angle in radians */
-	public double toRads() {
-		return angle_rads;
-	}
-
-	/** Get angle in degrees */
-	public double toDegs() {
-		return radsToDegs(angle_rads);
+		return a.asDouble(Units.RADIANS) == asDouble(Units.RADIANS);
 	}
 
 	/** Get angle in integer degrees */
 	public int toDegsInt() {
-		return (int)round(radsToDegs(angle_rads));
+		return (int)round(asDouble(Units.DEGREES));
 	}
 
 	/** Return a new Angle rounded in degrees.
 	 * @param p Rounding precision, e.g. 10 for 1 digit after decimal.
 	 * @return A new angle rounded in degrees. */
 	public Angle round(int p) {
-		return new Angle(round(toDegs(), p));
+		return new Angle(round(asDouble(Units.DEGREES), p));
 	}
 
 	/** Get the angle in normalized degrees.
 	 * @return Angle in degrees (0-359) */
 	public int toNormalizedDegs() {
-		return toNormalizedDegs(toDegs());
+		return toNormalizedDegs(asDouble(Units.DEGREES));
 	}
 
 	/** Return an inverted angle, which is the equivalent angle 
 	 * in the other direction. */
 	public Angle invert() {
-		return new Angle(radsToDegs(floorRev(toRads())) + 
-			radsToDegs(ceilRev(toRads()) - toRads()));
-	}
-
-	/** Add to the angle */
-	public Angle add(double degs) {
-		return new Angle(toDegs() + degs);
+		var rads = asDouble(Units.RADIANS);
+		return new Angle(floorRev(rads) + (ceilRev(rads) - rads), Units.RADIANS);
 	}
 
 	/** Return the direction as a human readable string.
 	 * @return The direction as N, NE, E, SE, S, SW, W, NW */
 	public String toShortDir() {
-		int d = toNormalizedDegs(toDegs());
+		int d = toNormalizedDegs();
 		if(d <= 22)
 			return "N";
 		else if(d >= 23 && d <= 68)

@@ -29,9 +29,9 @@ import us.mn.state.dot.tms.units.Distance;
 import us.mn.state.dot.tms.units.Temperature;
 import us.mn.state.dot.tms.units.Pressure;
 import us.mn.state.dot.tms.units.Speed;
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SurfaceStatus;
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.VisibilitySituation;
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PrecipSituation;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.VisibilitySituation;
 
 /**
  * Theme for weather sensor objects on the map.

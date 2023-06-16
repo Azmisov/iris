@@ -1,7 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2019-2022  Minnesota Department of Transportation
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2023  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,137 +16,71 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Enum;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Integer;
-import us.mn.state.dot.tms.units.Distance;
-import us.mn.state.dot.tms.utils.Json;
 
-import static us.mn.state.dot.tms.units.Distance.Units.DECIMETERS;
-import static us.mn.state.dot.tms.units.Distance.Units.METERS;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.VisibilitySituation;
+import static us.mn.state.dot.tms.units.Distance.Units.*;
 
 /**
  * Atmospheric / visibility sample values.
  *
  * @author Douglas Lau
- * @author Michael Darter
+ * @author Michael Darter, Isaac Nygaard
  */
 public class AtmosphericValues {
-
-	/** An elevation of 8001 is an error condition or missing value */
-	static private final int REF_ELEVATION_ERROR_MISSING = 8001;
-
-	/** Convert reference elevation to Distance.
-	 * @param e Elevation in meters with 8001 indicating an error or missing
-	 *          value.
-	 * @return Elevation distance or null for missing */
-	static private Distance convertRefElevation(ASN1Integer e) {
-		if (e != null) {
-			int ie = e.getInteger();
-			if (ie < REF_ELEVATION_ERROR_MISSING)
-				return new Distance(ie, METERS);
-		}
-		return null;
-	}
-
-	/** Pressure of 65535 indicates error or missing value */
-	static private final int PRESSURE_ERROR_MISSING = 65535;
-
-	/** Convert atmospheric pressure to pascals.
-	 * @param apr Atmospheric pressure in 1/10ths of millibars, with
-	 *            65535 indicating an error or missing value.
-	 * @return Pressure in pascals */
-	static private Integer convertAtmosphericPressure(ASN1Integer apr) {
-		if (apr != null) {
-			int tmb = apr.getInteger();
-			if (tmb != PRESSURE_ERROR_MISSING) {
-				double mb = (double) tmb * 0.1;
-				double pa = mb * 100;
-				return Integer.valueOf((int) Math.round(pa));
-			}
-		}
-		return null;
-	}
-
-	/** Visibility of 1000001 indicates error or missing value */
-	static private final int VISIBILITY_ERROR_MISSING = 1000001;
-
-	/** Convert visibility to Distance.
-	 * @param vis Visibility in decimeters with 1000001 indicating an error
-	 *            or missing value.
-	 * @return Visibility distance or null for missing */
-	static private Distance convertVisibility(ASN1Integer vis) {
-		if (vis != null) {
-			int iv = vis.getInteger();
-			if (iv != VISIBILITY_ERROR_MISSING)
-				return new Distance(iv, DECIMETERS);
-		}
-		return null;
-	}
-
 	/** Elevation of reference in meters */
-	public final ASN1Integer reference_elevation = essReferenceHeight
-		.makeInt();
+	public final EssDistance reference_elevation =
+		new EssDistance("ref_elevation", essReferenceHeight)
+			.setRange(-400, 8001);
 
 	/** Height of pressure sensor in meters */
-	public final HeightObject pressure_sensor_height = new HeightObject(
-		"pressure_sensor_height", essPressureHeight.makeInt());
+	public final EssDistance pressure_sensor_height =
+		new EssDistance("pressure_sensor_height", essPressureHeight);
 
-	/** Atmospheric pressure in tenths of millibars */
-	public final ASN1Integer atmospheric_pressure = essAtmosphericPressure
-		.makeInt();
+	/** Atmospheric pressure in pascals */
+	public final EssPressure atmospheric_pressure = 
+		new EssPressure("atmospheric_pressure", essAtmosphericPressure);
 
 	/** Visibility in decimeters */
-	public final ASN1Integer visibility = essVisibility.makeInt();
+	public final EssDistance visibility = 
+		new EssDistance("visibility", essVisibility)
+			.setUnits(1, DECIMETERS) // 1/10th meter
+			.setOutput(1, METERS, 0)
+			.setRange(0, 1000001);
 
-	/** Visibility situation */
-	public final ASN1Enum<VisibilitySituation> visibility_situation =
-		new ASN1Enum<VisibilitySituation>(VisibilitySituation.class,
-		essVisibilitySituation.node);
-
-	/** Create atmospheric values */
-	public AtmosphericValues() {
-		reference_elevation.setInteger(REF_ELEVATION_ERROR_MISSING);
-		atmospheric_pressure.setInteger(PRESSURE_ERROR_MISSING);
-		visibility.setInteger(VISIBILITY_ERROR_MISSING);
-	}
+	/** Visibility situation enum */
+	public final EssEnum<VisibilitySituation> visibility_situation =
+		new EssEnum<VisibilitySituation>("visibility_situation", essVisibilitySituation);
 
 	/** Get reference elevation in meters above mean sea level */
 	public Integer getReferenceElevation() {
-		Distance h = convertRefElevation(reference_elevation);
-		return (h != null) ? h.round(METERS) : null;
+		return reference_elevation.toInteger();
 	}
 
 	/** Get atmospheric pressure in pascals */
 	public Integer getAtmosphericPressure() {
-		return convertAtmosphericPressure(atmospheric_pressure);
+		return atmospheric_pressure.toInteger();
 	}
 
 	/** Get visibility in meters */
 	public Integer getVisibility() {
-		Distance vis = convertVisibility(visibility);
-		return (vis != null) ? vis.round(METERS) : null;
+		return visibility.toInteger();
 	}
 
 	/** Get the visibility situation */
 	public VisibilitySituation getVisibilitySituation() {
-		VisibilitySituation vs = visibility_situation.getEnum();
-		return (vs != VisibilitySituation.undefined &&
-		        vs != VisibilitySituation.unknown)
-		      ? vs
-		      : null;
+		return visibility_situation.get(e -> {
+			return VisibilitySituation.isValid(e) ? e : null;
+		});
 	}
 
 	/** Get JSON representation */
 	public String toJson() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(Json.num("reference_elevation",
-			getReferenceElevation()));
+		sb.append(reference_elevation.toJson());
 		sb.append(pressure_sensor_height.toJson());
-		sb.append(Json.num("atmospheric_pressure",
-			getAtmosphericPressure()));
-		sb.append(Json.num("visibility", getVisibility()));
-		sb.append(Json.str("visibility_situation",
-			getVisibilitySituation()));
+		sb.append(atmospheric_pressure.toJson());
+		sb.append(visibility.toJson());
+		sb.append(visibility_situation.toJson());
 		return sb.toString();
 	}
 }
