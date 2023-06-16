@@ -1,17 +1,3 @@
-/*
- * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2019-2022  Minnesota Department of Transportation
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums;
 import us.mn.state.dot.tms.WeatherSensor;
 
@@ -19,9 +5,12 @@ import us.mn.state.dot.tms.WeatherSensor;
  * Visibility situation as defined by essVisibilitySituation in NTCIP 1204.
  *
  * @author Douglas Lau
+ * @copyright 2019-2022 Minnesota Department of Transportation
  * @author Isaac Nygaard
+ * @copyright 2023 Iteris Inc.
+ * @license GPL-2.0
  */
-public enum VisibilitySituation {
+public enum VisibilitySituation implements EssEnumType {
 	undefined,         // 0
 	other,             // 1
 	unknown,           // 2
@@ -36,18 +25,12 @@ public enum VisibilitySituation {
 	sunGlare,          // 11
 	swarmOfInsects;    // 12
 
-	/** Values array */
-	static private final VisibilitySituation[] VALUES = values();
-
-	/** Get a SurfaceStatus from an ordinal value */
-	static public VisibilitySituation fromOrdinal(int o) {
-		return (o >= 0 && o < VALUES.length) ? VALUES[o] : undefined;
+	public boolean isValid(){
+		return this != unknown && EssEnumType.super.isValid();
 	}
-
-	/** Get an enum from an ordinal value */
-	static public VisibilitySituation fromOrdinal(Integer o) {
-		return (o != null ? fromOrdinal(o.intValue()) : undefined);
-    }
+	public static VisibilitySituation fromOrdinal(Integer i){
+		return EssEnumType.fromOrdinal(VisibilitySituation.class, i);
+	}
 
 	/** Get the surface status as an enum */
 	static public VisibilitySituation from(WeatherSensor ws) {
@@ -57,11 +40,6 @@ public enum VisibilitySituation {
 				return fromOrdinal(val);
 		}
 		return undefined;
-	}
-
-	/** Whether value is known/defiend */
-	static public boolean isValid(VisibilitySituation v){
-		return v != null && v != undefined && v != unknown;
 	}
 
 	/** Convert to string, with empty string if null/empty */

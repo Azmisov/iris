@@ -1,7 +1,6 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Enum;
 import us.mn.state.dot.tms.server.comm.snmp.DisplayString;
 import us.mn.state.dot.tms.utils.Json;
 import us.mn.state.dot.tms.server.comm.ntcip.EssValues;
@@ -22,29 +21,35 @@ import us.mn.state.dot.tms.units.Distance;
 public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>{
 	/** Number of temperature sensors in table */
 	public final EssNumber num_sensors =
-		EssNumber.Count("subsurface_sensors", numEssSubSurfaceSensors)
-			.setRange(0, 255, null);
+		EssNumber.Count("subsurface_sensors", numEssSubSurfaceSensors);
+	
+	public SubSurfaceSensorsTable(){
+		setSensorCount(num_sensors);
+	}
 
 	/** Table row */
 	static public class Row extends EssValues{
+		/** Row/sensor number */
 		public final int number;
 		public final DisplayString location;
-		public final ASN1Enum<SubSurfaceType> sub_surface_type;
+		/** Subsurface type enum */
+		public final EssEnum<SubSurfaceType> sub_surface_type;
 		/** Subsurface depth in meters */
 		public final EssDistance depth;
 		/** Subsurface temperature in celcius */
 		public final EssTemperature temp;
 		/** Moisture in percent 0-100 */
 		public final EssNumber moisture;
-		public final ASN1Enum<SubSurfaceSensorError> sensor_error;
+		/** Subsurface sensor error enum */
+		public final EssEnum<SubSurfaceSensorError> sensor_error;
 
 		/** Create a table row */
 		private Row(int row) {
 			number = row;
 			location = new DisplayString(
 				essSubSurfaceSensorLocation.node, row);
-			sub_surface_type = new ASN1Enum<SubSurfaceType>(
-				SubSurfaceType.class, essSubSurfaceType.node, row);
+			sub_surface_type =
+				new EssEnum<SubSurfaceType>("sub_surface_type", essSubSurfaceType, row);
 			depth = 
 				new EssDistance("depth", essSubSurfaceSensorDepth, row)
 					.setUnits(1, Distance.Units.CENTIMETERS)
@@ -53,9 +58,8 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 				new EssTemperature("temp", essSubSurfaceTemperature, row);
 			moisture =
 				EssNumber.Percent("moisture", essSubSurfaceMoisture, row);
-			sensor_error = new ASN1Enum<SubSurfaceSensorError>(
-				SubSurfaceSensorError.class,
-				essSubSurfaceSensorError.node, row);
+			sensor_error =
+				new EssEnum<SubSurfaceSensorError>("sensor_error", essSubSurfaceSensorError, row);
 		}
 
 		/** Get the sensor location */
@@ -66,13 +70,7 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 
 		/** Get sub-surface type or null on error */
 		public SubSurfaceType getSubSurfaceType() {
-			SubSurfaceType sst = sub_surface_type.getEnum();
-			return (sst != SubSurfaceType.undefined) ? sst : null;
-		}
-
-		/** Get sub-surface sensor depth in meters */
-		private String getDepth() {
-			return depth.toString();
+			return sub_surface_type.get();
 		}
 
 		/** Get sub-surface temp or null on error */
@@ -82,8 +80,7 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 
 		/** Get sensor error or null on error */
 		public SubSurfaceSensorError getSensorError() {
-			SubSurfaceSensorError se = sensor_error.getEnum();
-			return (se != null && se.isError()) ? se : null;
+			return sensor_error.get();
 		}
 
 		public String toString() {
@@ -94,12 +91,11 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 			StringBuilder sb = new StringBuilder();
 			sb.append('{');
 			sb.append(Json.str("location", getSensorLocation()));
-			sb.append(Json.str("sub_surface_type",
-				getSubSurfaceType()));
-			sb.append(Json.num("depth", getDepth()));
+			sb.append(sub_surface_type.toJson());
+			sb.append(depth.toJson());
 			sb.append(temp.toJson());
 			sb.append(moisture.toJson());
-			sb.append(Json.str("sensor_error", getSensorError()));
+			sb.append(sensor_error.toJson());
 			// remove trailing comma
 			if (sb.charAt(sb.length() - 1) == ',')
 				sb.setLength(sb.length() - 1);

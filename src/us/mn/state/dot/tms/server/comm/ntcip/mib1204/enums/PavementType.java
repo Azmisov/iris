@@ -1,25 +1,15 @@
-/*
- * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2019-2022  Minnesota Department of Transportation
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums;
 
 /**
  * Pavement type as defined by essPavementType in NTCIP 1204.
  *
  * @author Douglas Lau
+ * @copyright 2019-2022 Minnesota Department of Transportation
+ * @author Isaac Nygaard
+ * @copyright 2023 Iteris Inc.
+ * @license GPL-2.0
  */
-public enum PavementType {
+public enum PavementType implements EssEnumType {
 	undefined,            // 0
 	other,                // 1
 	unknown,              // 2
@@ -30,4 +20,11 @@ public enum PavementType {
 	concreteBridge,       // 7
 	asphaltOverlayBridge, // 8
 	timberBridge;         // 9
+
+	public boolean isValid(){
+		return this != unknown && EssEnumType.super.isValid();
+	}
+	public static PavementType fromOrdinal(Integer i){
+		return EssEnumType.fromOrdinal(PavementType.class, i);
+	}
 }

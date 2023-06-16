@@ -1,17 +1,3 @@
-/*
- * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2022  Minnesota Department of Transportation
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums;
 
 /**
@@ -19,8 +5,12 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums;
  * windSensorSituation in 1204v2+.
  *
  * @author Douglas Lau
+ * @copyright 2022 Minnesota Department of Transportation
+ * @author Isaac Nygaard
+ * @copyright 2023 Iteris Inc.
+ * @license GPL-2.0
  */
-public enum WindSituation {
+public enum WindSituation implements EssEnumType {
 	undefined,           // 0
 	other,               // 1
 	unknown,             // 2
@@ -34,4 +24,11 @@ public enum WindSituation {
 	stormWinds,          // 10
 	hurricaneForceWinds, // 11
 	gustyWinds;          // 12
+
+	public boolean isValid(){
+		return this != unknown && EssEnumType.super.isValid();
+	}
+	public static WindSituation fromOrdinal(Integer i){
+		return EssEnumType.fromOrdinal(WindSituation.class, i);
+	}
 }

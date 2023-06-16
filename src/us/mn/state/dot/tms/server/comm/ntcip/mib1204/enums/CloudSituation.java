@@ -17,9 +17,6 @@ public enum CloudSituation implements EssEnumType{
 	mostlyClear,  // 4 (1% - 37.5% cover)
 	clear;        // 5 (0% cover)
 
-	public static boolean isValid(CloudSituation v){
-		return EssEnumType.isValid(v);
-	}
 	public static CloudSituation fromOrdinal(Integer i){
 		return EssEnumType.fromOrdinal(CloudSituation.class, i);
 	}

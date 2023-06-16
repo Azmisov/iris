@@ -15,9 +15,8 @@
  */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
-import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.VisibilitySituation;
+import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
 import static us.mn.state.dot.tms.units.Distance.Units.*;
 
 /**
@@ -68,9 +67,7 @@ public class AtmosphericValues {
 
 	/** Get the visibility situation */
 	public VisibilitySituation getVisibilitySituation() {
-		return visibility_situation.get(e -> {
-			return VisibilitySituation.isValid(e) ? e : null;
-		});
+		return visibility_situation.get();
 	}
 
 	/** Get JSON representation */

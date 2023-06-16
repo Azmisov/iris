@@ -1,12 +1,9 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Enum;
-import us.mn.state.dot.tms.units.Speed;
-import us.mn.state.dot.tms.units.Distance.Units;
-import us.mn.state.dot.tms.utils.Json;
+import static us.mn.state.dot.tms.units.Speed.Units.*;
+import static us.mn.state.dot.tms.units.Distance.Units.*;
 
 /**
  * Precipitation sensor sample values.
@@ -21,7 +18,7 @@ public class PrecipitationValues {
 	/** Water depth in cm */
 	public final EssDistance water_depth =
 		new EssDistance("water_depth", essWaterDepth)
-			.setUnits(1, Units.CENTIMETERS);
+			.setUnits(1, CENTIMETERS);
 
 	/** Relative humidity in percent from 0-100 */
 	public final EssNumber relative_humidity =
@@ -36,8 +33,8 @@ public class PrecipitationValues {
 	// 3600 / 10,000 = 0.36
 	public final EssSpeed precip_rate = 
 		new EssSpeed("precip_rate", essPrecipRate)
-			.setUnits(0.36, Speed.Units.MMPH)
-			.setOutput(1, Speed.Units.MMPH, 1);
+			.setUnits(0.36, MMPH)
+			.setOutput(1, MMPH, 1);
 
 	/** One hour precipitation depth in mm per m^2 */
 	public final EssDistance precip_1_hour =
@@ -60,9 +57,8 @@ public class PrecipitationValues {
 		EssDistance.PrecipRate("precip_24_hours", essPrecipitation24Hours);
 
 	/** Precipitation situation */
-	public final ASN1Enum<PrecipSituation> precip_situation =
-		new ASN1Enum<PrecipSituation>(PrecipSituation.class,
-		essPrecipSituation.node);
+	public final EssEnum<PrecipSituation> precip_situation =
+		new EssEnum<PrecipSituation>("precip_situation", essPrecipSituation);
 
 	/** Get the water depth in cm, else null if missing/invalid */
 	public Integer getWaterDepth() {
@@ -81,11 +77,7 @@ public class PrecipitationValues {
 
 	/** Get the precipitation situation */
 	public PrecipSituation getPrecipSituation() {
-		PrecipSituation ps = precip_situation.getEnum();
-		return (ps != PrecipSituation.undefined &&
-		        ps != PrecipSituation.unknown)
-		      ? ps
-		      : null;
+		return precip_situation.get();
 	}
 
 	/** Get JSON representation */
@@ -99,7 +91,7 @@ public class PrecipitationValues {
 		sb.append(precip_6_hours.toJson());
 		sb.append(precip_12_hours.toJson());
 		sb.append(precip_24_hours.toJson());
-		sb.append(Json.str("precip_situation", getPrecipSituation()));
+		sb.append(precip_situation.toJson());
 		return sb.toString();
 	}
 }

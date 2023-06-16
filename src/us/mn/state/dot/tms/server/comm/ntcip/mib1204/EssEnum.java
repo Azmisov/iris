@@ -1,15 +1,17 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.EssEnumType;
 import java.lang.reflect.ParameterizedType;
 import us.mn.state.dot.tms.utils.Json;
 
-/** Converts {@link MIB1204} raw types to a generic enum type.
+/** Converts {@link MIB1204} raw types to a generic enum type. The enum
+ * should implement {@link EssEnumType}
  * 
  * @author Isaac Nygaard
  * @copyright 2023 Iteris, Inc
  * @license GPL-2.0
  */
-public class EssEnum<T extends Enum<T>> extends EssConverter<T>{
+public class EssEnum<T extends Enum<T> & EssEnumType> extends EssConverter<T>{
 	/** The enum class this converter is for */
 	public final Class<T> enumClass;
 	
@@ -26,7 +28,8 @@ public class EssEnum<T extends Enum<T>> extends EssConverter<T>{
 	private Class<T> reflect(){
 		// https://stackoverflow.com/questions/3437897;
 		// only works here because we have superclass EssConverter<T>
-		return (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+		var type = (ParameterizedType) getClass().getGenericSuperclass();
+		return (Class<T>) type.getActualTypeArguments()[0];
 	}
 
 	@Override
@@ -35,8 +38,12 @@ public class EssEnum<T extends Enum<T>> extends EssConverter<T>{
 		// https://stackoverflow.com/questions/10121988
 		T[] values = enumClass.getEnumConstants();
 		// extends Enum enforced, so guranteed non-null values
-		if (i >= 0 && i < values.length)
-			return values[i];
+		if (i >= 0 && i < values.length){
+			T e = values[i];
+			if (e.isValid())
+				return e;
+		}
+		else System.err.print("%s out-of-range: %d".formatted(mib_attr, i));
 		return null;
 	}
 	@Override

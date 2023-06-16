@@ -1,7 +1,6 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Enum;
 import us.mn.state.dot.tms.utils.Json;
 import us.mn.state.dot.tms.server.comm.ntcip.EssValues;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.WindSituation;
@@ -31,9 +30,8 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 
 	/** Wind situation.
 	 * Note: this object not supported by all vendors */
-	public final ASN1Enum<WindSituation> situation =
-		new ASN1Enum<WindSituation>(WindSituation.class,
-		essWindSituation.node);
+	public final EssEnum<WindSituation> situation =
+		new EssEnum<WindSituation>("situation", essWindSituation);
 
 	/** Two minute average wind speed in m/s (deprecated in V2) */
 	public final EssSpeed avg_speed =
@@ -68,7 +66,8 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 		public final EssAngle spot_direction;
 		public final EssSpeed gust_speed;
 		public final EssAngle gust_direction;
-		public final ASN1Enum<WindSituation> situation;
+		/** Wind situation enum */
+		public final EssEnum<WindSituation> situation;
 
 		/** Create a table row */
 		private Row(int row) {
@@ -86,15 +85,8 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 			gust_direction =
 				new EssAngle("gust_direction", windSensorGustDirection, row);
 			// Note: this object not supported by all vendors
-			situation = new ASN1Enum<WindSituation>(
-				WindSituation.class, windSensorSituation.node, row);
-		}
-
-		private WindSituation getSituation() {
-			WindSituation ws = situation.getEnum();
-			if (ws == WindSituation.undefined || ws == WindSituation.unknown)
-				ws = null;
-			return ws;
+			situation =
+				new EssEnum<WindSituation>("situation", windSensorSituation, row);
 		}
 
 		public String toString(){
@@ -111,7 +103,7 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 			sb.append(spot_direction.toJson());
 			sb.append(gust_speed.toJson());
 			sb.append(gust_direction.toJson());
-			sb.append(Json.str("situation", getSituation()));
+			sb.append(situation.toJson());
 			// remove trailing comma
 			if (sb.charAt(sb.length() - 1) == ',')
 				sb.setLength(sb.length() - 1);
@@ -123,14 +115,6 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 	@Override
 	protected Row createRow(int row_num) {
 		return new Row(row_num);
-	}
-
-	/** Get the wind situation */
-	private WindSituation getSituation() {
-		WindSituation ws = situation.getEnum();
-		if (ws == WindSituation.undefined || ws == WindSituation.unknown)
-			ws = null;
-		return ws;
 	}
 
 	/** Get two minute average wind speed */
@@ -178,7 +162,7 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 			sb.append(spot_direction.toJson());
 			sb.append(gust_speed.toJson());
 			sb.append(gust_direction.toJson());
-			sb.append(Json.str("situation", getSituation()));
+			sb.append(situation.toJson());
 			// remove trailing comma
 			if (sb.charAt(sb.length() - 1) == ',')
 				sb.setLength(sb.length() - 1);

@@ -16,11 +16,9 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Enum;
 import us.mn.state.dot.tms.server.comm.snmp.DisplayString;
 import us.mn.state.dot.tms.units.Distance;
-import us.mn.state.dot.tms.units.Distance.Units;
+import static us.mn.state.dot.tms.units.Distance.Units.*;
 import us.mn.state.dot.tms.utils.Json;
 import us.mn.state.dot.tms.server.comm.ntcip.EssValues;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PavementSensorError;
@@ -47,6 +45,7 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 
 	/** Table row */
 	static public class Row extends EssValues {
+		/** Row/sensor number */
 		public final int number;
 		public final DisplayString location;
 		/** Pavement type enum */
@@ -106,13 +105,13 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 				new EssEnum<PavementSensorError>("pavement_sensor_error", essPavementSensorError, row);
 			water_depth =
 				new EssDistance("water_depth", essSurfaceWaterDepth, row)
-					.setUnits(1, Units.MILLIMETERS)
-					.setOutput(1, Units.METERS, 3)
+					.setUnits(1, MILLIMETERS)
+					.setOutput(1, METERS, 3)
 					.setRange(0, 255);
 			ice_or_water_depth =
 				new EssDistance("ice_or_water_depth", essSurfaceIceOrWaterDepth, row)
-					.setUnits(0.1, Units.MILLIMETERS)
-					.setOutput(1, Units.METERS, 4)
+					.setUnits(0.1, MILLIMETERS)
+					.setOutput(1, METERS, 4)
 					.setRange(0, EssDistance.MAX_WORD);
 			salinity =
 				new EssNumber("salinity", essSurfaceSalinity, row)
@@ -127,7 +126,7 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 				new EssNumber("conductivity", essSurfaceConductivityV2, row);
 			temp_depth =
 				new EssDistance("temp_depth", pavementSensorTemperatureDepth, row)
-					.setUnits(1, Units.CENTIMETERS)
+					.setUnits(1, CENTIMETERS)
 					.setRange(2, 11);
 			sensor_model_info =
 				new EssNumber("sensor_model_info", pavementSensorModelInformation, row)
@@ -142,22 +141,17 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 
 		/** Get pavement type or null on error */
 		public PavementType getPavementType() {
-			PavementType pt = pavement_type.getEnum();
-			return (pt != PavementType.undefined) ? pt : null;
+			return pavement_type.get();
 		}
 
 		/** Get pavement sensor type or null on error */
 		public PavementSensorType getPavementSensorType() {
-			PavementSensorType pst = sensor_type.getEnum();
-			return (pst != PavementSensorType.undefined)
-			      ? pst
-			      : null;
+			return sensor_type.get();
 		}
 
 		/** Get surface status or null on error */
 		public SurfaceStatus getSurfStatus() {
-			SurfaceStatus ess = surface_status.getEnum();
-			return (ess != SurfaceStatus.undefined) ? ess : null;
+			return surface_status.get();
 		}
 
 		/** Get surface temp or null on error */
@@ -171,9 +165,8 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 		}
 
 		/** Get pavement sensor error or null on error */
-		public PavementSensorError getPavementSensorError() {
-			PavementSensorError pse = sensor_error.getEnum();
-			return (pse != null && pse.isError()) ? pse : null;
+		public PavementSensorError getPavementSensorError(){
+			return sensor_error.get();
 		}
 
 		/** Get surface water depth formatted to meter units, mulitplied by
@@ -181,7 +174,7 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 		 */
 		public String getWaterDepth(float scale){
 			return water_depth.get(d -> {
-				return Num.format(d.asDouble(Units.METERS)*scale, 3);
+				return Num.format(d.asDouble(METERS)*scale, 3);
 			});
 		}
 
@@ -204,8 +197,7 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 
 		/** Get black ice signal or null on error */
 		public SurfaceBlackIceSignal getBlackIceSignal() {
-			SurfaceBlackIceSignal bis = black_ice_signal.getEnum();
-			return (bis != null && bis.isValue()) ? bis : null;
+			return black_ice_signal.get();
 		}
 
 		/** Get conductivity in 0.1 milli-mhos/cm, or null if missing */
@@ -238,22 +230,21 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 			StringBuilder sb = new StringBuilder();
 			sb.append('{');
 			sb.append(Json.str("location", getSensorLocation()));
-			sb.append(Json.str("pavement_type", getPavementType()));
+			sb.append(pavement_type.toJson());
 			sb.append(height.toJson());
 			sb.append(exposure.toJson());
-			sb.append(Json.str("sensor_type", getPavementSensorType()));
-			sb.append(Json.str("surface_status", getSurfStatus()));
+			sb.append(sensor_type.toJson());
+			sb.append(surface_status.toJson());
 			sb.append(surface_temp.toJson());
 			sb.append(pavement_temp.toJson());
-			sb.append(Json.str("sensor_error",
-				getPavementSensorError()));
+			sb.append(sensor_error.toJson());
 			sb.append(Json.num("ice_or_water_depth", getIceOrWaterDepth()));
 			sb.append(salinity.toJson());
 			sb.append(freeze_point.toJson());
-			sb.append(Json.str("black_ice_signal", getBlackIceSignal()));
+			sb.append(black_ice_signal.toJson());
 			sb.append(friction.toJson());
 			sb.append(conductivity.toJson());
-			sb.append(Json.num("temp_depth", getTempDepth().toString()));
+			sb.append(temp_depth.toJson());
 			// remove trailing comma
 			if (sb.charAt(sb.length() - 1) == ',')
 				sb.setLength(sb.length() - 1);

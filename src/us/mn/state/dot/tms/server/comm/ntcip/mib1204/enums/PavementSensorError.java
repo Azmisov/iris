@@ -18,8 +18,9 @@ public enum PavementSensorError implements EssEnumType{
 	shortCircuit, // 5
 	dirtyLens;    // 6
 
-	public static boolean isValid(PavementSensorError v){
-		return v != none && EssEnumType.isValid(v);
+	/** In this case, this indicates there was a valid sensor error detected */
+	public boolean isValid(){
+		return this != none && EssEnumType.super.isValid();
 	}
 	public static PavementSensorError fromOrdinal(Integer i){
 		return EssEnumType.fromOrdinal(PavementSensorError.class, i);

@@ -1,28 +1,16 @@
-/*
- * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017  Iteris Inc.
- * Copyright (C) 2019-2022  Minnesota Department of Transportation
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums;
 import us.mn.state.dot.tms.WeatherSensor;
 
 /**
  * Pavement surface status as defined by essSurfaceStatus in NTCIP 1204.
  *
- * @author Michael Darter
  * @author Douglas Lau
+ * @copyright 2019-2022 Minnesota Department of Transportation
+ * @author Michael Darter, Isaac Nygaard
+ * @copyright 2017-2023 Iteris Inc.
+ * @license GPL-2.0
  */
-public enum SurfaceStatus {
+public enum SurfaceStatus implements EssEnumType {
 	undefined,            // 0
 	other,                // 1
 	error,                // 2
@@ -39,18 +27,9 @@ public enum SurfaceStatus {
 	frost,                // 13
 	absorptionAtDewpoint; // 14
 
-	/** Values array */
-	static private final SurfaceStatus[] VALUES = values();
-
-	/** Get a SurfaceStatus from an ordinal value */
-	static public SurfaceStatus fromOrdinal(int o) {
-		return (o >= 0 && o < VALUES.length) ? VALUES[o] : undefined;
+	public static SurfaceStatus fromOrdinal(Integer i){
+		return EssEnumType.fromOrdinal(SurfaceStatus.class, i);
 	}
-
-	/** Get an enum from an ordinal value */
-	static public SurfaceStatus fromOrdinal(Integer o) {
-		return (o != null ? fromOrdinal(o.intValue()) : undefined);
-    }
 
 	/** Get the surface status as an enum */
 	static public SurfaceStatus from(WeatherSensor ws) {

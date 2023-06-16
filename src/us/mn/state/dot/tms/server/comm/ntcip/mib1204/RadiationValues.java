@@ -16,11 +16,9 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Enum;
-import us.mn.state.dot.tms.utils.Json;
 import us.mn.state.dot.tms.server.comm.ntcip.EssValues;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.CloudSituation;
-import us.mn.state.dot.tms.units.Interval;
+import static us.mn.state.dot.tms.units.Interval.Units.*;
 
 /**
  * Solar radiation sample values.
@@ -34,9 +32,8 @@ public class RadiationValues extends EssValues{
 		new EssInterval("total_sun", essTotalSun);
 
 	/** Cloud situation */
-	public final ASN1Enum<CloudSituation> cloud_situation =
-		new ASN1Enum<CloudSituation>(CloudSituation.class,
-		essCloudSituation.node);
+	public final EssEnum<CloudSituation> cloud_situation =
+		new EssEnum<CloudSituation>("cloud_situation", essCloudSituation);
 
 	/** Instantaneous terrestrial radiation (watts / m^2) */
 	public final EssNumber instantaneous_terrestrial =
@@ -55,7 +52,7 @@ public class RadiationValues extends EssValues{
 	// code we treat zero as error
 	public final EssInterval total_radiation_period =
 		new EssInterval("total_radiation_period", essTotalRadiationPeriod)
-			.setUnits(1, Interval.Units.SECONDS)
+			.setUnits(1, SECONDS)
 			.setRange(0, 86401, 0);
 
 	/** Solar radiation over 24 hours (Joules / m^2; deprecated in V2) */
@@ -69,8 +66,7 @@ public class RadiationValues extends EssValues{
 
 	/** Get the cloud situation */
 	public CloudSituation getCloudSituation() {
-		CloudSituation cs = cloud_situation.getEnum();
-		return (cs != CloudSituation.undefined) ? cs : null;
+		return cloud_situation.get();
 	}
 
 	/** Get the total radiation period (seconds) */
@@ -87,10 +83,9 @@ public class RadiationValues extends EssValues{
 	public String toJson() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(total_sun.toJson());
-		sb.append(Json.str("cloud_situation", getCloudSituation()));
-		Integer s = getSolarRadiation();
-		if (s != null) {
-			sb.append(Json.num("solar_radiation", s));
+		sb.append(cloud_situation.toJson());
+		if (!solar_radiation.isNull()){
+			sb.append(solar_radiation.toJson());
 		} else {
 			sb.append(instantaneous_terrestrial.toJson());
 			sb.append(instantaneous_solar.toJson());
@@ -102,6 +97,6 @@ public class RadiationValues extends EssValues{
 
 	@Override
 	public String toString() {
-		return "TODO";
+		return toJson(); // customize this?
 	}
 }

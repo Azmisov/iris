@@ -1,28 +1,16 @@
-/*
- * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017-2018  Iteris Inc.
- * Copyright (C) 2019-2022  Minnesota Department of Transportation
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums;
 import us.mn.state.dot.tms.WeatherSensor;
 
 /**
  * Precipitation situation as defined by essPrecipSituation in NTCIP 1204.
  *
- * @author Michael Darter
  * @author Douglas Lau
+ * @copyright 2019-2022 Minnesota Department of Transportation
+ * @author Michael Darter, Isaac Nygaard
+ * @copyright 2017-2023 Iteris Inc.
+ * @license GPL-2.0
  */
-public enum PrecipSituation {
+public enum PrecipSituation implements EssEnumType {
 	undefined(""),                   				// 0
 	other("None"),                       			// 1
 	unknown("None"),                     			// 2
@@ -47,12 +35,11 @@ public enum PrecipSituation {
 		desc_csv = dcsv;
 	}
 
-	/** Get an enum from an ordinal value */
-	static public PrecipSituation fromOrdinal(int o) {
-		if (o >= 0 && o < values().length)
-			return values()[o];
-		else
-			return undefined;
+	public boolean isValid(){
+		return this != unknown && EssEnumType.super.isValid();
+	}
+	public static PrecipSituation fromOrdinal(Integer i){
+		return EssEnumType.fromOrdinal(PrecipSituation.class, i);
 	}
 
 	/** Get the precipitation situation as an enum */
