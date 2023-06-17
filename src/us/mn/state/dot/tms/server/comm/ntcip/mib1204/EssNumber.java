@@ -9,7 +9,7 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
  * @copyright 2023 Iteris Inc.
  * @license GPL-2.0
  */
-public class EssNumber extends EssConverter<Double>{
+public class EssNumber extends EssInteger<Double>{
     private int digits = 1;
     // unlike EssUnits, doesn't make sense to have lazy output scaling here
     private double scale = 1;

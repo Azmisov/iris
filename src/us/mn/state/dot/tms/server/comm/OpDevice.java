@@ -45,20 +45,22 @@ abstract public class OpDevice<T extends ControllerProperty>
 
 	/** Operation equality test */
 	@Override
+	@SuppressWarnings("unchecked")
 	public boolean equals(Object o) {
 		return (o instanceof OpDevice) &&
 		       (getClass() == o.getClass()) &&
-		       ((OpDevice)o).device == device;
+		       ((OpDevice<T>) o).device == device;
 	}
 
 	/** Phase to acquire exclusive ownership of the device */
-	protected class AcquireDevice extends Phase<T> {
+	protected class AcquireDevice extends Phase {
 
 		/** Perform the acquire device phase */
-		protected Phase<T> poll(CommMessage<T> mess)
+		@SuppressWarnings("unchecked")
+		protected Phase poll(CommMessage<T> mess)
 			throws DeviceContentionException
 		{
-			OpDevice owner = device.acquire(OpDevice.this);
+			OpDevice<T> owner = device.acquire(OpDevice.this);
 			if(owner != OpDevice.this)
 				throw new DeviceContentionException(owner);
 			return phaseTwo();
@@ -67,12 +69,12 @@ abstract public class OpDevice<T extends ControllerProperty>
 
 	/** Create the first phase of the operation */
 	@Override
-	protected final Phase<T> phaseOne() {
+	protected final Phase phaseOne() {
 		return exclusive ? new AcquireDevice() : phaseTwo();
 	}
 
 	/** Create the second phase of the operation */
-	abstract protected Phase<T> phaseTwo();
+	abstract protected Phase phaseTwo();
 
 	/** Cleanup the operation */
 	@Override

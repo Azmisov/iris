@@ -50,13 +50,13 @@ public class OpQueryMeterStatus extends Op170Device {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<MndotProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new QueryMeterData();
 	}
 
 	/** Phase to query the meter data */
-	protected class QueryMeterData extends Phase<MndotProperty> {
-		protected Phase<MndotProperty> poll(
+	protected class QueryMeterData extends Phase {
+		protected Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty data_mem = new MemoryProperty(
@@ -121,8 +121,8 @@ public class OpQueryMeterStatus extends Op170Device {
 	}
 
 	/** Phase to query a ramp meter red time */
-	protected class QueryRedTime extends Phase<MndotProperty> {
-		protected Phase<MndotProperty> poll(
+	protected class QueryRedTime extends Phase {
+		protected Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty red_mem = new MemoryProperty(

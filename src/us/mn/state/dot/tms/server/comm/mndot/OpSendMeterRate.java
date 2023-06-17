@@ -62,13 +62,13 @@ public class OpSendMeterRate extends Op170Device {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<MndotProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return (red_time != null) ? new SendRedTime() : new SendRate();
 	}
 
 	/** Phase to send the red time */
-	protected class SendRedTime extends Phase<MndotProperty> {
-		protected Phase<MndotProperty> poll(
+	protected class SendRedTime extends Phase {
+		protected Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty p = new MemoryProperty(redTimeAddress(),
@@ -86,8 +86,8 @@ public class OpSendMeterRate extends Op170Device {
 	}
 
 	/** Phase to send the (remote) metering rate */
-	protected class SendRate extends Phase<MndotProperty> {
-		protected Phase<MndotProperty> poll(
+	protected class SendRate extends Phase {
+		protected Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty p = new MemoryProperty(

@@ -43,15 +43,15 @@ public class OpQuerySamples extends OpSS105 {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<SS105Property> phaseOne() {
+	protected Phase phaseOne() {
 		return new GetCurrentSamples();
 	}
 
 	/** Phase to get the most recent binned samples */
-	private class GetCurrentSamples extends Phase<SS105Property> {
+	private class GetCurrentSamples extends Phase {
 
 		/** Get the most recent binned samples */
-		protected Phase<SS105Property> poll(
+		protected Phase poll(
 			CommMessage<SS105Property> mess) throws IOException
 		{
 			mess.add(sample_data);
@@ -63,10 +63,10 @@ public class OpQuerySamples extends OpSS105 {
 	}
 
 	/** Phase to send the date and time */
-	private class SendDateTime extends Phase<SS105Property> {
+	private class SendDateTime extends Phase {
 
 		/** Send the date and time */
-		protected Phase<SS105Property> poll(
+		protected Phase poll(
 			CommMessage<SS105Property> mess) throws IOException
 		{
 			long stamp = sample_data.getTime();

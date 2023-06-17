@@ -71,16 +71,16 @@ public class OpQueryGpsLocation extends OpDevice<SierraGxProperty> {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<SierraGxProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return (getUsername() != null)
 		      ? new CheckNeedLogin()
 		      : new QueryGps();
 	}
 
 	/** Phase to check if we need to log into the modem */
-	private class CheckNeedLogin extends Phase<SierraGxProperty> {
+	private class CheckNeedLogin extends Phase {
 
-		protected Phase<SierraGxProperty> poll(
+		protected Phase poll(
 			CommMessage<SierraGxProperty> mess) throws IOException
 		{
 			TestLoginModeProperty prop = new TestLoginModeProperty();
@@ -93,9 +93,9 @@ public class OpQueryGpsLocation extends OpDevice<SierraGxProperty> {
 	}
 
 	/** Phase to send username */
-	private class SendUsername extends Phase<SierraGxProperty> {
+	private class SendUsername extends Phase {
 
-		protected Phase<SierraGxProperty> poll(
+		protected Phase poll(
 			CommMessage<SierraGxProperty> mess) throws IOException
 		{
 			SendUsernameProperty prop = new SendUsernameProperty(
@@ -112,9 +112,9 @@ public class OpQueryGpsLocation extends OpDevice<SierraGxProperty> {
 	}
 
 	/** Phase to send password */
-	private class SendPassword extends Phase<SierraGxProperty> {
+	private class SendPassword extends Phase {
 
-		protected Phase<SierraGxProperty> poll(
+		protected Phase poll(
 			CommMessage<SierraGxProperty> mess) throws IOException
 		{
 			SendPasswordProperty prop = new SendPasswordProperty(
@@ -131,9 +131,9 @@ public class OpQueryGpsLocation extends OpDevice<SierraGxProperty> {
 	}
 
 	/** Phase to query GPS location */
-	private class QueryGps extends Phase<SierraGxProperty> {
+	private class QueryGps extends Phase {
 
-		protected Phase<SierraGxProperty> poll(
+		protected Phase poll(
 			CommMessage<SierraGxProperty> mess) throws IOException
 		{
 			mess.add(gps_prop);

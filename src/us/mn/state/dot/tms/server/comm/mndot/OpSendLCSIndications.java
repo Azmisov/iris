@@ -58,15 +58,15 @@ public class OpSendLCSIndications extends OpLCS {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<MndotProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new TurnOffDevices();
 	}
 
 	/** Phase to turn off devices */
-	protected class TurnOffDevices extends Phase<MndotProperty> {
+	protected class TurnOffDevices extends Phase {
 
 		/** Turn off devices */
-		protected Phase<MndotProperty> poll(
+		protected Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			int address = Address.RAMP_METER_DATA +
@@ -81,10 +81,10 @@ public class OpSendLCSIndications extends OpLCS {
 	}
 
 	/** Phase to set the special function output bits */
-	protected class SetOutputs extends Phase<MndotProperty> {
+	protected class SetOutputs extends Phase {
 
 		/** Set the special function outputs */
-		protected Phase<MndotProperty> poll(
+		protected Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] buffer = createSpecialFunctionBuffer();
@@ -99,10 +99,10 @@ public class OpSendLCSIndications extends OpLCS {
 	}
 
 	/** Phase to turn on devices */
-	protected class TurnOnDevices extends Phase<MndotProperty> {
+	protected class TurnOnDevices extends Phase {
 
 		/** Turn on devices */
-		protected Phase<MndotProperty> poll(
+		protected Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			int address = Address.RAMP_METER_DATA +

@@ -36,15 +36,15 @@ public class OpQueryStatus extends OpE6 {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<E6Property> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new QueryDiagStatus();
 	}
 
 	/** Phase to query the diagnostic status */
-	private class QueryDiagStatus extends Phase<E6Property> {
+	private class QueryDiagStatus extends Phase {
 
 		/** Query diag status */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		protected Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			sendQuery(mess, stat);
@@ -54,10 +54,10 @@ public class OpQueryStatus extends OpE6 {
 	}
 
 	/** Phase to query the buffering mode */
-	private class QueryBufferingMode extends Phase<E6Property> {
+	private class QueryBufferingMode extends Phase {
 
 		/** Query the buffering mode */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		protected Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			BufferingModeProp mode = new BufferingModeProp();
@@ -71,10 +71,10 @@ public class OpQueryStatus extends OpE6 {
 	}
 
 	/** Phase to store the buffering mode */
-	private class StoreBufferingMode extends Phase<E6Property> {
+	private class StoreBufferingMode extends Phase {
 
 		/** Store the buffering mode */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		protected Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			BufferingModeProp mode = new BufferingModeProp();
@@ -86,10 +86,10 @@ public class OpQueryStatus extends OpE6 {
 	}
 
 	/** Phase to query the buffered tag transaction count */
-	private class QueryBufferedCount extends Phase<E6Property> {
+	private class QueryBufferedCount extends Phase {
 
 		/** Query the buffered tag transaction count */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		protected Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			BufferedCountProp count = new BufferedCountProp();
@@ -104,7 +104,7 @@ public class OpQueryStatus extends OpE6 {
 	}
 
 	/** Phase to query the buffered tag transactions */
-	private class QueryBufferedTransactions extends Phase<E6Property> {
+	private class QueryBufferedTransactions extends Phase {
 		private final int n_count;
 		private int n_curr;
 		private QueryBufferedTransactions(int n) {
@@ -113,7 +113,7 @@ public class OpQueryStatus extends OpE6 {
 		}
 
 		/** Query the buffered tag transactions */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		protected Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			BufferedTransactionProp trans =
@@ -132,10 +132,10 @@ public class OpQueryStatus extends OpE6 {
 	}
 
 	/** Phase to clear the buffered tag transaction count */
-	private class ClearBufferedCount extends Phase<E6Property> {
+	private class ClearBufferedCount extends Phase {
 
 		/** Clear the buffered tag transaction count */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		protected Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			BufferedCountProp count = new BufferedCountProp();

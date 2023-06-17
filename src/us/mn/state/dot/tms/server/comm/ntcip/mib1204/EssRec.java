@@ -18,26 +18,22 @@ import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
 public class EssRec {
 
 	/** Atmospheric values */
-	public final AtmosphericValues atmospheric_values =
-		new AtmosphericValues();
+	public final AtmosphericValues atmospheric_values = new AtmosphericValues();
 
 	/** Wind sensors table */
 	public final WindSensorsTable ws_table = new WindSensorsTable();
 
 	/** Temperature sensors table */
-	public final TemperatureSensorsTable ts_table =
-		new TemperatureSensorsTable();
+	public final TemperatureSensorsTable ts_table = new TemperatureSensorsTable();
 
 	/** Precipitation sensor values */
-	public final PrecipitationValues precip_values =
-		new PrecipitationValues();
+	public final PrecipitationValues precip_values = new PrecipitationValues();
 
 	/** Pavement sensors table */
 	public final PavementSensorsTable ps_table = new PavementSensorsTable();
 
 	/** Sub-surface sensors table */
-	public final SubSurfaceSensorsTable ss_table =
-		new SubSurfaceSensorsTable();
+	public final SubSurfaceSensorsTable ss_table = new SubSurfaceSensorsTable();
 
 	/** Solar radiation values */
 	public final RadiationValues rad_values = new RadiationValues();
@@ -47,28 +43,28 @@ public class EssRec {
 
 	/** Store the atmospheric values */
 	private void storeAtmospheric(WeatherSensorImpl ws) {
-		ws.setPressureNotify(atmospheric_values.getAtmosphericPressure());
-		ws.setVisibilityNotify(atmospheric_values.getVisibility());
+		ws.setPressureNotify(atmospheric_values.atmospheric_pressure.toInteger());
+		ws.setVisibilityNotify(atmospheric_values.visibility.toInteger());
 		ws.setPressureSensorHeightNotify(
 			atmospheric_values.pressure_sensor_height.toInteger());
-		ws.setElevationNotify(atmospheric_values.getReferenceElevation());
+		ws.setElevationNotify(atmospheric_values.reference_elevation.toInteger());
 	}
 
 	/** Store the wind sensor data */
 	private void storeWinds(WeatherSensorImpl ws) {
-		ws.setWindSpeedNotify(ws_table.getAvgSpeed().getKPH());
-		ws.setWindDirNotify(ws_table.getAvgDir().get());
-		ws.setSpotWindSpeedNotify(ws_table.getSpotSpeed().getKPH());
-		ws.setSpotWindDirNotify(ws_table.getSpotDir().get());
-		ws.setMaxWindGustSpeedNotify(ws_table.getGustSpeed().getKPH());
-		ws.setMaxWindGustDirNotify(ws_table.getGustDir().get());
+		ws.setWindSpeedNotify(ws_table.getAvgSpeed());
+		ws.setWindDirNotify(ws_table.getAvgDir());
+		ws.setSpotWindSpeedNotify(ws_table.getSpotSpeed());
+		ws.setSpotWindDirNotify(ws_table.getSpotDir());
+		ws.setMaxWindGustSpeedNotify(ws_table.getGustSpeed());
+		ws.setMaxWindGustDirNotify(ws_table.getGustDir());
 	}
 
 	/** Store the temperatures */
 	private void storeTemps(WeatherSensorImpl ws) {
-		ws.setDewPointTempNotify(ts_table.getDewPointTempC());
-		ws.setMaxTempNotify(ts_table.getMaxTempC());
-		ws.setMinTempNotify(ts_table.getMinTempC());
+		ws.setDewPointTempNotify(ts_table.dew_point_temp.toInteger());
+		ws.setMaxTempNotify(ts_table.max_air_temp.toInteger());
+		ws.setMinTempNotify(ts_table.min_air_temp.toInteger());
 		// Air temperature is assumed to be the first sensor
 		// in the table.  Additional sensors are ignored.
 		TemperatureSensorsTable.Row row = ts_table.getRow(1);
@@ -78,10 +74,10 @@ public class EssRec {
 
 	/** Store precipitation samples */
 	private void storePrecip(WeatherSensorImpl ws) {
-		ws.setWaterDepthNotify(precip_values.getWaterDepth());
+		ws.setWaterDepthNotify(precip_values.water_depth.toInteger());
 		ws.setHumidityNotify(precip_values.relative_humidity.toInteger());
-		ws.setPrecipRateNotify(precip_values.getPrecipRate());
-		ws.setPrecipOneHourNotify(precip_values.getPrecip1Hour());
+		ws.setPrecipRateNotify(precip_values.precip_rate.toInteger());
+		ws.setPrecipOneHourNotify(precip_values.precip_1_hour.toInteger());
 		PrecipSituation ps = precip_values.getPrecipSituation();
 		ws.setPrecipSituationNotify((ps != null) ? ps.ordinal() : null);
 	}

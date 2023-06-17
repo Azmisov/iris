@@ -64,15 +64,15 @@ public class OpSendLCSIndications extends OpLCS {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<DinRelayProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new CreateOutletCommands();
 	}
 
 	/** Phase to create operations to command outlet status */
-	private class CreateOutletCommands extends Phase<DinRelayProperty> {
+	private class CreateOutletCommands extends Phase {
 
 		/** Create the outlet query operations */
-		protected Phase<DinRelayProperty> poll(
+		protected Phase poll(
 			CommMessage<DinRelayProperty> mess)
 		{
 			Iterator<ControllerImpl> it = controllers.iterator();

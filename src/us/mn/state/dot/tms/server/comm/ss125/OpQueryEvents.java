@@ -43,15 +43,15 @@ public class OpQueryEvents extends OpSS125 {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<SS125Property> phaseOne() {
+	protected Phase phaseOne() {
 		return new GetActiveEvent();
 	}
 
 	/** Phase to get the active event */
-	private class GetActiveEvent extends Phase<SS125Property> {
+	private class GetActiveEvent extends Phase {
 
 		/** Get the active event data */
-		protected Phase<SS125Property> poll(
+		protected Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			ActiveEventProperty ev = new ActiveEventProperty();
@@ -76,10 +76,10 @@ public class OpQueryEvents extends OpSS125 {
 	}
 
 	/** Phase to send the date and time */
-	private class SendDateTime extends Phase<SS125Property> {
+	private class SendDateTime extends Phase {
 
 		/** Send the date and time */
-		protected Phase<SS125Property> poll(
+		protected Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			DateTimeProperty date_time = new DateTimeProperty();
@@ -90,10 +90,10 @@ public class OpQueryEvents extends OpSS125 {
 	}
 
 	/** Phase to clear the event FIFO */
-	private class ClearEvents extends Phase<SS125Property> {
+	private class ClearEvents extends Phase {
 
 		/** Clear the event FIFO */
-		protected Phase<SS125Property> poll(
+		protected Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			ClearEventsProperty clear = new ClearEventsProperty();

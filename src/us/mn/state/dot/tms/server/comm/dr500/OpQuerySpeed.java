@@ -47,15 +47,15 @@ public class OpQuerySpeed extends OpDR500 {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<DR500Property> phaseOne() {
+	protected Phase phaseOne() {
 		return new GetAvgSpeed();
 	}
 
 	/** Phase to get the average speed */
-	private class GetAvgSpeed extends Phase<DR500Property> {
+	private class GetAvgSpeed extends Phase {
 
 		/** Get the average speed */
-		protected Phase<DR500Property> poll(
+		protected Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			stamp = TimeSteward.currentTimeMillis();

@@ -6,11 +6,13 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
  * chose whether to eagerly compute the output type, or do the conversion lazily
  * on-the-fly. Default max fractional digits for Strings is 8.
  *
+ * @param <U> enum type containing the units for the converted type
+ * 
  * @author Isaac Nygaard
  * @copyright 2023 Iteris, Inc
  * @license GPL-2.0
  */
-public class EssUnits<C,U> extends EssConverter<C>{
+public class EssUnits<C, U extends Enum<U>> extends EssInteger<C>{
     public int digits = 8;
     public double src_scale, out_scale;
     public U src_units, out_units;

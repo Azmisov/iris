@@ -44,15 +44,15 @@ public class OpPerVehicle extends OpG4 {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<G4Property> phaseOne() {
+	protected Phase phaseOne() {
 		return new VehicleEvent();
 	}
 
 	/** Phase to get a vehicle event */
-	private class VehicleEvent extends Phase<G4Property> {
+	private class VehicleEvent extends Phase {
 
 		/** Get a vehicle event */
-		protected Phase<G4Property> poll(CommMessage<G4Property> mess)
+		protected Phase poll(CommMessage<G4Property> mess)
 			throws IOException
 		{
 			VehicleEventProperty ev = new VehicleEventProperty();
@@ -74,10 +74,10 @@ public class OpPerVehicle extends OpG4 {
 	}
 
 	/** Phase to set the clock */
-	private class StoreRTC extends Phase<G4Property> {
+	private class StoreRTC extends Phase {
 
 		/** Set the clock */
-		protected Phase<G4Property> poll(
+		protected Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			RTCProperty rtc = new RTCProperty();

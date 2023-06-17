@@ -1,7 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2005-2017  Minnesota Department of Transportation
- * Copyright (C) 2012  Iteris Inc.
+ * Copyright (C) 2012-2023  Iteris Inc.
  * Copyright (C) 2014-2015  AHMCT, University of California
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@ import us.mn.state.dot.tms.utils.SString;
  * An operation is a sequence of phases to be performed on a field controller.
  *
  * @author Douglas Lau
- * @author Michael Darter
+ * @author Michael Darter, Isaac Nygaard
  * @author Travis Swanston
  */
 abstract public class OpController<T extends ControllerProperty> {
@@ -56,16 +56,46 @@ abstract public class OpController<T extends ControllerProperty> {
 	}
 
 	/** Base class for operation phases */
-	abstract protected class Phase<T extends ControllerProperty> {
+	abstract protected class Phase {
 
 		/** Perform a poll.
 		 * @return The next phase of the operation, or null */
-		abstract protected Phase<T> poll(CommMessage<T> mess)
+		abstract protected Phase poll(CommMessage<T> mess)
 			throws IOException, DeviceContentionException;
 	}
 
+	/** Lambda interface, which can eventually replace Phase. Will compile down
+	 * to the same thing, but much less verbose. Use this to perform a poll.
+	 * Return the next phase of the operation as another lambda.
+	 */
+	protected interface PollLambda<K extends ControllerProperty>{
+		PollLambda<K> operation(CommMessage<K> mess) throws IOException, DeviceContentionException;
+	}
+
+	/** This is for backwards compatibility with the consumers that expect to
+	 * receive a Phase object, before PollLambda has completely replaced it.
+	 * It is a lightweight wrapper you should return from the first poll operation
+	 * you wish to use lambdas. All subsequent poll phases need to also use
+	 * a lambda.
+	 */
+	protected class PhaseLambda<L extends PollLambda<T>> extends Phase{
+		private L lambda;
+		// Set initial lambda to be run
+		PhaseLambda(L lambda){
+			this.lambda = lambda;
+		}
+		@SuppressWarnings("unchecked")
+		protected Phase poll(CommMessage<T> mess)
+			throws IOException, DeviceContentionException
+		{
+			// reuse the wrapper for next phase
+			lambda = (L) lambda.operation(mess);
+			return lambda == null ? null : this;
+		}		
+	}
+
 	/** Current phase of the operation, or null if done */
-	private Phase<T> phase;
+	private Phase phase;
 
 	/** Begin the operation.  The operation begins when it is queued for
 	 * processing. */
@@ -76,7 +106,7 @@ abstract public class OpController<T extends ControllerProperty> {
 	/** Create the first phase of the operation.  This method cannot be
 	 * called in the Operation constructor, because the object may not
 	 * have been fully constructed yet (subclass initialization). */
-	abstract protected Phase<T> phaseOne();
+	abstract protected Phase phaseOne();
 
 	/** Priority of the operation */
 	private PriorityLevel priority;
@@ -184,7 +214,7 @@ abstract public class OpController<T extends ControllerProperty> {
 
 	/** Get the phase class */
 	private Class phaseClass() {
-		Phase<T> p = phase;
+		Phase p = phase;
 		return (p != null) ? p.getClass() : getClass();
 	}
 
@@ -203,13 +233,13 @@ abstract public class OpController<T extends ControllerProperty> {
 	public final void poll(CommMessage<T> mess) throws IOException,
 		DeviceContentionException
 	{
-		Phase<T> p = phase;
+		Phase p = phase;
 		if (p != null)
 			updatePhase(p.poll(mess));
 	}
 
 	/** Update the phase of the operation */
-	private synchronized void updatePhase(Phase<T> p) {
+	private synchronized void updatePhase(Phase p) {
 		// Need to synchronize against setFailed / setSucceeded
 		if (!isDone())
 			phase = p;

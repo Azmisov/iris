@@ -39,17 +39,17 @@ public class OpQueryBeaconState extends OpNdotBeacon<NdotBeaconProperty> {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<NdotBeaconProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new QueryStatus();
 	}
 
 	/** Phase to query the gate status */
-	protected class QueryStatus extends Phase<NdotBeaconProperty> {
+	protected class QueryStatus extends Phase {
 
 		int failCount = 0;
 
 		/** Query the status */
-		protected Phase<NdotBeaconProperty> poll(CommMessage<NdotBeaconProperty> mess)
+		protected Phase poll(CommMessage<NdotBeaconProperty> mess)
 			throws IOException
 		{
 			mess.add(prop);

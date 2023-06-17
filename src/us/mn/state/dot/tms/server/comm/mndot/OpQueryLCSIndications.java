@@ -44,15 +44,15 @@ public class OpQueryLCSIndications extends OpLCS {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<MndotProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new QueryStatus();
 	}
 
 	/** Phase to query the LCS status */
-	protected class QueryStatus extends Phase<MndotProperty> {
+	protected class QueryStatus extends Phase {
 
 		/** Query the status */
-		protected Phase<MndotProperty> poll(
+		protected Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty prop = new MemoryProperty(
@@ -67,10 +67,10 @@ public class OpQueryLCSIndications extends OpLCS {
 	}
 
 	/** Phase to query the LCS special function outputs */
-	protected class QueryOutputs extends Phase<MndotProperty> {
+	protected class QueryOutputs extends Phase {
 
 		/** Query the outputs */
-		protected Phase<MndotProperty> poll(
+		protected Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty prop = new MemoryProperty(

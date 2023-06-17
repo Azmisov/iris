@@ -1,8 +1,6 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.server.comm.snmp.DisplayString;
-import us.mn.state.dot.tms.utils.Json;
 import us.mn.state.dot.tms.server.comm.ntcip.EssValues;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceSensorError;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceType;
@@ -31,7 +29,7 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 	static public class Row extends EssValues{
 		/** Row/sensor number */
 		public final int number;
-		public final DisplayString location;
+		public final EssString location;
 		/** Subsurface type enum */
 		public final EssEnum<SubSurfaceType> sub_surface_type;
 		/** Subsurface depth in meters */
@@ -46,8 +44,8 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 		/** Create a table row */
 		private Row(int row) {
 			number = row;
-			location = new DisplayString(
-				essSubSurfaceSensorLocation.node, row);
+			location =
+				new EssString("location", essSubSurfaceSensorLocation, row);
 			sub_surface_type =
 				new EssEnum<SubSurfaceType>("sub_surface_type", essSubSurfaceType, row);
 			depth = 
@@ -64,8 +62,7 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 
 		/** Get the sensor location */
 		public String getSensorLocation() {
-			String sl = location.getValue();
-			return (sl.length() > 0) ? sl : null;
+			return location.get();
 		}
 
 		/** Get sub-surface type or null on error */
@@ -90,7 +87,7 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 		public String toJson() {
 			StringBuilder sb = new StringBuilder();
 			sb.append('{');
-			sb.append(Json.str("location", getSensorLocation()));
+			sb.append(location.toJson());
 			sb.append(sub_surface_type.toJson());
 			sb.append(depth.toJson());
 			sb.append(temp.toJson());

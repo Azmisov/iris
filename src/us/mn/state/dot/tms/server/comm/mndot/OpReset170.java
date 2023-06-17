@@ -33,15 +33,15 @@ public class OpReset170 extends Op170 {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<MndotProperty> phaseOne() {
+	protected Phase phaseOne() {
 		return new ResetDetectors();
 	}
 
 	/** Phase to reset the detectors */
-	protected class ResetDetectors extends Phase<MndotProperty> {
+	protected class ResetDetectors extends Phase {
 
 		/** Reset the detectors */
-		protected Phase<MndotProperty> poll(
+		protected Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			// Enabling the detector-reset pin can cause some
@@ -58,10 +58,10 @@ public class OpReset170 extends Op170 {
 	}
 
 	/** Phase to clear the detector reset */
-	protected class ClearDetectors extends Phase<MndotProperty> {
+	protected class ClearDetectors extends Phase {
 
 		/** Clear the detector reset */
-		protected Phase<MndotProperty> poll(
+		protected Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] data = new byte[1];
@@ -74,10 +74,10 @@ public class OpReset170 extends Op170 {
 	}
 
 	/** Phase to restart the controller */
-	protected class Level1Restart extends Phase<MndotProperty> {
+	protected class Level1Restart extends Phase {
 
 		/** Restart the controller */
-		protected Phase<MndotProperty> poll(
+		protected Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			mess.add(new Level1Property());

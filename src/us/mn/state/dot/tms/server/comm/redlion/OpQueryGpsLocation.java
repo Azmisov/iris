@@ -56,15 +56,15 @@ public class OpQueryGpsLocation extends OpDevice<RedLionProperty> {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<RedLionProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new QueryGPS();
 	}
 
 	/** Phase to send GPS location-query command */
-	private class QueryGPS extends Phase<RedLionProperty> {
+	private class QueryGPS extends Phase {
 
 		/** Add the RedLionProperty cmd to the outbound message */
-		protected Phase<RedLionProperty> poll(
+		protected Phase poll(
 			CommMessage<RedLionProperty> mess) throws IOException
 		{
 			mess.add(prop);

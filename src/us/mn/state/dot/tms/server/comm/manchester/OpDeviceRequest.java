@@ -66,13 +66,13 @@ public class OpDeviceRequest extends OpManchester {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<ManchesterProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return (prop != null) ? new DeviceRequestPhase() : null;
 	}
 
 	/** Phase to make device request */
-	protected class DeviceRequestPhase extends Phase<ManchesterProperty> {
-		protected Phase<ManchesterProperty> poll(
+	protected class DeviceRequestPhase extends Phase {
+		protected Phase poll(
 			CommMessage<ManchesterProperty> mess) throws IOException
 		{
 			mess.add(prop);
@@ -82,7 +82,7 @@ public class OpDeviceRequest extends OpManchester {
 	}
 
 	/** Phase to power device back on */
-	protected class PowerOnPhase extends Phase<ManchesterProperty> {
+	protected class PowerOnPhase extends Phase {
 
 		/** Power on property */
 		private final AuxProperty p = new AuxProperty(4);
@@ -91,7 +91,7 @@ public class OpDeviceRequest extends OpManchester {
 		private int n_sent = 0;
 
 		/** Set power-on property */
-		protected Phase<ManchesterProperty> poll(
+		protected Phase poll(
 			CommMessage<ManchesterProperty> mess) throws IOException
 		{
 			if (n_sent > 0)

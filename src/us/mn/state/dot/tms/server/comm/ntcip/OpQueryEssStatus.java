@@ -20,20 +20,19 @@ import us.mn.state.dot.tms.server.WeatherSensorImpl;
 import us.mn.state.dot.tms.server.comm.CommMessage;
 import us.mn.state.dot.tms.server.comm.PriorityLevel;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssRec;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssNumber;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssConvertible;
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.essMobileFriction;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PercentObject;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.TemperatureSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.WindSensorsTable;
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PavementSensorError;
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
-import us.mn.state.dot.tms.server.comm.snmp.NoSuchName;
+import us.mn.state.dot.tms.server.comm.snmp.ASN1Object;
 
 /**
  * Operation to query the status of a weather sensor.
  *
- * @author Michael Darter
+ * @author Michael Darter, Isaac Nygaard
  * @author Douglas Lau
  */
 public class OpQueryEssStatus extends OpEss {
@@ -72,16 +71,14 @@ public class OpQueryEssStatus extends OpEss {
 	/** Phase to query atmospheric pressure */
 	protected class QueryPressure extends Phase {
 
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(ess_rec.atmospheric_values.atmospheric_pressure);
-			// also query pressure height (which depends on reference height)
-			mess.add(ess_rec.atmospheric_values.reference_elevation);
-			mess.add(ess_rec.atmospheric_values.pressure_sensor_height.node);
-			mess.queryProps();
-			logQuery(ess_rec.atmospheric_values.atmospheric_pressure);
-			logQuery(ess_rec.atmospheric_values.reference_elevation);
-			logQuery(ess_rec.atmospheric_values.pressure_sensor_height.node);
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			var A = ess_rec.atmospheric_values;
+			queryMany(mess, new EssConvertible[]{
+				A.atmospheric_pressure,
+				// also query pressure height (which depends on reference height)
+				A.reference_elevation,
+				A.pressure_sensor_height		
+			});
 			return new QueryVisibility();
 		}
 	}
@@ -89,20 +86,13 @@ public class OpQueryEssStatus extends OpEss {
 	/** Phase to query visibility */
 	protected class QueryVisibility extends Phase {
 
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(ess_rec.atmospheric_values.visibility);
-			mess.add(ess_rec.atmospheric_values.visibility_situation);
-			try {
-				mess.queryProps();
-				logQuery(ess_rec.atmospheric_values.visibility);
-				logQuery(ess_rec.atmospheric_values.visibility_situation);
-				log("   essVisibilitySituation=" + 
-					ess_rec.atmospheric_values.getVisibilitySituation());
-			}
-			catch (NoSuchName e) {
-				// Note: some vendors do not support these
-			}
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			var A = ess_rec.atmospheric_values;
+			queryMany(mess, new EssConvertible[]{
+				A.visibility,
+				A.visibility_situation
+			});
+			log("   essVisibilitySituation=" + A.visibility_situation);
 			return queryWindSensors();
 		}
 	}
@@ -122,20 +112,16 @@ public class OpQueryEssStatus extends OpEss {
 	protected class QueryWindSensorsV2 extends Phase {
 
 		/** Query values */
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			try {
-				mess.add(ws_table.num_sensors);
-				mess.queryProps();
-				logQuery(ws_table.num_sensors);
-				return ws_table.isDone()
-				      ? new QueryTemperatureSensors()
-				      : new QueryWindTableV2();
-			}
-			catch (NoSuchName e) {
-				// Note: this object was introduced in V2
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			var err = queryMany(mess, new EssConvertible[]{
+				ws_table.num_sensors
+			});
+			// Note: this object was introduced in V2
+			if (err != null)
 				return new QueryWindSensorV1();
-			}
+			return ws_table.isDone()
+				? new QueryTemperatureSensors()
+				: new QueryWindTableV2();
 		}
 	}
 
@@ -144,31 +130,20 @@ public class OpQueryEssStatus extends OpEss {
 		private final WindSensorsTable.Row tr = ws_table.addRow();
 
 		/** Query values */
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(tr.avg_speed.node);
-			mess.add(tr.avg_direction.node);
-			mess.add(tr.spot_speed.node);
-			mess.add(tr.spot_direction.node);
-			mess.add(tr.gust_speed.node);
-			mess.add(tr.gust_direction.node);
-			try {
-				mess.queryProps();
-			}
-			catch (NoSuchName e) {
-				// Some controllers sometimes seem to randomly
-				// forget what windSensorGustDirection is
-				return new QueryTemperatureSensors();
-			}
-			logQuery(tr.avg_speed.node);
-			logQuery(tr.avg_direction.node);
-			logQuery(tr.spot_speed.node);
-			logQuery(tr.spot_direction.node);
-			logQuery(tr.gust_speed.node);
-			logQuery(tr.gust_direction.node);
-			return ws_table.isDone()
-			      ? new QueryTemperatureSensors()
-			      : new QueryWindSensorsV2();
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			var err = queryMany(mess, new EssConvertible[]{
+				tr.avg_speed,
+				tr.avg_direction,
+				tr.spot_speed,
+				tr.spot_direction,
+				tr.gust_speed,
+				tr.gust_direction
+			});
+			// Some controllers sometimes seem to randomly
+			// forget what windSensorGustDirection is
+			return (err != null || ws_table.isDone())
+				? new QueryTemperatureSensors()
+				: new QueryWindSensorsV2();
 		}
 	}
 
@@ -176,27 +151,16 @@ public class OpQueryEssStatus extends OpEss {
 	protected class QueryWindSensorV1 extends Phase {
 
 		/** Query values */
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(ws_table.avg_direction.node);
-			mess.add(ws_table.avg_speed.node);
-			mess.add(ws_table.spot_direction.node);
-			mess.add(ws_table.spot_speed.node);
-			mess.add(ws_table.gust_direction.node);
-			mess.add(ws_table.gust_speed.node);
-			try {
-				mess.queryProps();
-			}
-			catch (NoSuchName e) {
-				// Note: these objects are deprecated in V2
-				return new QueryTemperatureSensors();
-			}
-			logQuery(ws_table.avg_direction.node);
-			logQuery(ws_table.avg_speed.node);
-			logQuery(ws_table.spot_direction.node);
-			logQuery(ws_table.spot_speed.node);
-			logQuery(ws_table.gust_direction.node);
-			logQuery(ws_table.gust_speed.node);
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			queryMany(mess, new EssConvertible[]{
+				ws_table.avg_direction,
+				ws_table.avg_speed,
+				ws_table.spot_direction,
+				ws_table.spot_speed,
+				ws_table.gust_direction,
+				ws_table.gust_speed
+			});
+			// Note: for errors, these objects are deprecated in V2
 			return new QueryTemperatureSensors();
 		}
 	}
@@ -205,19 +169,14 @@ public class OpQueryEssStatus extends OpEss {
 	protected class QueryTemperatureSensors extends Phase {
 
 		/** Query values */
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(ts_table.num_temp_sensors);
-			mess.add(ts_table.wet_bulb_temp.node);
-			mess.add(ts_table.dew_point_temp.node);
-			mess.add(ts_table.max_air_temp.node);
-			mess.add(ts_table.min_air_temp.node);
-			mess.queryProps();
-			logQuery(ts_table.num_temp_sensors);
-			logQuery(ts_table.wet_bulb_temp.node);
-			logQuery(ts_table.dew_point_temp.node);
-			logQuery(ts_table.max_air_temp.node);
-			logQuery(ts_table.min_air_temp.node);
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			queryMany(mess, new EssConvertible[]{
+				ts_table.num_temp_sensors,
+				ts_table.wet_bulb_temp,
+				ts_table.dew_point_temp,
+				ts_table.max_air_temp,
+				ts_table.min_air_temp
+			});
 			return ts_table.isDone()
 			      ? new QueryPrecipitation()
 			      : new QueryTemperatureTable();
@@ -230,18 +189,14 @@ public class OpQueryEssStatus extends OpEss {
 			ts_table.addRow();
 
 		/** Query values */
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(tr.air_temp.node);
-			try {
-				mess.queryProps();
-			}
-			catch (NoSuchName e) {
-				// Some controllers sometimes seem to randomly
-				// forget what essAirTemperature is
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			var err = queryMany(mess, new EssConvertible[]{
+				tr.air_temp
+			});
+			// Some controllers sometimes seem to randomly
+			// forget what essAirTemperature is
+			if (err != null)
 				return new QueryPrecipitation();
-			}
-			logQuery(tr.air_temp.node);
 			if (ts_table.isDone()){
 				log(" ts_table=" + ts_table);
 				return new QueryPrecipitation();
@@ -254,32 +209,23 @@ public class OpQueryEssStatus extends OpEss {
 	protected class QueryPrecipitation extends Phase {
 
 		/** Query values */
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
 			// essWaterDepth is V1 NTCIP only and was replaced
 			// subsequently with the water level sensor table, but
 			// may be supported by RWIS for compatibility.
-			mess.add(ess_rec.precip_values.water_depth);
-			mess.add(ess_rec.precip_values.relative_humidity.node);
-			mess.add(ess_rec.precip_values.precip_rate);
-			mess.add(ess_rec.precip_values.precip_1_hour);
-			mess.add(ess_rec.precip_values.precip_3_hours);
-			mess.add(ess_rec.precip_values.precip_6_hours);
-			mess.add(ess_rec.precip_values.precip_12_hours);
-			mess.add(ess_rec.precip_values.precip_24_hours);
-			mess.add(ess_rec.precip_values.precip_situation);
-			mess.queryProps();
-			logQuery(ess_rec.precip_values.water_depth);
-			logQuery(ess_rec.precip_values.relative_humidity.node);
-			logQuery(ess_rec.precip_values.precip_rate);
-			logQuery(ess_rec.precip_values.precip_1_hour);
-			logQuery(ess_rec.precip_values.precip_3_hours);
-			logQuery(ess_rec.precip_values.precip_6_hours);
-			logQuery(ess_rec.precip_values.precip_12_hours);
-			logQuery(ess_rec.precip_values.precip_24_hours);
-			logQuery(ess_rec.precip_values.precip_situation);
-			log("   essPrecipSituation=" +
-				ess_rec.precip_values.getPrecipSituation());
+			var P = ess_rec.precip_values;
+			queryMany(mess, new EssConvertible[]{
+				P.water_depth,
+				P.relative_humidity,
+				P.precip_rate,
+				P.precip_1_hour,
+				P.precip_3_hours,
+				P.precip_6_hours,
+				P.precip_12_hours,
+				P.precip_24_hours,
+				P.precip_situation
+			});
+			log("   essPrecipSituation=" + P.precip_situation);
 			return new QueryPavement();
 		}
 	}
@@ -288,11 +234,10 @@ public class OpQueryEssStatus extends OpEss {
 	protected class QueryPavement extends Phase {
 
 		/** Query values */
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(ps_table.num_sensors);
-			mess.queryProps();
-			logQuery(ps_table.num_sensors);
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			queryMany(mess, new EssConvertible[]{
+				ps_table.num_sensors
+			});
 			return nextPavementRow();
 		}
 	}
@@ -309,29 +254,19 @@ public class OpQueryEssStatus extends OpEss {
 		private final PavementSensorsTable.Row pr =
 			ps_table.addRow();
 
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(pr.surface_status);
-			mess.add(pr.surface_temp.node);
-			mess.add(pr.pavement_temp.node);
-			mess.add(pr.water_depth);
-			mess.add(pr.freeze_point.node);
-			mess.add(pr.sensor_error);
-			mess.add(pr.salinity);
-			mess.add(pr.black_ice_signal);
-			mess.queryProps();
-			logQuery(pr.surface_status);
-			log("   PavementSurfaceStatus=" + 
-				SurfaceStatus.fromOrdinal(pr.surface_status.getInteger()));
-			logQuery(pr.surface_temp.node);
-			logQuery(pr.pavement_temp.node);
-			logQuery(pr.water_depth);
-			logQuery(pr.freeze_point.node);
-			logQuery(pr.sensor_error);
-			log("   PavementSensorError=" + 
-				PavementSensorError.fromOrdinal(pr.sensor_error.getInteger()));
-			logQuery(pr.salinity);
-			logQuery(pr.black_ice_signal);
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			queryMany(mess, new EssConvertible[]{
+				pr.surface_status,
+				pr.surface_temp,
+				pr.pavement_temp,
+				pr.water_depth,
+				pr.freeze_point,
+				pr.sensor_error,
+				pr.salinity,
+				pr.black_ice_signal
+			});
+			log("   PavementSurfaceStatus=" + pr.surface_status);
+			log("   PavementSensorError=" + pr.sensor_error);
 			return new QueryPavementRowV2(pr);
 		}
 	}
@@ -343,20 +278,14 @@ public class OpQueryEssStatus extends OpEss {
 			pr = r;
 		}
 
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
 			// Note: this object was introduced in V2
-			mess.add(pr.ice_or_water_depth);
+			var err = queryMany(mess, new EssConvertible[]{pr.ice_or_water_depth});
 			// Note: essSurfaceConductivityV2 could be polled here
-			try {
-				mess.queryProps();
-				logQuery(pr.ice_or_water_depth);
-				return new QueryPavementRowV4(pr);
-			}
-			catch (NoSuchName e) {
-				// Fallback to V1 water depth
+			// Fallback to V1 water depth
+			if (err != null)
 				return new QueryPavementRowV1(pr);
-			}
+			return new QueryPavementRowV4(pr);
 		}
 	}
 
@@ -367,17 +296,12 @@ public class OpQueryEssStatus extends OpEss {
 			pr = r;
 		}
 
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(pr.water_depth);
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			queryMany(mess, new EssConvertible[]{
+				pr.water_depth
+			});
 			// Note: essSurfaceConductivity could be polled here
-			try {
-				mess.queryProps();
-				logQuery(pr.water_depth);
-			}
-			catch (NoSuchName e) {
-				// Note: this object was deprecated in V2
-			}
+			// Note: for errors, this object was deprecated in V2
 			return nextPavementRow();
 		}
 	}
@@ -389,20 +313,15 @@ public class OpQueryEssStatus extends OpEss {
 			pr = r;
 		}
 
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
 			// Note: this object was added in V4
-			mess.add(pr.friction.node);
-			try {
-				mess.queryProps();
-				logQuery(pr.friction.node);
-			}
-			catch (NoSuchName e) {
-				// Fallback to mobile friction (1st row only)
-				if (pr.number == 1)
-					return new QueryMobileFriction(pr);
-			}
-			return nextPavementRow();
+			var err = queryMany(mess, new EssConvertible[]{
+				pr.friction
+			});
+			// Fallback to mobile friction (1st row only)
+			return (err != null && pr.number == 1)
+				? new QueryMobileFriction(pr)
+				: nextPavementRow();
 		}
 	}
 
@@ -416,22 +335,14 @@ public class OpQueryEssStatus extends OpEss {
 			pr = r;
 		}
 
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
 			// Note: mobile friction is not part of pavement table
-			PercentObject mf = new PercentObject("friction",
-				essMobileFriction.makeInt());
-			mess.add(mf.node);
-			try {
-				mess.queryProps();
-				logQuery(mf.node);
-				pr.friction.node.setInteger(
-					mf.node.getInteger()
-				);
-			}
-			catch (NoSuchName e) {
-				// Note: some vendors do not support this object
-			}
+			// 	we're using pr.friction to hold the value though
+			var mf = EssNumber.Percent("friction", essMobileFriction);
+			var err = queryMany(mess, new EssConvertible[]{mf});
+			// Note: some vendors do not support this object
+			if (err != null)
+				pr.friction.setRawValue(mf.getRawValue());
 			return nextPavementRow();
 		}
 	}
@@ -440,11 +351,10 @@ public class OpQueryEssStatus extends OpEss {
 	protected class QuerySubSurface extends Phase {
 
 		/** Query values */
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(ss_table.num_sensors);
-			mess.queryProps();
-			logQuery(ss_table.num_sensors);
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			queryMany(mess, new EssConvertible[]{
+				ss_table.num_sensors
+			});
 			return ss_table.isDone()
 			      ? new QueryTotalSun()
 			      : new QuerySubSurfaceTable();
@@ -456,19 +366,12 @@ public class OpQueryEssStatus extends OpEss {
 		private final SubSurfaceSensorsTable.Row sr =
 			ss_table.addRow();
 
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(sr.temp.node);
-			mess.add(sr.sensor_error);
-			try {
-				mess.queryProps();
-			} catch(NoSuchName ex) {
-				// High Sierra RWIS controller generates this
-				// exception: essSubSurfaceSensorError
-				log("Caught and ignored NoSuchName: ex=" + ex);
-			}
-			logQuery(sr.temp.node);
-			logQuery(sr.sensor_error);
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			queryMany(mess, new EssConvertible[]{
+				sr.temp,
+				sr.sensor_error
+			}, true);
+			// High Sierra RWIS controller can generates err: essSubSurfaceSensorError
 			return new QuerySubSurfaceMoisture(sr);
 		}
 	}
@@ -480,16 +383,11 @@ public class OpQueryEssStatus extends OpEss {
 			sr = r;
 		}
 
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(sr.moisture.node);
-			try {
-				mess.queryProps();
-				logQuery(sr.moisture.node);
-			}
-			catch (NoSuchName e) {
-				// Note: some vendors do not support this object
-			}
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			// Note: some vendors do not support this object
+			queryMany(mess, new EssConvertible[]{
+				sr.moisture
+			});
 			return ss_table.isDone()
 			      ? new QueryTotalSun()
 			      : new QuerySubSurfaceTable();
@@ -499,16 +397,11 @@ public class OpQueryEssStatus extends OpEss {
 	/** Phase to query total sun value */
 	protected class QueryTotalSun extends Phase {
 
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(ess_rec.rad_values.total_sun);
-			try {
-				mess.queryProps();
-				logQuery(ess_rec.rad_values.total_sun);
-			}
-			catch (NoSuchName e) {
-				// Not supported by some vendors...
-			}
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			// Not supported by some vendors...
+			queryMany(mess, new EssConvertible[]{
+				ess_rec.rad_values.total_sun
+			});
 			return new QueryCloudSituation();
 		}
 	}
@@ -516,16 +409,11 @@ public class OpQueryEssStatus extends OpEss {
 	/** Phase to query cloud situation value */
 	protected class QueryCloudSituation extends Phase {
 
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(ess_rec.rad_values.cloud_situation);
-			try {
-				mess.queryProps();
-				logQuery(ess_rec.rad_values.cloud_situation);
-			}
-			catch (NoSuchName e) {
-				// Not supported by some vendors...
-			}
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			// Not supported by some vendors...
+			queryMany(mess, new EssConvertible[]{
+				ess_rec.rad_values.cloud_situation
+			});
 			return new QueryRadiationV2();
 		}
 	}
@@ -534,47 +422,27 @@ public class OpQueryEssStatus extends OpEss {
 	protected class QueryRadiationV2 extends Phase {
 
 		/** Query values */
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(ess_rec.rad_values
-				.instantaneous_terrestrial.node);
-			mess.add(ess_rec.rad_values.instantaneous_solar.node);
-			mess.add(ess_rec.rad_values.total_radiation.node);
-			mess.add(ess_rec.rad_values.total_radiation_period);
-			try {
-				mess.queryProps();
-			}
-			catch (NoSuchName e) {
-				// Note: these objects were introduced in V2
-				return new QueryRadiationV1();
-			}
-			logQuery(ess_rec.rad_values
-				.instantaneous_terrestrial.node);
-			logQuery(ess_rec.rad_values.instantaneous_solar.node);
-			logQuery(ess_rec.rad_values.total_radiation.node);
-			logQuery(ess_rec.rad_values.total_radiation_period);
-			return null;
+		protected Phase poll(CommMessage<ASN1Object> mess) throws IOException {
+			var R = ess_rec.rad_values;
+			// Note: these objects were introduced in V2
+			var err = queryMany(mess, new EssConvertible[]{
+				R.instantaneous_terrestrial,
+				R.instantaneous_solar,
+				R.total_radiation,
+				R.total_radiation_period
+			}, true);
+			return err != null ? new PhaseLambda<>(QueryRadiationV1) : null;
 		}
 	}
 
 	/** Phase to query radiation values (V1) */
-	protected class QueryRadiationV1 extends Phase {
-
-		/** Query values */
-		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
-			mess.add(ess_rec.rad_values.solar_radiation);
-			try {
-				mess.queryProps();
-			}
-			catch (NoSuchName e) {
-				// Note: this object was deprecated in V2
-				return null;
-			}
-			logQuery(ess_rec.rad_values.solar_radiation);
-			return null;
-		}
-	}
+	protected final PollLambda<ASN1Object> QueryRadiationV1 = mess -> {
+		// Note: this object was deprecated in V2
+		queryMany(mess, new EssConvertible[]{
+			ess_rec.rad_values.solar_radiation
+		});
+		return null;
+	};
 
 	/** Cleanup the operation */
 	@Override

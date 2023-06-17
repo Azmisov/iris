@@ -65,15 +65,15 @@ public class OpMoveCamera extends OpManchester {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<ManchesterProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new Move();
 	}
 
 	/** Phase to move the camera */
-	protected class Move extends Phase<ManchesterProperty> {
+	protected class Move extends Phase {
 
 		/** Command controller to move the camera */
-		protected Phase<ManchesterProperty> poll(
+		protected Phase poll(
 			CommMessage<ManchesterProperty> mess) throws IOException
 		{
 			sleepUntilReady();

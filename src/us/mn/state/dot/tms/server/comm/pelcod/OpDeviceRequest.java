@@ -83,13 +83,13 @@ public class OpDeviceRequest extends OpPelcoD {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<PelcoDProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new DeviceRequestPhase();
 	}
 
 	/** Main phase. */
-	protected class DeviceRequestPhase extends Phase<PelcoDProperty> {
-		protected Phase<PelcoDProperty> poll(
+	protected class DeviceRequestPhase extends Phase {
+		protected Phase poll(
 			CommMessage<PelcoDProperty> mess) throws IOException
 		{
 			PelcoDProperty prop = createProp(req, n_sent);

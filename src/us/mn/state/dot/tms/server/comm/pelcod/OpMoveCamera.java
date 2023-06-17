@@ -57,18 +57,18 @@ public class OpMoveCamera extends OpPelcoD {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<PelcoDProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new Move();
 	}
 
 	/** Phase to move the camera */
-	protected class Move extends Phase<PelcoDProperty> {
+	protected class Move extends Phase {
 
 		/** Number of times this request was sent */
 		private int n_sent = 0;
 
 		/** Command controller to move the camera */
-		protected Phase<PelcoDProperty> poll(
+		protected Phase poll(
 			CommMessage<PelcoDProperty> mess) throws IOException
 		{
 			mess.add(prop);

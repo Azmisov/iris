@@ -45,15 +45,15 @@ public class OpQueryConfig extends OpCanoga {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<CanogaProperty> phaseOne() {
+	protected Phase phaseOne() {
 		return new QuerySerialNumber();
 	}
 
 	/** Phase to query the serial number */
-	protected class QuerySerialNumber extends Phase<CanogaProperty> {
+	protected class QuerySerialNumber extends Phase {
 
 		/** Query the serial number */
-		protected Phase<CanogaProperty> poll(
+		protected Phase poll(
 			CommMessage<CanogaProperty> mess) throws IOException
 		{
 			mess.add(serial_number);
@@ -63,10 +63,10 @@ public class OpQueryConfig extends OpCanoga {
 	}
 
 	/** Phase to query the firmware version */
-	protected class QueryVersion extends Phase<CanogaProperty> {
+	protected class QueryVersion extends Phase {
 
 		/** Query the firmware version */
-		protected Phase<CanogaProperty> poll(
+		protected Phase poll(
 			CommMessage<CanogaProperty> mess) throws IOException
 		{
 			mess.add(version);

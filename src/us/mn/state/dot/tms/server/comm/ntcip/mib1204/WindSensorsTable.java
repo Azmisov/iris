@@ -1,9 +1,9 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.utils.Json;
 import us.mn.state.dot.tms.server.comm.ntcip.EssValues;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.WindSituation;
+import static us.mn.state.dot.tms.units.Speed.Units.*;
 
 /**
  * Wind sensors data table, where each table row contains data read from a
@@ -117,34 +117,38 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 		return new Row(row_num);
 	}
 
+	// TODO: so Json was previously specified to use m/s, but the storage
+	// in WeatherSensorImpl is km/h; I'm leaving as is, but think we should
+	// settle on a single unit to use for both
+
 	/** Get two minute average wind speed */
-	public EssSpeed getAvgSpeed() {
-		return fallback(r -> r.avg_speed, avg_speed);
+	public Integer getAvgSpeed() {
+		return fallback(r -> r.avg_speed, avg_speed).get(v -> v.round(KPH));
 	}
 
 	/** Get two minute average wind direction */
-	public EssAngle getAvgDir() {
-		return fallback(r -> r.avg_direction, avg_direction);
+	public Integer getAvgDir() {
+		return fallback(r -> r.avg_direction, avg_direction).toInteger();
 	}
 
 	/** Get spot wind speed */
-	public EssSpeed getSpotSpeed() {
-		return fallback(r -> r.spot_speed, spot_speed);
+	public Integer getSpotSpeed() {
+		return fallback(r -> r.spot_speed, spot_speed).get(v -> v.round(KPH));
 	}
 
 	/** Get spot wind direction */
-	public EssAngle getSpotDir() {
-		return fallback(r -> r.spot_direction, spot_direction);
+	public Integer getSpotDir() {
+		return fallback(r -> r.spot_direction, spot_direction).toInteger();
 	}
 
 	/** Get ten minute max gust wind speed */
-	public EssSpeed getGustSpeed() {
-		return fallback(r -> r.gust_speed, gust_speed);
+	public Integer getGustSpeed() {
+		return fallback(r -> r.gust_speed, gust_speed).get(v -> v.round(KPH));
 	}
 
 	/** Get ten minute max gust wind direction */
-	public EssAngle getGustDir() {
-		return fallback(r -> r.gust_direction, gust_direction);
+	public Integer getGustDir() {
+		return fallback(r -> r.gust_direction, gust_direction).toInteger();
 	}
 
 	/** Get JSON representation */

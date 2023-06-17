@@ -33,15 +33,15 @@ public class OpTest170 extends Op170 {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<MndotProperty> phaseOne() {
+	protected Phase phaseOne() {
 		return new TestCommunication();
 	}
 
 	/** Phase to test communication */
-	protected class TestCommunication extends Phase<MndotProperty> {
+	protected class TestCommunication extends Phase {
 
 		/** Test communication */
-		protected Phase<MndotProperty> poll(
+		protected Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] data = new byte[123];

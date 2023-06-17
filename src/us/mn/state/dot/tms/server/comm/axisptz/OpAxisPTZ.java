@@ -43,13 +43,13 @@ public class OpAxisPTZ extends OpDevice<AxisProp> {
 	}
 
 	/** Create the second phase of the operation */
-	protected Phase<AxisProp> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new SendProp();
 	}
 
 	/** Send property */
-	private class SendProp extends Phase<AxisProp> {
-		protected Phase<AxisProp> poll(CommMessage<AxisProp> mess)
+	private class SendProp extends Phase {
+		protected Phase poll(CommMessage<AxisProp> mess)
 			throws IOException
 		{
 			mess.add(prop);

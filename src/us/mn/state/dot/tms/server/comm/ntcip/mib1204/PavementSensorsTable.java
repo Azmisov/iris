@@ -16,7 +16,6 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.server.comm.snmp.DisplayString;
 import us.mn.state.dot.tms.units.Distance;
 import static us.mn.state.dot.tms.units.Distance.Units.*;
 import us.mn.state.dot.tms.utils.Json;
@@ -47,7 +46,7 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 	static public class Row extends EssValues {
 		/** Row/sensor number */
 		public final int number;
-		public final DisplayString location;
+		public final EssString location;
 		/** Pavement type enum */
 		public final EssEnum<PavementType> pavement_type;
 		public final EssDistance height;
@@ -85,7 +84,8 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 		/** Create a table row */
 		private Row(int row) {
 			number = row;
-			location = new DisplayString(essPavementSensorLocation.node, row);
+			location =
+				new EssString("location", essPavementSensorLocation, row);
 			pavement_type =
 				new EssEnum<PavementType>("pavement_type", essPavementType, row);
 			height =
@@ -135,8 +135,7 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 
 		/** Get the sensor location */
 		public String getSensorLocation() {
-			String sl = location.getValue();
-			return (sl.length() > 0) ? sl : null;
+			return location.get();
 		}
 
 		/** Get pavement type or null on error */
@@ -229,7 +228,7 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 		public String toJson() {
 			StringBuilder sb = new StringBuilder();
 			sb.append('{');
-			sb.append(Json.str("location", getSensorLocation()));
+			sb.append(location.toJson());
 			sb.append(pavement_type.toJson());
 			sb.append(height.toJson());
 			sb.append(exposure.toJson());

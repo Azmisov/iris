@@ -37,15 +37,15 @@ public class OpQueryOutlets extends OpDinRelay {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<DinRelayProperty> phaseOne() {
+	protected Phase phaseOne() {
 		return new QueryOutlets();
 	}
 
 	/** Phase to query the DIN relay outlet status */
-	private class QueryOutlets extends Phase<DinRelayProperty> {
+	private class QueryOutlets extends Phase {
 
 		/** Query the outlet status */
-		protected Phase<DinRelayProperty> poll(
+		protected Phase poll(
 			CommMessage<DinRelayProperty> mess) throws IOException
 		{
 			mess.add(property);

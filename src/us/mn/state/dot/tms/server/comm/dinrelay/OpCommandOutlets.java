@@ -43,15 +43,15 @@ public class OpCommandOutlets extends OpDinRelay {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<DinRelayProperty> phaseOne() {
+	protected Phase phaseOne() {
 		return new QueryOutlets();
 	}
 
 	/** Phase to query the DIN relay outlet status */
-	private class QueryOutlets extends Phase<DinRelayProperty> {
+	private class QueryOutlets extends Phase {
 
 		/** Query the outlet status */
-		protected Phase<DinRelayProperty> poll(
+		protected Phase poll(
 			CommMessage<DinRelayProperty> mess) throws IOException
 		{
 			mess.add(property);
@@ -61,13 +61,13 @@ public class OpCommandOutlets extends OpDinRelay {
 	}
 
 	/** Turn off outlets which are commanded OFF */
-	private class TurnOffOutlets extends Phase<DinRelayProperty> {
+	private class TurnOffOutlets extends Phase {
 
 		/** Current outlet number */
 		private int o_num = 0;
 
 		/** Command next outlet OFF */
-		protected Phase<DinRelayProperty> poll(
+		protected Phase poll(
 			CommMessage<DinRelayProperty> mess) throws IOException
 		{
 			CommandProperty prop;
@@ -95,13 +95,13 @@ public class OpCommandOutlets extends OpDinRelay {
 	}
 
 	/** Turn on outlets which are commanded ON */
-	private class TurnOnOutlets extends Phase<DinRelayProperty> {
+	private class TurnOnOutlets extends Phase {
 
 		/** Current outlet number */
 		private int o_num = 0;
 
 		/** Command next outlet ON */
-		protected Phase<DinRelayProperty> poll(
+		protected Phase poll(
 			CommMessage<DinRelayProperty> mess) throws IOException
 		{
 			CommandProperty prop;

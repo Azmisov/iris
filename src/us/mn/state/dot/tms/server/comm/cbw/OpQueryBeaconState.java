@@ -46,15 +46,15 @@ public class OpQueryBeaconState extends OpDevice<CBWProperty> {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<CBWProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new QueryBeacon();
 	}
 
 	/** Phase to query the beacon status */
-	private class QueryBeacon extends Phase<CBWProperty> {
+	private class QueryBeacon extends Phase {
 
 		/** Query the beacon status */
-		protected Phase<CBWProperty> poll(
+		protected Phase poll(
 			CommMessage<CBWProperty> mess) throws IOException
 		{
 			mess.add(prop);

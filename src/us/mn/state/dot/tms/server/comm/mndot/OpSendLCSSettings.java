@@ -33,7 +33,7 @@ public class OpSendLCSSettings extends OpLCS {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<MndotProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		SignConfigImpl sc = SignConfigImpl.findOrCreateLCS();
 		if (sc != null) {
 			for (DMSImpl dms: dmss) {

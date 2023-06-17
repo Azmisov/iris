@@ -43,15 +43,15 @@ public class OpPreset extends OpPelcoD {
 	}
 
 	/** Create the second phase of the operation */
-	protected Phase<PelcoDProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new CommandPreset();
 	}
 
 	/** Phase to recall or store a camera preset */
-	protected class CommandPreset extends Phase<PelcoDProperty> {
+	protected class CommandPreset extends Phase {
 
 		/** Command controller to recall or store a preset */
-		protected Phase<PelcoDProperty> poll(
+		protected Phase poll(
 			CommMessage<PelcoDProperty> mess) throws IOException
 		{
 			mess.add(prop);

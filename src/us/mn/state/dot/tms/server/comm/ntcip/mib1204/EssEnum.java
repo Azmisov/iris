@@ -5,13 +5,14 @@ import java.lang.reflect.ParameterizedType;
 import us.mn.state.dot.tms.utils.Json;
 
 /** Converts {@link MIB1204} raw types to a generic enum type. The enum
- * should implement {@link EssEnumType}
+ * should implement {@link EssEnumType}. A value that doesn't pass
+ * {@link EssEnumType#isValid} will be set to null.
  * 
  * @author Isaac Nygaard
  * @copyright 2023 Iteris, Inc
  * @license GPL-2.0
  */
-public class EssEnum<T extends Enum<T> & EssEnumType> extends EssConverter<T>{
+public class EssEnum<T extends Enum<T> & EssEnumType> extends EssInteger<T>{
 	/** The enum class this converter is for */
 	public final Class<T> enumClass;
 	
@@ -34,7 +35,7 @@ public class EssEnum<T extends Enum<T> & EssEnumType> extends EssConverter<T>{
 
 	@Override
 	public T convert(){
-		int i = node.getInteger();
+		int i = raw.getInteger();
 		// https://stackoverflow.com/questions/10121988
 		T[] values = enumClass.getEnumConstants();
 		// extends Enum enforced, so guranteed non-null values
@@ -43,7 +44,7 @@ public class EssEnum<T extends Enum<T> & EssEnumType> extends EssConverter<T>{
 			if (e.isValid())
 				return e;
 		}
-		else System.err.print("%s out-of-range: %d".formatted(mib_attr, i));
+		else System.err.print("%s out-of-range: %d".formatted(raw.getName(), i));
 		return null;
 	}
 	@Override
@@ -61,7 +62,7 @@ public class EssEnum<T extends Enum<T> & EssEnumType> extends EssConverter<T>{
 	}
 	@Override
 	public String toJson(){
-		String out = get(e -> Json.str(json_key, e.toString()));
-		return out == null ? "" : out;
+		var val = toString();
+		return val.isEmpty() ? val : Json.str(json_key, val);
 	}
 }

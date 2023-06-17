@@ -41,15 +41,15 @@ public class OpReadMsgFeed extends OpController<MsgFeedProperty> {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<MsgFeedProperty> phaseOne() {
+	protected Phase phaseOne() {
 		return new PhaseReadMsgFeed();
 	}
 
 	/** Phase to read the message feed */
-	protected class PhaseReadMsgFeed extends Phase<MsgFeedProperty> {
+	protected class PhaseReadMsgFeed extends Phase {
 
 		/** Execute the phase */
-		protected Phase<MsgFeedProperty> poll(
+		protected Phase poll(
 			CommMessage<MsgFeedProperty> mess) throws IOException
 		{
 			mess.add(new MsgFeedProperty(feed));
