@@ -54,7 +54,7 @@ public class OpQueryBinned extends OpSS125 {
 	private class GetCurrentInterval extends Phase {
 
 		/** Get the most recent binned interval */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			mess.add(binned_data);
@@ -69,7 +69,7 @@ public class OpQueryBinned extends OpSS125 {
 	private class SendDateTime extends Phase {
 
 		/** Send the date and time */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			long stamp = binned_data.getTime();

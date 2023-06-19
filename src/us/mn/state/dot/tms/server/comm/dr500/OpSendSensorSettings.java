@@ -72,7 +72,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class QuerySysInfo extends Phase {
 
 		/** Query the system information */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			SysInfoProperty si = new SysInfoProperty();
@@ -87,7 +87,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class StoreDateTime extends Phase {
 
 		/** Store the date/time */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			DateTimeProperty dt = new DateTimeProperty();
@@ -101,7 +101,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class QueryUnits extends Phase {
 
 		/** Query the units */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty un = new VarProperty(VarName.UNITS);
@@ -118,7 +118,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class StoreUnits extends Phase {
 
 		/** Store the units */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty un = new VarProperty(VarName.UNITS,
@@ -133,7 +133,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class QueryBinning extends Phase {
 
 		/** Query the binning interval */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty bn = new VarProperty(VarName.BIN_MINUTES);
@@ -150,7 +150,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class StoreBinning extends Phase {
 
 		/** Store the binning interval */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty bn = new VarProperty(VarName.BIN_MINUTES,
@@ -165,7 +165,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class QuerySensitivity extends Phase {
 
 		/** Query the sensitivity */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty st = new VarProperty(VarName.SENSITIVITY);
@@ -182,7 +182,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class StoreSensitivity extends Phase {
 
 		/** Store the sensitivity */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty st = new VarProperty(VarName.SENSITIVITY,
@@ -197,7 +197,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class QueryLowSpeed extends Phase {
 
 		/** Query the low speed */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty lo = new VarProperty(VarName.LO_SPEED);
@@ -214,7 +214,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class StoreLowSpeed extends Phase {
 
 		/** Store the low speed */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty lo = new VarProperty(VarName.LO_SPEED,
@@ -229,7 +229,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class QueryThresholdSpeed extends Phase {
 
 		/** Query the threshold speed */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty sp = new VarProperty(
@@ -247,7 +247,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class StoreThresholdSpeed extends Phase {
 
 		/** Store the threshold speed */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty sp = new VarProperty(
@@ -262,7 +262,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class QueryHighSpeed extends Phase {
 
 		/** Query the high speed */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty hi = new VarProperty(VarName.HI_SPEED);
@@ -279,7 +279,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class StoreHighSpeed extends Phase {
 
 		/** Store the high speed */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty hi = new VarProperty(VarName.HI_SPEED,
@@ -294,7 +294,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class QueryTarget extends Phase {
 
 		/** Query the target flag */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty sf = new VarProperty(VarName.TARGET);
@@ -311,7 +311,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class StoreTarget extends Phase {
 
 		/** Store the target flag */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty sf = new VarProperty(VarName.TARGET,
@@ -326,7 +326,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class QueryTimeAvg extends Phase {
 
 		/** Query time average */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty ta = new VarProperty(VarName.TIME_AVG);
@@ -343,7 +343,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class StoreTimeAvg extends Phase {
 
 		/** Store time average */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty ta = new VarProperty(VarName.TIME_AVG,
@@ -358,7 +358,7 @@ public class OpSendSensorSettings extends OpDR500 {
 	protected class QueryMode extends Phase {
 
 		/** Query mode */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty mode = new VarProperty(VarName.MODE);
@@ -380,7 +380,7 @@ public class OpSendSensorSettings extends OpDR500 {
 		}
 
 		/** Store mode */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			VarProperty mode = new VarProperty(VarName.MODE, flags);

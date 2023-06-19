@@ -41,7 +41,7 @@ public class OpReset170 extends Op170 {
 	protected class ResetDetectors extends Phase {
 
 		/** Reset the detectors */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			// Enabling the detector-reset pin can cause some
@@ -61,7 +61,7 @@ public class OpReset170 extends Op170 {
 	protected class ClearDetectors extends Phase {
 
 		/** Clear the detector reset */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] data = new byte[1];
@@ -77,7 +77,7 @@ public class OpReset170 extends Op170 {
 	protected class Level1Restart extends Phase {
 
 		/** Restart the controller */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			mess.add(new Level1Property());

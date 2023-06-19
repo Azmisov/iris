@@ -61,7 +61,7 @@ public class OpChangeBeaconState extends OpNdotBeacon<NdotBeaconProperty> {
 		int failCount = 0;
 
 		/** Set the state of the beacon controller */
-		protected Phase poll(CommMessage<NdotBeaconProperty> mess)
+		public Phase poll(CommMessage<NdotBeaconProperty> mess)
 			throws IOException
 		{
 			mess.add(prop);

@@ -52,7 +52,7 @@ public class OpQueryStats extends OpG4 {
 	private class GetCurrentSamples extends Phase {
 
 		/** Get the most recent binned samples */
-		protected Phase poll(CommMessage<G4Property> mess)
+		public Phase poll(CommMessage<G4Property> mess)
 			throws IOException
 		{
 			mess.add(stat);
@@ -67,7 +67,7 @@ public class OpQueryStats extends OpG4 {
 	private class StoreRTC extends Phase {
 
 		/** Store the RTC */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			long stamp = stat.getStamp();

@@ -55,7 +55,7 @@ public class OpReadCap extends OpController<CapProperty> {
 	protected class PhaseReadCap extends Phase {
 
 		/** Execute the phase */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<CapProperty> mess) throws IOException
 		{
 			CapPoller.slog("polling feed " + alertFeed);

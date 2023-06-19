@@ -148,7 +148,7 @@ public class OpSendMeterSettings extends Op170Device {
 	protected class ResetWatchdogMonitor extends Phase {
 
 		/** Reset the watchdog monitor */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] data = {Address.WATCHDOG_BITS};
@@ -163,7 +163,7 @@ public class OpSendMeterSettings extends Op170Device {
 	protected class ClearWatchdogMonitor extends Phase {
 
 		/** Clear the watchdog monitor */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] data = new byte[1];
@@ -178,7 +178,7 @@ public class OpSendMeterSettings extends Op170Device {
 	protected class SetCommFail extends Phase {
 
 		/** Set the comm fail time */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] data = {MeterPoller.COMM_FAIL_THRESHOLD};
@@ -192,7 +192,7 @@ public class OpSendMeterSettings extends Op170Device {
 	protected class SetTimingTable extends Phase {
 
 		/** Set the timing table for the ramp meter */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty p = new MemoryProperty(tableAddress(),
@@ -224,7 +224,7 @@ public class OpSendMeterSettings extends Op170Device {
 	protected class ClearVerifies extends Phase {
 
 		/** Clear the meter verifies for the ramp meter */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			int address = getVerifyAddress();

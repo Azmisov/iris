@@ -102,7 +102,7 @@ public class OpQueryDMSMessage extends OpDMS {
 
 		/** Query the current message source (memory type) */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(source);
 			mess.queryProps();
 			logQuery(source);
@@ -182,7 +182,7 @@ public class OpQueryDMSMessage extends OpDMS {
 
 		/** Query the current message */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(multi_string);
 			mess.add(msg_owner);
 			if (supportsBeaconActivation())

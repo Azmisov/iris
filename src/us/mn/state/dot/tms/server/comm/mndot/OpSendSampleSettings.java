@@ -60,7 +60,7 @@ public class OpSendSampleSettings extends Op170 {
 	protected class SynchronizeClock extends Phase {
 
 		/** Synchronize the clock */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			mess.add(new SynchronizeProperty());
@@ -73,7 +73,7 @@ public class OpSendSampleSettings extends Op170 {
 	protected class QueryPromVersion extends Phase {
 
 		/** Query the prom version */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] data = new byte[2];
@@ -93,7 +93,7 @@ public class OpSendSampleSettings extends Op170 {
 	protected class QueueBitmap extends Phase {
 
 		/** Set the queue detector bitmap */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] data = getQueueBitmap();

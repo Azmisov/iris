@@ -84,7 +84,7 @@ public class OpCheckMoveStatus extends OpGateNdorV5 {
 
 		/** Query the status */
 		@SuppressWarnings({ "unchecked", "synthetic-access" })
-		protected Phase poll(CommMessage mess)
+		public Phase poll(CommMessage mess)
 			throws IOException
 		{
 			mess.add(prop);

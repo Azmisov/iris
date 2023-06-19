@@ -89,7 +89,7 @@ public class OpQueryDMSFonts extends OpDMS {
 
 		/** Query the maximum character size (v2 only) */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(max_char_sz);
 			try {
 				mess.queryProps();
@@ -108,7 +108,7 @@ public class OpQueryDMSFonts extends OpDMS {
 
 		/** Query the number of supported fonts */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(num_fonts);
 			mess.add(max_characters);
 			mess.queryProps();
@@ -152,7 +152,7 @@ public class OpQueryDMSFonts extends OpDMS {
 
 		/** Query the font number for one row in font table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer number = fontNumber.makeInt(row);
 			DisplayString name = new DisplayString(fontName.node,
 				row);
@@ -248,7 +248,7 @@ public class OpQueryDMSFonts extends OpDMS {
 
 		/** Add a character to the font table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer char_width = characterWidth.makeInt(row,
 				crow);
 			ASN1OctetString char_bitmap = new ASN1OctetString(

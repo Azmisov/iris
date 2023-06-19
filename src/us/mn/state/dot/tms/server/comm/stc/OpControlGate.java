@@ -63,7 +63,7 @@ public class OpControlGate extends OpSTC {
 	protected class StoreControl extends Phase {
 
 		/** Store control */
-		protected Phase poll(CommMessage<STCProperty> mess)
+		public Phase poll(CommMessage<STCProperty> mess)
 			throws IOException
 		{
 			mess.add(control);

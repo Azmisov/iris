@@ -50,7 +50,7 @@ public class OpTestCap extends OpReadCap {
 	protected class PhaseTestCap extends Phase {
 
 		/** Execute the phase */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<CapProperty> mess) throws IOException
 		{
 			File testAlert = new File(TEST_FILE);

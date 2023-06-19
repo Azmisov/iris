@@ -75,7 +75,7 @@ public class OpSendBeaconState extends Op170Device {
 	protected class SetRate extends Phase {
 
 		/** Write the meter rate to the controller */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] data = { rate };

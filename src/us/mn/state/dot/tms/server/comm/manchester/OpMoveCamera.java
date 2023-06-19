@@ -73,7 +73,7 @@ public class OpMoveCamera extends OpManchester {
 	protected class Move extends Phase {
 
 		/** Command controller to move the camera */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<ManchesterProperty> mess) throws IOException
 		{
 			sleepUntilReady();

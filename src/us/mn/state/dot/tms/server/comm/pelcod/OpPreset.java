@@ -51,7 +51,7 @@ public class OpPreset extends OpPelcoD {
 	protected class CommandPreset extends Phase {
 
 		/** Command controller to recall or store a preset */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<PelcoDProperty> mess) throws IOException
 		{
 			mess.add(prop);

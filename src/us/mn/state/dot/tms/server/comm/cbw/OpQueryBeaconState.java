@@ -54,7 +54,7 @@ public class OpQueryBeaconState extends OpDevice<CBWProperty> {
 	private class QueryBeacon extends Phase {
 
 		/** Query the beacon status */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<CBWProperty> mess) throws IOException
 		{
 			mess.add(prop);

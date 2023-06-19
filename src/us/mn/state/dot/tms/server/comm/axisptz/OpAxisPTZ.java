@@ -49,7 +49,7 @@ public class OpAxisPTZ extends OpDevice<AxisProp> {
 
 	/** Send property */
 	private class SendProp extends Phase {
-		protected Phase poll(CommMessage<AxisProp> mess)
+		public Phase poll(CommMessage<AxisProp> mess)
 			throws IOException
 		{
 			mess.add(prop);

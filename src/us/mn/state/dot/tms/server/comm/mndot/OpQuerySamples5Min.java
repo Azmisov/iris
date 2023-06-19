@@ -100,7 +100,7 @@ public class OpQuerySamples5Min extends OpQuerySamples {
 
 		/** Collect 5-minute data from the controller */
 		@Override
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			int recs = 0;

@@ -56,7 +56,7 @@ public class OpQueryMeterStatus extends Op170Device {
 
 	/** Phase to query the meter data */
 	protected class QueryMeterData extends Phase {
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty data_mem = new MemoryProperty(
@@ -122,7 +122,7 @@ public class OpQueryMeterStatus extends Op170Device {
 
 	/** Phase to query a ramp meter red time */
 	protected class QueryRedTime extends Phase {
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty red_mem = new MemoryProperty(

@@ -49,7 +49,7 @@ public class OpQueryBeaconState extends OpNdotBeacon<NdotBeaconProperty> {
 		int failCount = 0;
 
 		/** Query the status */
-		protected Phase poll(CommMessage<NdotBeaconProperty> mess)
+		public Phase poll(CommMessage<NdotBeaconProperty> mess)
 			throws IOException
 		{
 			mess.add(prop);

@@ -52,7 +52,7 @@ public class OpQueryAlarms extends Op170 {
 	protected class GetAlarms extends Phase {
 
 		/** Query the meter red time */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess)
 			throws IOException
 		{

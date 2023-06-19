@@ -51,7 +51,7 @@ public class OpSendBeaconSettings extends Op170Device {
 	protected class SetTimingTable extends Phase {
 
 		/** Set the timing table for the beacon */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty p = new MemoryProperty(tableAddress(),

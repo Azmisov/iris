@@ -74,7 +74,7 @@ public class OpUpdateDMSBrightness extends OpDMS {
 
 		/** Query the DMS brightness status */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(max_level);
 			mess.add(p_level);
 			mess.add(light);
@@ -93,7 +93,7 @@ public class OpUpdateDMSBrightness extends OpDMS {
 
 		/** Get the brightness table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(b_levels);
 			mess.add(brightness);
 			mess.add(control);
@@ -113,7 +113,7 @@ public class OpUpdateDMSBrightness extends OpDMS {
 
 		/** Set the manual control mode */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			control.setEnum(DmsIllumControl.manual);
 			mess.add(control);
 			logStore(control);
@@ -127,7 +127,7 @@ public class OpUpdateDMSBrightness extends OpDMS {
 
 		/** Set the brightness table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			// NOTE: if the existing table is not valid, don't mess
 			//       with it.  This check is needed for a certain
 			//       vendor, which has a wacky brightness table.
@@ -153,7 +153,7 @@ public class OpUpdateDMSBrightness extends OpDMS {
 
 		/** Set the photocell control mode */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			control.setEnum(DmsIllumControl.photocell);
 			mess.add(control);
 			logStore(control);

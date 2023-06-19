@@ -51,7 +51,7 @@ public class OpCommandOutlets extends OpDinRelay {
 	private class QueryOutlets extends Phase {
 
 		/** Query the outlet status */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DinRelayProperty> mess) throws IOException
 		{
 			mess.add(property);
@@ -67,7 +67,7 @@ public class OpCommandOutlets extends OpDinRelay {
 		private int o_num = 0;
 
 		/** Command next outlet OFF */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DinRelayProperty> mess) throws IOException
 		{
 			CommandProperty prop;
@@ -101,7 +101,7 @@ public class OpCommandOutlets extends OpDinRelay {
 		private int o_num = 0;
 
 		/** Command next outlet ON */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DinRelayProperty> mess) throws IOException
 		{
 			CommandProperty prop;

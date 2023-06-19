@@ -56,7 +56,7 @@ public class OpQueryGateStatus extends OpSTC {
 	protected class QueryVersion extends Phase {
 
 		/** Query the version */
-		protected Phase poll(CommMessage<STCProperty> mess)
+		public Phase poll(CommMessage<STCProperty> mess)
 			throws IOException
 		{
 			VersionProperty v = new VersionProperty(password());
@@ -71,7 +71,7 @@ public class OpQueryGateStatus extends OpSTC {
 	protected class QueryStatus extends Phase {
 
 		/** Query the status */
-		protected Phase poll(CommMessage<STCProperty> mess)
+		public Phase poll(CommMessage<STCProperty> mess)
 			throws IOException
 		{
 			mess.add(status);
@@ -103,7 +103,7 @@ public class OpQueryGateStatus extends OpSTC {
 	protected class QueryFaults extends Phase {
 
 		/** Query the faults */
-		protected Phase poll(CommMessage<STCProperty> mess)
+		public Phase poll(CommMessage<STCProperty> mess)
 			throws IOException
 		{
 			FaultProperty faults = new FaultProperty(password());

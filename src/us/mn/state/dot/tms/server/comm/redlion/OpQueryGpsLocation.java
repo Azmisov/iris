@@ -64,7 +64,7 @@ public class OpQueryGpsLocation extends OpDevice<RedLionProperty> {
 	private class QueryGPS extends Phase {
 
 		/** Add the RedLionProperty cmd to the outbound message */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<RedLionProperty> mess) throws IOException
 		{
 			mess.add(prop);

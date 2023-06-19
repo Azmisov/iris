@@ -74,7 +74,7 @@ public class OpSendSensorSettings extends OpSS125 {
 	protected class QueryVersion extends Phase {
 
 		/** Query the firmware version */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			VersionProperty vr = new VersionProperty();
@@ -89,7 +89,7 @@ public class OpSendSensorSettings extends OpSS125 {
 	protected class QueryGenConfig extends Phase {
 
 		/** Query the general config */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			mess.add(gen_config);
@@ -113,7 +113,7 @@ public class OpSendSensorSettings extends OpSS125 {
 	protected class StoreGenConfig extends Phase {
 
 		/** Store the general config */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			gen_config.setLocation(ControllerHelper.getLocation(
@@ -130,7 +130,7 @@ public class OpSendSensorSettings extends OpSS125 {
 	protected class QueryDataConfig extends Phase {
 
 		/** Query the data config */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			mess.add(data_config);
@@ -161,7 +161,7 @@ public class OpSendSensorSettings extends OpSS125 {
 	protected class StoreDataConfig extends Phase {
 
 		/** Store the data config */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			data_config.setInterval(interval);
@@ -181,7 +181,7 @@ public class OpSendSensorSettings extends OpSS125 {
 	protected class QueryClassConfig extends Phase {
 
 		/** Query the vehicle class config */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			mess.add(class_config);
@@ -206,7 +206,7 @@ public class OpSendSensorSettings extends OpSS125 {
 	protected class StoreClassConfig extends Phase {
 
 		/** Store the vehicle class config */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			updateClassConfig();
@@ -227,7 +227,7 @@ public class OpSendSensorSettings extends OpSS125 {
 	protected class QueryDateTime extends Phase {
 
 		/** Query the date and time */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			DateTimeProperty date_time = new DateTimeProperty();
@@ -251,7 +251,7 @@ public class OpSendSensorSettings extends OpSS125 {
 	protected class SendDateTime extends Phase {
 
 		/** Send the date and time */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			DateTimeProperty date_time = new DateTimeProperty();
@@ -270,7 +270,7 @@ public class OpSendSensorSettings extends OpSS125 {
 	protected class StoreConfigFlash extends Phase {
 
 		/** Store the config to flash */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
 			FlashConfigProperty flash = new FlashConfigProperty();

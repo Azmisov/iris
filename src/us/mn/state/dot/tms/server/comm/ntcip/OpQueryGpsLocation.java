@@ -70,7 +70,7 @@ public class OpQueryGpsLocation extends OpNtcip {
 
 		/** Query the GPS location */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(lat);
 			mess.add(lon);
 			try {

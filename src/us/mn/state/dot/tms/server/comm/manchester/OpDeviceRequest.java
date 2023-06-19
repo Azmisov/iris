@@ -72,7 +72,7 @@ public class OpDeviceRequest extends OpManchester {
 
 	/** Phase to make device request */
 	protected class DeviceRequestPhase extends Phase {
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<ManchesterProperty> mess) throws IOException
 		{
 			mess.add(prop);
@@ -91,7 +91,7 @@ public class OpDeviceRequest extends OpManchester {
 		private int n_sent = 0;
 
 		/** Set power-on property */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<ManchesterProperty> mess) throws IOException
 		{
 			if (n_sent > 0)

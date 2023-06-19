@@ -55,7 +55,7 @@ public class OpQuerySpeed extends OpDR500 {
 	private class GetAvgSpeed extends Phase {
 
 		/** Get the average speed */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DR500Property> mess) throws IOException
 		{
 			stamp = TimeSteward.currentTimeMillis();

@@ -46,7 +46,7 @@ public class OpReadIncFeed extends OpController<IncFeedProperty> {
 	protected class PhaseReadIncFeed extends Phase {
 
 		/** Execute the phase */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<IncFeedProperty> mess) throws IOException
 		{
 			mess.add(new IncFeedProperty(cache));

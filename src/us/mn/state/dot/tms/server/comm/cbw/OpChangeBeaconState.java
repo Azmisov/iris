@@ -76,7 +76,7 @@ public class OpChangeBeaconState extends OpDevice<CBWProperty> {
 		}
 
 		/** Change the beacon state */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<CBWProperty> mess) throws IOException
 		{
 			String pq = getPathQuery(pin, flash);

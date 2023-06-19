@@ -52,7 +52,7 @@ public class OpQueryLCSIndications extends OpLCS {
 	protected class QueryStatus extends Phase {
 
 		/** Query the status */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty prop = new MemoryProperty(
@@ -70,7 +70,7 @@ public class OpQueryLCSIndications extends OpLCS {
 	protected class QueryOutputs extends Phase {
 
 		/** Query the outputs */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty prop = new MemoryProperty(

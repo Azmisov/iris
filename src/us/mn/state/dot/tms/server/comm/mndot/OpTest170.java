@@ -41,7 +41,7 @@ public class OpTest170 extends Op170 {
 	protected class TestCommunication extends Phase {
 
 		/** Test communication */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] data = new byte[123];

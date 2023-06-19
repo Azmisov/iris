@@ -68,7 +68,7 @@ public class OpMoveCamera extends OpPelcoD {
 		private int n_sent = 0;
 
 		/** Command controller to move the camera */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<PelcoDProperty> mess) throws IOException
 		{
 			mess.add(prop);

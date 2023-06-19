@@ -59,7 +59,7 @@ public class OpSendSensorSettings extends OpSS105 {
 	protected class GetTimeInterval extends Phase {
 
 		/** Get the time interval (for binning) */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS105Property> mess) throws IOException
 		{
 			TimeIntervalProperty ti = new TimeIntervalProperty();
@@ -76,7 +76,7 @@ public class OpSendSensorSettings extends OpSS105 {
 	protected class SetTimeInterval extends Phase {
 
 		/** Set the time interval (for binning) */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS105Property> mess) throws IOException
 		{
 			TimeIntervalProperty ti = new TimeIntervalProperty(
@@ -91,7 +91,7 @@ public class OpSendSensorSettings extends OpSS105 {
 	protected class GetClassification extends Phase {
 
 		/** Get the classification lengths */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS105Property> mess) throws IOException
 		{
 			ClassificationProperty c = new ClassificationProperty();
@@ -108,7 +108,7 @@ public class OpSendSensorSettings extends OpSS105 {
 	protected class SetClassification extends Phase {
 
 		/** Set the classification lengths */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS105Property> mess) throws IOException
 		{
 			ClassificationProperty c = new ClassificationProperty();
@@ -122,7 +122,7 @@ public class OpSendSensorSettings extends OpSS105 {
 	protected class QueryVersion extends Phase {
 
 		/** Query the firmware version */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS105Property> mess) throws IOException
 		{
 			VersionProperty vr = new VersionProperty();
@@ -142,7 +142,7 @@ public class OpSendSensorSettings extends OpSS105 {
 	protected class SynchronizeClock extends Phase {
 
 		/** Synchronize the clock */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS105Property> mess) throws IOException
 		{
 			TimeProperty tr = new TimeProperty();

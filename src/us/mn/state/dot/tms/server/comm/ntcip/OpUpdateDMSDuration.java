@@ -55,7 +55,7 @@ public class OpUpdateDMSDuration extends OpDMS {
 
 		/** Set the message time remaining */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer time = dmsMessageTimeRemaining.makeInt();
 			time.setInteger(getDuration());
 			mess.add(time);

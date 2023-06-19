@@ -47,7 +47,7 @@ public class OpQuerySetup extends OpDevice<CBWProperty> {
 	private class QueryState extends Phase {
 
 		/** Query the state */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<CBWProperty> mess) throws IOException
 		{
 			CBWProperty prop = new CBWProperty(

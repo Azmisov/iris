@@ -89,7 +89,7 @@ public class OpDeviceRequest extends OpPelcoD {
 
 	/** Main phase. */
 	protected class DeviceRequestPhase extends Phase {
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<PelcoDProperty> mess) throws IOException
 		{
 			PelcoDProperty prop = createProp(req, n_sent);

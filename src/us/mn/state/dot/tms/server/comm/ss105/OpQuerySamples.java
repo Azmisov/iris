@@ -51,7 +51,7 @@ public class OpQuerySamples extends OpSS105 {
 	private class GetCurrentSamples extends Phase {
 
 		/** Get the most recent binned samples */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS105Property> mess) throws IOException
 		{
 			mess.add(sample_data);
@@ -66,7 +66,7 @@ public class OpQuerySamples extends OpSS105 {
 	private class SendDateTime extends Phase {
 
 		/** Send the date and time */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<SS105Property> mess) throws IOException
 		{
 			long stamp = sample_data.getTime();

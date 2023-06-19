@@ -51,7 +51,7 @@ public class OpTestComm extends OpController {
 
 		/** Test communication */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer m = MIB1201.globalMaxModules.makeInt();
 			mess.add(m);
 			mess.queryProps();

@@ -72,7 +72,7 @@ public class OpSendLCSIndications extends OpLCS {
 	private class CreateOutletCommands extends Phase {
 
 		/** Create the outlet query operations */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DinRelayProperty> mess)
 		{
 			Iterator<ControllerImpl> it = controllers.iterator();

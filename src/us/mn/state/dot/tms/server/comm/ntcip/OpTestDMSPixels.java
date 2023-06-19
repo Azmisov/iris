@@ -94,7 +94,7 @@ public class OpTestDMSPixels extends OpDMS {
 
 		/** Query the status of pixel test activation */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			log("Phase: QueryTestStatus");
 			mess.add(activation);
 			mess.queryProps();
@@ -111,7 +111,7 @@ public class OpTestDMSPixels extends OpDMS {
 
 		/** Activate the pixel test */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			log("Phase: ActivatePixelTest");
 			activation.setEnum(PixelTestActivation.test);
 			mess.add(activation);
@@ -130,7 +130,7 @@ public class OpTestDMSPixels extends OpDMS {
 
 		/** Check for test completion */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			log("Phase: CheckTestCompletion");
 			mess.add(activation);
 			mess.queryProps();
@@ -156,7 +156,7 @@ public class OpTestDMSPixels extends OpDMS {
 
 		/** Query the row count in pixel failure table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			log("Phase: QueryRowCount");
 			mess.add(total_rows);
 			mess.queryProps();
@@ -175,7 +175,7 @@ public class OpTestDMSPixels extends OpDMS {
 
 		/** Query test/message rows in pixel failure table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			log("Phase: QueryTestAndMessageRows");
 			mess.add(test_rows);
 			mess.add(message_rows);
@@ -233,7 +233,7 @@ public class OpTestDMSPixels extends OpDMS {
 
 		/** Query one row in the pixel failure table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			log("Phase: QueryRows");
 			ASN1Integer x_loc = pixelFailureXLocation.makeInt(
 				detectionType.ordinal(), row);

@@ -53,7 +53,7 @@ public class OpQueryConfig extends OpCanoga {
 	protected class QuerySerialNumber extends Phase {
 
 		/** Query the serial number */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<CanogaProperty> mess) throws IOException
 		{
 			mess.add(serial_number);
@@ -66,7 +66,7 @@ public class OpQueryConfig extends OpCanoga {
 	protected class QueryVersion extends Phase {
 
 		/** Query the firmware version */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<CanogaProperty> mess) throws IOException
 		{
 			mess.add(version);

@@ -68,7 +68,7 @@ public class OpSendMeterRate extends Op170Device {
 
 	/** Phase to send the red time */
 	protected class SendRedTime extends Phase {
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty p = new MemoryProperty(redTimeAddress(),
@@ -87,7 +87,7 @@ public class OpSendMeterRate extends Op170Device {
 
 	/** Phase to send the (remote) metering rate */
 	protected class SendRate extends Phase {
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty p = new MemoryProperty(

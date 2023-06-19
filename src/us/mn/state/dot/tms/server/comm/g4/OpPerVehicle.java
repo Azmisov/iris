@@ -52,7 +52,7 @@ public class OpPerVehicle extends OpG4 {
 	private class VehicleEvent extends Phase {
 
 		/** Get a vehicle event */
-		protected Phase poll(CommMessage<G4Property> mess)
+		public Phase poll(CommMessage<G4Property> mess)
 			throws IOException
 		{
 			VehicleEventProperty ev = new VehicleEventProperty();
@@ -77,7 +77,7 @@ public class OpPerVehicle extends OpG4 {
 	private class StoreRTC extends Phase {
 
 		/** Set the clock */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			RTCProperty rtc = new RTCProperty();

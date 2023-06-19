@@ -45,7 +45,7 @@ public class OpQueryBeaconState extends Op170Device {
 	protected class QueryStatus extends Phase {
 
 		/** Query the beacon state */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] b = new byte[1];

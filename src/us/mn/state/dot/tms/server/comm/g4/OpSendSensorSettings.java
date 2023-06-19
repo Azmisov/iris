@@ -74,7 +74,7 @@ public class OpSendSensorSettings extends OpG4 {
 	private class QuerySensorInfo extends Phase {
 
 		/** Query the sensor information */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			mess.add(sensor_info);
@@ -92,7 +92,7 @@ public class OpSendSensorSettings extends OpG4 {
 	private class QuerySetupInfo extends Phase {
 
 		/** Query the setup information */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			mess.add(setup_info);
@@ -172,7 +172,7 @@ public class OpSendSensorSettings extends OpG4 {
 	private class StoreSetupInfo extends Phase {
 
 		/** Store the setup information */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			updateSetupInfo();
@@ -186,7 +186,7 @@ public class OpSendSensorSettings extends OpG4 {
 	private class QueryClassConfig extends Phase {
 
 		/** Query the vehicle class config */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			mess.add(class_config);
@@ -213,7 +213,7 @@ public class OpSendSensorSettings extends OpG4 {
 	protected class StoreClassConfig extends Phase {
 
 		/** Store the vehicle classes */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			updateClassConfig();
@@ -235,7 +235,7 @@ public class OpSendSensorSettings extends OpG4 {
 	private class QueryRTC extends Phase {
 
 		/** Query the RTC */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			mess.add(rtc);
@@ -264,7 +264,7 @@ public class OpSendSensorSettings extends OpG4 {
 	private class StoreRTC extends Phase {
 
 		/** Store the RTC */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			updateRTC();

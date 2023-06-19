@@ -50,7 +50,7 @@ public class OpQuerySamples30Sec extends OpQuerySamples {
 	protected class QuerySample30Sec extends Phase {
 
 		/** Query 30-second sample data */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] r = new byte[72];

@@ -50,7 +50,7 @@ public class OpQueryModules extends OpNtcip {
 
 		/** Query the number of modules */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(mod_table.modules);
 			mess.queryProps();
 			logQuery(mod_table.modules);
@@ -75,7 +75,7 @@ public class OpQueryModules extends OpNtcip {
 
 		/** Query the module make, model and version */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(row.make);
 			mess.add(row.model);
 			mess.add(row.version);

@@ -73,7 +73,7 @@ public class OpRead extends OpController<ClearGuideProperty> {
 		/** Authenticate with ClearGuide auth server
 		 * @param msg Associated comm message.
 		 * @return Null if done else next phase. */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<ClearGuideProperty> msg)
 			throws IOException
 		{
@@ -101,7 +101,7 @@ public class OpRead extends OpController<ClearGuideProperty> {
 		/** Read DMS metrics
 		 * @param msg Associated comm message.
 		 * @return Null if done else next phase. */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<ClearGuideProperty> msg) throws IOException
 		{
 			log("DmsMetricsPhase.poll: ------------");

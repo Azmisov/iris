@@ -62,7 +62,7 @@ public class OpQuerySystem extends OpNtcip {
 
 		/** Query values */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(sys_descr.node);
 			mess.add(sys_contact.node);
 			mess.add(sys_name.node);

@@ -57,7 +57,7 @@ abstract public class OpDevice<T extends ControllerProperty>
 
 		/** Perform the acquire device phase */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage<T> mess)
+		public Pollable<T> poll(CommMessage<T> mess)
 			throws DeviceContentionException
 		{
 			OpDevice<T> owner = device.acquire(OpDevice.this);
@@ -69,12 +69,12 @@ abstract public class OpDevice<T extends ControllerProperty>
 
 	/** Create the first phase of the operation */
 	@Override
-	protected final Phase phaseOne() {
+	protected final Pollable<T> phaseOne() {
 		return exclusive ? new AcquireDevice() : phaseTwo();
 	}
 
 	/** Create the second phase of the operation */
-	abstract protected Phase phaseTwo();
+	abstract protected Pollable<T> phaseTwo();
 
 	/** Cleanup the operation */
 	@Override

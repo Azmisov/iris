@@ -63,7 +63,7 @@ public class OpDeployLaneMarking extends Op170Device {
 	protected class QueryOutputs extends Phase {
 
 		/** Query the special function outputs */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty prop = new MemoryProperty(
@@ -78,7 +78,7 @@ public class OpDeployLaneMarking extends Op170Device {
 	protected class SetOutputs extends Phase {
 
 		/** Set the special function outputs */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			updateOutputs();

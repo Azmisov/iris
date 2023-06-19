@@ -65,7 +65,7 @@ public class OpQuerySamples extends OpController {
 
 		/** Query the detectors */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer max_det = maxVehicleDetectors.makeInt();
 			ASN1Integer seq = volumeOccupancySequence.makeInt();
 			ASN1Integer vo_per = volumeOccupancyPeriod.makeInt();
@@ -107,7 +107,7 @@ public class OpQuerySamples extends OpController {
 
 		/** Query one row of data */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer veh = detectorVolume.makeInt(row);
 			ASN1Integer occ = detectorOccupancy.makeInt(row);
 			mess.add(veh);

@@ -63,7 +63,7 @@ public class OpQueryEventSamples extends OpCanoga {
 	protected class QueryCurrentEvents extends Phase {
 
 		/** Query the current detection events */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<CanogaProperty> mess) throws IOException
 		{
 			mess.add(detection);

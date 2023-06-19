@@ -306,7 +306,7 @@ class OpMessage extends OpDms {
 		 * @return next Phase to execute else null.
 		 * @throws IOException
 		 */
-		protected Phase poll(CommMessage argmess)
+		public Phase poll(CommMessage argmess)
 			throws IOException 
 		{
 			LOG.log("PhaseSendMessage.poll(msg) called.");

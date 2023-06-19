@@ -60,7 +60,7 @@ public class OpQueryBeaconState extends OpDevice<DinRelayProperty> {
 	private class QueryBeacon extends Phase {
 
 		/** Query the beacon status */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DinRelayProperty> mess) throws IOException
 		{
 			mess.add(property);

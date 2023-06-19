@@ -45,7 +45,7 @@ public class OpQueryOutlets extends OpDinRelay {
 	private class QueryOutlets extends Phase {
 
 		/** Query the outlet status */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<DinRelayProperty> mess) throws IOException
 		{
 			mess.add(property);

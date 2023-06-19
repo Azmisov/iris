@@ -81,7 +81,7 @@ public class OpMoveGateArm extends OpGateNdorV5 {
 
 		/** Store control */
 		@SuppressWarnings({ "unchecked", "synthetic-access", "incomplete-switch" })
-		protected Phase poll(CommMessage mess)
+		public Phase poll(CommMessage mess)
 			throws IOException
 		{
 			mess.add(prop);

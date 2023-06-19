@@ -48,7 +48,7 @@ public class OpSyncTime extends OpNtcip {
 	private class QueryGlobalTime extends Phase {
 
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			Counter global_time = new Counter(globalTime.node);
 			ASN1Enum<GlobalDaylightSaving> global_dst =
 				new ASN1Enum<GlobalDaylightSaving>(
@@ -74,7 +74,7 @@ public class OpSyncTime extends OpNtcip {
 	private class SetGlobalTime extends Phase {
 
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			Counter global_time = new Counter(globalTime.node);
 			long ms = TimeSteward.currentTimeMillis();
 			global_time.setInteger((int) (ms / 1000));

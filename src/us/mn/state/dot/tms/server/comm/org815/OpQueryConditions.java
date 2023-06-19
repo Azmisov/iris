@@ -42,7 +42,7 @@ public class OpQueryConditions extends OpOrg815 {
 	protected class QueryConditions extends Phase {
 
 		/** Query the conditions */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<Org815Property> mess) throws IOException
 		{
 			long now = TimeSteward.currentTimeMillis();
@@ -70,7 +70,7 @@ public class OpQueryConditions extends OpOrg815 {
 	protected class ResetAccumulator extends Phase {
 
 		/** Reset the accumulator */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<Org815Property> mess) throws IOException
 		{
 			ResetProperty reset = new ResetProperty();

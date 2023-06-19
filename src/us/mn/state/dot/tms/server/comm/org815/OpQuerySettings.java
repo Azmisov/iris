@@ -40,7 +40,7 @@ public class OpQuerySettings extends OpOrg815 {
 	protected class QueryVersion extends Phase {
 
 		/** Query the version */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<Org815Property> mess) throws IOException
 		{
 			VersionProperty version = new VersionProperty();

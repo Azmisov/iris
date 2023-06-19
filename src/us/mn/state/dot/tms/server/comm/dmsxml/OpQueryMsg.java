@@ -482,7 +482,7 @@ class OpQueryMsg extends OpDms {
 	private class PhaseQueryMsg extends Phase
 	{
 		/** Query current message */
-		protected Phase poll(CommMessage argmess)
+		public Phase poll(CommMessage argmess)
 			throws IOException
 		{
 			// ignore startup operations for DMS on dial-up lines

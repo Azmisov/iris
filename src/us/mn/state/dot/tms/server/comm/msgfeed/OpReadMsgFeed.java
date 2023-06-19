@@ -49,7 +49,7 @@ public class OpReadMsgFeed extends OpController<MsgFeedProperty> {
 	protected class PhaseReadMsgFeed extends Phase {
 
 		/** Execute the phase */
-		protected Phase poll(
+		public Phase poll(
 			CommMessage<MsgFeedProperty> mess) throws IOException
 		{
 			mess.add(new MsgFeedProperty(feed));

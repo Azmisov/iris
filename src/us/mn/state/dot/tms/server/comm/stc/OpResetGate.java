@@ -46,7 +46,7 @@ public class OpResetGate extends OpSTC {
 	protected class ExecuteReset extends Phase {
 
 		/** Execute the reset */
-		protected Phase poll(CommMessage<STCProperty> mess)
+		public Phase poll(CommMessage<STCProperty> mess)
 			throws IOException
 		{
 			ResetProperty reset = new ResetProperty(password());
@@ -64,7 +64,7 @@ public class OpResetGate extends OpSTC {
 			RESET_TIMEOUT;
 
 		/** Query the version */
-		protected Phase poll(CommMessage<STCProperty> mess)
+		public Phase poll(CommMessage<STCProperty> mess)
 			throws IOException
 		{
 			VersionProperty v = new VersionProperty(password());

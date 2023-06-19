@@ -71,7 +71,7 @@ public class OpSendDMSDefaults extends OpDMS {
 
 		/** Set the comm loss action */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer power_time =dmsShortPowerLossTime.makeInt();
 			ASN1Integer comm_time = dmsTimeCommLoss.makeInt();
 			MessageIDCode end_msg = new MessageIDCode(
@@ -119,7 +119,7 @@ public class OpSendDMSDefaults extends OpDMS {
 
 		/** Set the pixel service schedule */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer dur = vmsPixelServiceDuration.makeInt();
 			ASN1Integer freq = vmsPixelServiceFrequency.makeInt();
 			ASN1Integer time = vmsPixelServiceTime.makeInt();
@@ -142,7 +142,7 @@ public class OpSendDMSDefaults extends OpDMS {
 
 		/** Set the flash defaults */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer flash_on = defaultFlashOn.makeInt();
 			ASN1Integer flash_off = defaultFlashOff.makeInt();
 			flash_on.setInteger(0);
@@ -166,7 +166,7 @@ public class OpSendDMSDefaults extends OpDMS {
 
 		/** Set the message defaults */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Enum<JustificationLine> line = new ASN1Enum<
 				JustificationLine>(JustificationLine.class,
 				defaultJustificationLine.node);
@@ -205,7 +205,7 @@ public class OpSendDMSDefaults extends OpDMS {
 
 		/** Set the message defaults */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1OctetString fg = getDefaultForeground();
 			ASN1OctetString bg = getDefaultBackground();
 			mess.add(bg);
@@ -262,7 +262,7 @@ public class OpSendDMSDefaults extends OpDMS {
 
 		/** Set Ledstar-specific object defaults */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer temp = ledHighTempCutoff.makeInt();
 			ASN1Integer override = ledSignErrorOverride.makeInt();
 			ASN1Integer limit = ledBadPixelLimit.makeInt();
@@ -294,7 +294,7 @@ public class OpSendDMSDefaults extends OpDMS {
 
 		/** Set Skyline-specific object defaults */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer temp = dmsTempCritical.makeInt();
 			ASN1Integer day_night = dynBrightDayNight.makeInt();
 			ASN1Integer day_rate = dynBrightDayRate.makeInt();
@@ -330,7 +330,7 @@ public class OpSendDMSDefaults extends OpDMS {
 
 		/** Set ADDCO-specific object defaults */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer h_border = dmsHorizontalBorder.makeInt();
 			ASN1Integer v_border = dmsVerticalBorder.makeInt();
 			ASN1Integer h_pitch = vmsHorizontalPitch.makeInt();
