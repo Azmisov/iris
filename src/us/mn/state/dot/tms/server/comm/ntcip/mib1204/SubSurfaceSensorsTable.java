@@ -1,10 +1,10 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.server.comm.ntcip.EssValues;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceSensorError;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceType;
-import us.mn.state.dot.tms.units.Distance;
+import static us.mn.state.dot.tms.units.Distance.Units.*;
+import us.mn.state.dot.tms.utils.JsonSerializable;
 
 /**
  * SubSurface sensors data table, where each table row contains data read from a
@@ -26,9 +26,10 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 	}
 
 	/** Table row */
-	static public class Row extends EssValues{
+	static public class Row implements JsonSerializable{
 		/** Row/sensor number */
 		public final int number;
+		/** Sensor location as a display string */
 		public final EssString location;
 		/** Subsurface type enum */
 		public final EssEnum<SubSurfaceType> sub_surface_type;
@@ -50,8 +51,8 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 				new EssEnum<SubSurfaceType>("sub_surface_type", essSubSurfaceType, row);
 			depth = 
 				new EssDistance("depth", essSubSurfaceSensorDepth, row)
-					.setUnits(1, Distance.Units.CENTIMETERS)
-					.setOutput(1, Distance.Units.METERS, 2);
+					.setUnits(1, CENTIMETERS)
+					.setOutput(1, METERS, 2);
 			temp =
 				new EssTemperature("temp", essSubSurfaceTemperature, row);
 			moisture =
@@ -60,44 +61,19 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 				new EssEnum<SubSurfaceSensorError>("sensor_error", essSubSurfaceSensorError, row);
 		}
 
-		/** Get the sensor location */
-		public String getSensorLocation() {
-			return location.get();
-		}
-
-		/** Get sub-surface type or null on error */
-		public SubSurfaceType getSubSurfaceType() {
-			return sub_surface_type.get();
-		}
-
-		/** Get sub-surface temp or null on error */
-		public Integer getTempC() {
-			return temp.toInteger();
-		}
-
-		/** Get sensor error or null on error */
-		public SubSurfaceSensorError getSensorError() {
-			return sensor_error.get();
-		}
-
 		public String toString() {
-			return " subsurftemp(%d)=%d".formatted(number, getTempC());	
+			return " subsurftemp(%d)=%d".formatted(number, temp.toInteger());	
 		}
 		/** Get JSON representation */
 		public String toJson() {
-			StringBuilder sb = new StringBuilder();
-			sb.append('{');
-			sb.append(location.toJson());
-			sb.append(sub_surface_type.toJson());
-			sb.append(depth.toJson());
-			sb.append(temp.toJson());
-			sb.append(moisture.toJson());
-			sb.append(sensor_error.toJson());
-			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-			sb.append("},");
-			return sb.toString();
+			return EssConvertible.toJsonObject(new EssConvertible[]{
+				location,
+				sub_surface_type,
+				depth,
+				temp,
+				moisture,
+				sensor_error
+			});
 		}
 	}
 

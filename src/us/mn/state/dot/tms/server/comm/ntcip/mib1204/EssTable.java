@@ -2,17 +2,23 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import us.mn.state.dot.tms.utils.JsonSerializable;
 
-import us.mn.state.dot.tms.server.comm.ntcip.EssValues;
-
-/**
- * Abstract base class for ESS tables.
+/** Abstract base class for ESS tables. To implement, call
+ * {@link #setSensorCount} when constructing the subclass. You'll need to
+ * define an internal row class to be used for the table, and also provide a
+ * {@link #createRow} implementation to construct said rows. All other table
+ * management is automatically handled
+ *
+ * @param <R> the internal row class for the table
  *
  * @author Isaac Nygaard
  * @copyright 2023 Iteris Inc.
  * @license GPL-2.0
  */
-abstract public class EssTable<R extends EssValues> extends EssValues implements Iterable<R>{
+abstract public class EssTable<R extends JsonSerializable>
+	implements JsonSerializable, Iterable<R>
+{
     /** Rows in table */
 	protected final ArrayList<R> table_rows = new ArrayList<R>();
 	protected EssNumber sensor_count;
@@ -39,7 +45,7 @@ abstract public class EssTable<R extends EssValues> extends EssValues implements
     abstract protected R createRow(int row_num);
 
 	protected static interface FallbackLambda<T, R>{
-		public T operation(R row);
+		public T get(R row);
 	}
 
 	/** Retrieve a member from the first row, if exists, otherwise fallback
@@ -48,7 +54,7 @@ abstract public class EssTable<R extends EssValues> extends EssValues implements
 	public <T> T fallback(FallbackLambda<T, R> lambda, T overall){
 		if (table_rows.isEmpty())
 			return overall;
-		return lambda.operation(table_rows.get(0));
+		return lambda.get(table_rows.get(0));
 	}
 
 	/** Add a row to the table */
@@ -63,6 +69,20 @@ abstract public class EssTable<R extends EssValues> extends EssValues implements
 	public R getRow(int row) {
 		if (row >= 1 && row <= table_rows.size())
 		    return table_rows.get(row - 1);
+		return null;
+	}
+
+	protected static interface FindLambda<R>{
+		public boolean matches(R row);
+	}
+
+	/** Retrieve the first row that meets a condition, or null if no rows meet
+	 * the condition */
+	public R findRow(FindLambda<R> lambda){
+		for (R row : table_rows){
+			if (lambda.matches(row))
+				return row;
+		}
 		return null;
 	}
 
@@ -82,16 +102,9 @@ abstract public class EssTable<R extends EssValues> extends EssValues implements
     }
 
     /** Convert to Json representation; the abstract implementation will
-     * serialize the table rows as a Json list, or an empty string if no rows */
+     * serialize the table rows by appending, removing any trailing comma; or an
+     * empty string is returned if there are no rows */
     public String toJson(){
-        StringBuilder sb = new StringBuilder();
-		if (table_rows.size() > 0) {
-			for (R row : table_rows)
-				sb.append(row.toJson());
-			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-		}
-		return sb.toString();
+		return JsonSerializable.toJson(this, true);
     }
 }

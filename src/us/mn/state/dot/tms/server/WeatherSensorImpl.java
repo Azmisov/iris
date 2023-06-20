@@ -23,7 +23,6 @@ import java.util.Map;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import us.mn.state.dot.sonar.SonarException;
-import us.mn.state.dot.tms.Controller;
 import us.mn.state.dot.tms.DeviceRequest;
 import us.mn.state.dot.tms.GeoLoc;
 import us.mn.state.dot.tms.GeoLocHelper;
@@ -937,6 +936,8 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 			getPrecipSituation()));
 		w.write(createAttribute("precip_1h_mm", getPrecipOneHour()));
 		w.write(createAttribute("visibility_m", getVisibility()));
+		w.write(createAttribute("visibility_situation",
+			VisibilitySituation.from(this)));
 		w.write(createAttribute("atmos_pressure_pa", getPressure()));
 		w.write(createAttribute("atmos_pressure_sealevel_pa", 
 			getSeaLevelPressure()));

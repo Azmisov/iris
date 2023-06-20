@@ -33,23 +33,8 @@ public enum SurfaceStatus implements EssEnumType {
 
 	/** Get the surface status as an enum */
 	static public SurfaceStatus from(WeatherSensor ws) {
-		if (ws != null) {
-			Integer ss = ws.getPvmtSurfStatus();
-			if (ss != null)
-				return fromOrdinal(ss);
-		}
-		return undefined;
-	}
-
-	/** Convert to string, with empty string if null/empty */
-	static public String toStringValid(SurfaceStatus value){
-		return toStringValid(value, "");
-	}
-	/** Convert to string, with custom string if null/empty
-	 * @arg invalid - string to use if status is invalid */
-	static public String toStringValid(SurfaceStatus value, String invalid){
-		if (value != null && value != undefined)
-			return value.toString();
-		return invalid;
+		return ws != null
+			? fromOrdinal(ws.getPvmtSurfStatus())
+			: undefined;
 	}
 }

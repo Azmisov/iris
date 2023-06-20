@@ -40,16 +40,37 @@ public class TemperatureSensorsTable extends EssTable<TemperatureSensorsTable.Ro
 
 	/** Temperature table row */
 	static public class Row extends EssValues{
+		/** Row number */
+		public final int number;
+		/** Sensor height in meters */
 		public final EssDistance height;
+		/** Air temperature in degrees C */
 		public final EssTemperature air_temp;
 
 		/** Create a table row */
 		private Row(int row) {
+			number = row;
 			height = new EssDistance("height", essTemperatureSensorHeight, row);
 			air_temp = new EssTemperature("air_temp", essAirTemperature, row);
 		}
 
-		public String toString(){ return null; }
+		/** Is the nth sensor active? The temperature sensor table has
+		 * no error codes so a sensor is always active if present. */
+		public boolean isActive(){
+			return true;
+		}
+
+		/** Get log/debug string representation */
+		public String toString(){
+			StringBuilder sb = new StringBuilder();
+			sb.append(" isActive(").append(number).append(")=").
+				append(isActive());
+			sb.append(" height(").append(number).append(")=").
+				append(height.toInteger());
+			sb.append(" temp(").append(number).append(")=").
+				append(air_temp.toInteger());
+			return sb.toString();
+		}
 		/** Get JSON representation */
 		public String toJson() {
 			StringBuilder sb = new StringBuilder();
@@ -69,22 +90,21 @@ public class TemperatureSensorsTable extends EssTable<TemperatureSensorsTable.Ro
 		return new Row(row_num);
 	}
 
-	/** Get the dew point temp */
-	public Integer getDewPointTempC() {
-		return dew_point_temp.toInteger();
+	/** Get the first valid temperature or null on error */
+	public Double getFirstValidTemp(){
+		var row = findRow(r -> r.isActive());
+		return row != null ? row.air_temp.toDouble() : null;
 	}
 
-	/** Get the max temp */
-	public Integer getMaxTempC() {
-		return max_air_temp.toInteger();
+	/** Get log/debug string representation */
+	public String toString(){
+		StringBuilder sb = new StringBuilder();
+		sb.append("TemperatureSensorsTable:");
+		sb.append(" size=").append(num_temp_sensors);
+		sb.append(" firstValidTemp=").append(getFirstValidTemp());
+		sb.append(super.toString());
+		return sb.toString();
 	}
-
-	/** Get the min temp */
-	public Integer getMinTempC() {
-		return min_air_temp.toInteger();
-	}
-
-	public String toString(){ return null; }
 	/** Get JSON representation */
 	public String toJson() {
 		StringBuilder sb = new StringBuilder();

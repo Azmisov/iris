@@ -16,6 +16,15 @@ public interface EssEnumType{
         return this.ordinal() > 0;
     }
 
+    /** Serializes to string, with special case if not {@link #isValid} */
+    default String toStringValid(String invalid){
+        return isValid() ? toString() : invalid;
+    }
+    /** Serializes to string, with empty string if not {@link #isValid} */
+    default String toStringValid(){
+        return toStringValid("");
+    }
+
     /** Checks whether value is non-null, then calls {@link #isValid} */
     static <T extends EssEnumType> boolean isValid(T val){
         return val != null && val.isValid();

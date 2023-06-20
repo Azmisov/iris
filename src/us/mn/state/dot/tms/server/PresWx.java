@@ -16,7 +16,6 @@ package us.mn.state.dot.tms.server;
 
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.VisibilitySituation;
-import us.mn.state.dot.tms.WeatherSensorHelper;
 
 /**
  * Present Weather Status, indicated as a collection of characters

@@ -481,7 +481,7 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 			String sft = MISSING;
 			String fzt = MISSING;
 			String swd = MISSING;
-			String sst = tToCsv(row.getTempC());
+			String sst = tToCsv(row.temp.toInteger());
 			writeLine2(wr, sid, senid, dat, pss, sft, fzt, sst, swd);
 			++senid;
 		}

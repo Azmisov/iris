@@ -77,7 +77,7 @@ public class WeatherSensorTheme extends ProxyTheme<WeatherSensor> {
 			Distance.create(p.getVisibility(), 
 			Distance.Units.METERS));
 		ttb.addLine("Visibility Situation",
-			VisibilitySituation.toStringValid(VisibilitySituation.from(p)));
+			VisibilitySituation.from(p).toStringValid());
 		ttb.addLine("Water depth", 
 			p.getWaterDepth(), "cm");
 		ttb.addLine("Relative humidity", 
@@ -91,11 +91,11 @@ public class WeatherSensorTheme extends ProxyTheme<WeatherSensor> {
 		ttb.addLine("Precipitation 1h", 
 			p.getPrecipRate(), "mm");
 		ttb.addLine("Precip. situation",
-			PrecipSituation.toStringValid(PrecipSituation.from(p)));
+			PrecipSituation.from(p).toStringValid());
 		ttb.addLine("Dew point temperature", 
 			Temperature.create(p.getDewPointTemp()));
 		ttb.addLine("Pavement surface status", 
-			SurfaceStatus.toStringValid(SurfaceStatus.from(p)));
+			SurfaceStatus.from(p).toStringValid());
 		ttb.addLine("Pavement temperature", 
 			Temperature.create(p.getPvmtTemp()));
 		ttb.addLine("Surface temperature", 

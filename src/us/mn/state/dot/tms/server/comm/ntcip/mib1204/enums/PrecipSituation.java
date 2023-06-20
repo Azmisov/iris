@@ -44,23 +44,8 @@ public enum PrecipSituation implements EssEnumType {
 
 	/** Get the precipitation situation as an enum */
 	static public PrecipSituation from(WeatherSensor ws) {
-		if (ws != null) {
-			Integer ps = ws.getPrecipSituation();
-			if (ps != null)
-				return fromOrdinal(ps);
-		}
-		return undefined;
-	}
-
-	/** Convert to string, with empty string if null/empty */
-	static public String toStringValid(PrecipSituation value){
-		return toStringValid(value, "");
-	}
-	/** Convert to string, with custom string if null/empty
-	 * @arg invalid - string to use if status is invalid */
-	static public String toStringValid(PrecipSituation value, String invalid){
-		if (value != null && value != undefined)
-			return value.toString();
-		return invalid;
+		return ws != null
+			? fromOrdinal(ws.getPrecipSituation())
+			: undefined;
 	}
 }

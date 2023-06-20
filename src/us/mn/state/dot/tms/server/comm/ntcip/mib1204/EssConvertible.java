@@ -1,6 +1,7 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import us.mn.state.dot.tms.server.comm.snmp.ASN1Object;
+import us.mn.state.dot.tms.utils.JsonBuilder;
 
 /** Interface shared by all EssConverter generic types. We could instead have a
  * non-generic superclass instead, but it ends up being needless abstraction in
@@ -10,7 +11,7 @@ import us.mn.state.dot.tms.server.comm.snmp.ASN1Object;
  * @copyright 2023 Iteris Inc.
  * @license GPL-2.0
  */
-public interface EssConvertible {
+public interface EssConvertible extends JsonBuilder.Buildable {
     /** Get the raw type prior to conversion */
     public ASN1Object getRaw();
     /** Check whether the converted type is ull */
@@ -21,6 +22,4 @@ public interface EssConvertible {
     public Integer toInteger() throws UnsupportedOperationException;
     /** Transforms the converted type to String */
     public String toString();
-    /** Transforms the converted type to Json string */
-    public String toJson();
 }

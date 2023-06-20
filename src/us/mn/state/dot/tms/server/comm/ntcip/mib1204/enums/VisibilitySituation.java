@@ -34,23 +34,8 @@ public enum VisibilitySituation implements EssEnumType {
 
 	/** Get the surface status as an enum */
 	static public VisibilitySituation from(WeatherSensor ws) {
-		if (ws != null) {
-			Integer val = ws.getVisibilitySituation();
-			if (val != null)
-				return fromOrdinal(val);
-		}
-		return undefined;
-	}
-
-	/** Convert to string, with empty string if null/empty */
-	static public String toStringValid(VisibilitySituation value){
-		return toStringValid(value, "");
-	}
-	/** Convert to string, with custom string if null/empty
-	 * @arg invalid - string to use if status is invalid */
-	static public String toStringValid(VisibilitySituation value, String invalid){
-		if (value != null && value != undefined)
-			return value.toString();
-		return invalid;
+		return ws != null
+			? fromOrdinal(ws.getVisibilitySituation())
+			: undefined;
 	}
 }

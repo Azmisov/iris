@@ -126,12 +126,12 @@ public class EssRec {
 
 	/** Store subsurface sensor values */
 	private void storeSubSurface(WeatherSensorImpl ws) {
-		SubSurfaceSensorsTable.Row row = ss_table.getRow(1);
+		var row = ss_table.getRow(1);
 		Integer t = null;
 		// High Sierra stores nothing in this table;
 		// Subsurface temps are stored in pvmt table. (not currently!)
 		if (row != null && ws.getType() != EssType.HIGH_SIERRA)
-			t = row.getTempC();
+			t = row.temp.toInteger();
 		ws.setSubSurfTempNotify(t);
 		ws.setSubsurfaceSensorsTable(ss_table);
 	}

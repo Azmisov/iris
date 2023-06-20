@@ -2,6 +2,7 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import us.mn.state.dot.tms.server.comm.snmp.ASN1Object;
 import us.mn.state.dot.tms.utils.Json;
+import us.mn.state.dot.tms.utils.JsonSerializable;
 
 /** An abstract class that manages conversion from raw MIB1204 nodes to
  * a converted Java object type. This reduces code duplication. There are 

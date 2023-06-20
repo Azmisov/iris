@@ -1,8 +1,8 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.server.comm.ntcip.EssValues;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.WindSituation;
+import us.mn.state.dot.tms.utils.JsonBuilder;
 import static us.mn.state.dot.tms.units.Speed.Units.*;
 
 /**
@@ -58,7 +58,7 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 		new EssAngle("gust_direction", essMaxWindGustDir);
 
 	/** Wind sensor row */
-	static public class Row extends EssValues {
+	static public class Row implements JsonBuilder.Buildable {
 		public final EssDistance height;
 		public final EssSpeed avg_speed;
 		public final EssAngle avg_direction;
@@ -93,22 +93,17 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 			return toJson();
 		}
 		/** Get JSON representation */
-		public String toJson() {
-			StringBuilder sb = new StringBuilder();
-			sb.append('{');
-			sb.append(height.toJson());
-			sb.append(avg_speed.toJson());
-			sb.append(avg_direction.toJson());
-			sb.append(spot_speed.toJson());
-			sb.append(spot_direction.toJson());
-			sb.append(gust_speed.toJson());
-			sb.append(gust_direction.toJson());
-			sb.append(situation.toJson());
-			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-			sb.append("},");
-			return sb.toString();
+		public void toJson(JsonBuilder jb){
+			return EssConvertible.toJsonObject(new EssConvertible[]{
+				height,
+				avg_speed,
+				avg_direction,
+				spot_speed,
+				spot_direction,
+				gust_speed,
+				gust_direction,
+				situation
+			});
 		}
 	}
 
@@ -158,7 +153,8 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 		if (!table_rows.isEmpty()) {
 			sb.append(super.toJson());
 		} else {
-			sb.append('{');
+			sb.append(
+			)
 			sb.append(height.toJson());
 			sb.append(avg_speed.toJson());
 			sb.append(avg_direction.toJson());
@@ -168,9 +164,7 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 			sb.append(gust_direction.toJson());
 			sb.append(situation.toJson());
 			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-			sb.append("}");			
+			sb.setLength(sb.length() - 1);
 		}
 		sb.append("],");
 		return sb.toString();
