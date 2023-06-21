@@ -387,14 +387,14 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		append(sb, formatDate(w.getStamp()));	//DtTm
 		append(sb, tIntToCsv100(w.getAirTemp()));	//AirTemp
 		append(sb, tIntToCsv100(w.getDewPointTemp()));	//Dewpoint
-		append(sb, w.getHumidity());		//Rh
+		append(sb, w.getHumidityQC());		//Rh
 		append(sb, spToCsv(w.getWindSpeed()));	//SpdAvg
 		append(sb, spToCsv(
 			w.getMaxWindGustSpeed()));	//SpdGust
 		append(sb, MISSING);				//DirMin
 		append(sb, w.getWindDir());		//DirAvg
 		append(sb, w.getMaxWindGustDir());	//DirMax
-		append(sb, prToCsv(w.getPressure()));	//Pressure
+		append(sb, prToCsv(w.getPressureQC()));	//Pressure
 		append(sb, capitalizeFirstLetter(
 			WeatherSensorHelper.getPrecipRateIntensity(w)));	//PcIntens
 		append(sb, psToCsv(w));     //PcType
@@ -475,7 +475,7 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		append(sb, getAltitude(w));		//altitude
 		append(sb, w.getDewPointTemp());	//dewpoint
 		append(sb, praToCsvPikalert(w));	//precipRate
-		append(sb, w.getHumidity());		//relHumidity
+		append(sb, w.getHumidityQC());		//relHumidity
 		append(sb, getRoadTempPikalert(1, w));	//roadTemperature1
 		append(sb, getRoadTempPikalert(2, w));	//roadTemperature2
 		append(sb, w.getAirTemp());		//temperature
