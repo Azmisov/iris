@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017 Iteris Inc.
+ * Copyright (C) 2017-2023 Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,13 @@ import us.mn.state.dot.tms.server.comm.snmp.NoSuchName;
  * @author Michael Darter, Isaac Nygaard
  */
 abstract public class OpEss extends OpNtcip {
+
+	/** NTCIP 1204 versions */
+	enum NtcipVer {UNKNOWN, V1, V2, V3};
+
+	/** NTCIP 1204 version number */
+	// TODO: add version detection
+	protected NtcipVer ntcip_ver = NtcipVer.UNKNOWN;
 
 	/** Field sensor */
 	protected final WeatherSensorImpl w_sensor; 

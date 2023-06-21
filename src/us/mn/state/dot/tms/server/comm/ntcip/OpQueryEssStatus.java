@@ -215,7 +215,9 @@ public class OpQueryEssStatus extends OpEss {
 			// Note: this object was introduced in V2
 			var err = queryMany(mess, new EssConvertible[]{
 				pr.ice_or_water_depth,
-				pr.conductivity
+				pr.conductivity,
+				pr.sensor_model_info,
+				pr.temp_depth
 			});
 			// Fallback to V1 water depth
 			if (err != null)
@@ -236,7 +238,7 @@ public class OpQueryEssStatus extends OpEss {
 			pr.sensor_error,
 			pr.salinity,
 			pr.black_ice_signal,
-			pr.sensor_model_info,
+			
 		});
 		log(EssConvertible.toLogString("PavementSurfaceStatus", pr.surface_status));
 		log(EssConvertible.toLogString("PavementSensorError", pr.sensor_error));
