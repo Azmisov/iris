@@ -4,6 +4,7 @@ import us.mn.state.dot.sched.TimeSteward;
 import us.mn.state.dot.tms.server.WeatherSensorImpl;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
+import us.mn.state.dot.tms.utils.JsonBuilder;
 
 /**
  * A collection of weather condition values which can be converted to JSON.
@@ -15,7 +16,7 @@ import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
  * @copyright 2019-2022 Minnesota Department of Transportation
  * @license GPL-2.0
  */
-public class EssRec {
+public class EssRec implements JsonBuilder.Buildable {
 
 	/** Atmospheric values */
 	public final AtmosphericValues atmospheric_values = new AtmosphericValues();
@@ -43,15 +44,17 @@ public class EssRec {
 
 	/** Store the atmospheric values */
 	private void storeAtmospheric(WeatherSensorImpl ws) {
-		ws.setPressureNotify(atmospheric_values.atmospheric_pressure.toInteger());
-		ws.setVisibilityNotify(atmospheric_values.visibility.toInteger());
-		ws.setPressureSensorHeightNotify(
-			atmospheric_values.pressure_sensor_height.toInteger());
-		ws.setElevationNotify(atmospheric_values.reference_elevation.toInteger());
+		var A = atmospheric_values;
+		ws.setPressureNotify(A.atmospheric_pressure.toInteger());
+		ws.setVisibilityNotify(A.visibility.toInteger());
+		ws.setPressureSensorHeightNotify(A.pressure_sensor_height.toInteger());
+		ws.setElevationNotify(A.reference_elevation.toInteger());
+		ws.setVisibilitySituationNotify(A.visibility_situation.toInteger());
 	}
 
 	/** Store the wind sensor data */
 	private void storeWinds(WeatherSensorImpl ws) {
+		// these getters aggregate, so are needed
 		ws.setWindSpeedNotify(ws_table.getAvgSpeed());
 		ws.setWindDirNotify(ws_table.getAvgDir());
 		ws.setSpotWindSpeedNotify(ws_table.getSpotSpeed());
@@ -65,11 +68,7 @@ public class EssRec {
 		ws.setDewPointTempNotify(ts_table.dew_point_temp.toInteger());
 		ws.setMaxTempNotify(ts_table.max_air_temp.toInteger());
 		ws.setMinTempNotify(ts_table.min_air_temp.toInteger());
-		// Air temperature is assumed to be the first sensor
-		// in the table.  Additional sensors are ignored.
-		TemperatureSensorsTable.Row row = ts_table.getRow(1);
-		Integer t = (row != null) ? row.air_temp.toInteger() : null;
-		ws.setAirTempNotify(t);
+		ws.setAirTempNotify(ts_table.getFirstValidTemp().toInteger());
 	}
 
 	/** Store precipitation samples */
@@ -110,10 +109,13 @@ public class EssRec {
 			}
 			// Otherwise generic type; ignore all but first sensor
 			else{
-				pvmt_surf_temp = row.getPvmtTempC();
-				surf_temp = row.getSurfTempC();
-				surf_freeze_temp = row.getFreezePointC();
-				pvmt_surf_status = row.getSurfStatus();
+				// the surface status and first valid surf temp
+				// should come from the same sensor.
+				var valid_row = ps_table.getFirstValidSurfTempRow();
+				pvmt_surf_status = valid_row.getSurfStatus();
+				surf_temp = valid_row.getSurfTempC();
+				pvmt_surf_temp = ps_table.getFirstValidPvmtTemp();
+				surf_freeze_temp = ps_table.getFirstValidSurfFreezeTemp();				
 			}
 		}
 		ws.setPvmtTempNotify(pvmt_surf_temp);
@@ -126,12 +128,11 @@ public class EssRec {
 
 	/** Store subsurface sensor values */
 	private void storeSubSurface(WeatherSensorImpl ws) {
-		var row = ss_table.getRow(1);
 		Integer t = null;
 		// High Sierra stores nothing in this table;
 		// Subsurface temps are stored in pvmt table. (not currently!)
-		if (row != null && ws.getType() != EssType.HIGH_SIERRA)
-			t = row.temp.toInteger();
+		if (ws.getType() != EssType.HIGH_SIERRA)
+			t = ss_table.getFirstValidTemp();
 		ws.setSubSurfTempNotify(t);
 		ws.setSubsurfaceSensorsTable(ss_table);
 	}
@@ -149,20 +150,15 @@ public class EssRec {
 	}
 
 	/** Get JSON representation */
-	public String toJson() {
-		StringBuilder sb = new StringBuilder();
-		sb.append('{');
-		sb.append(atmospheric_values.toJson());
-		sb.append(ws_table.toJson());
-		sb.append(ts_table.toJson());
-		sb.append(precip_values.toJson());
-		sb.append(ps_table.toJson());
-		sb.append(ss_table.toJson());
-		sb.append(rad_values.toJson());
-		// remove trailing comma
-		if (sb.charAt(sb.length() - 1) == ',')
-			sb.setLength(sb.length() - 1);
-		sb.append('}');
-		return sb.toString();
+	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception {
+		jb.object(new JsonBuilder.Buildable[]{
+			atmospheric_values,
+			ws_table,
+			ts_table,
+			precip_values,
+			ps_table,
+			ss_table,
+			rad_values
+		});
 	}
 }

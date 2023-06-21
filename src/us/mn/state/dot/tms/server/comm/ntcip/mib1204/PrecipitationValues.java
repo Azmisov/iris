@@ -2,6 +2,8 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
+import us.mn.state.dot.tms.utils.JsonBuilder;
+
 import static us.mn.state.dot.tms.units.Speed.Units.*;
 import static us.mn.state.dot.tms.units.Distance.Units.*;
 
@@ -14,7 +16,7 @@ import static us.mn.state.dot.tms.units.Distance.Units.*;
  * @copyright 2017-2023 Iteris, Inc
  * @license GPL-2.0
  */
-public class PrecipitationValues {
+public class PrecipitationValues implements JsonBuilder.Buildable{
 	/** Water depth in cm */
 	public final EssDistance water_depth =
 		new EssDistance("water_depth", essWaterDepth)
@@ -81,17 +83,17 @@ public class PrecipitationValues {
 	}
 
 	/** Get JSON representation */
-	public String toJson() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(water_depth.toJson());
-		sb.append(relative_humidity.toJson());
-		sb.append(precip_rate.toJson());
-		sb.append(precip_1_hour.toJson());
-		sb.append(precip_3_hours.toJson());
-		sb.append(precip_6_hours.toJson());
-		sb.append(precip_12_hours.toJson());
-		sb.append(precip_24_hours.toJson());
-		sb.append(precip_situation.toJson());
-		return sb.toString();
+	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+		jb.extend(new EssConvertible[]{
+			water_depth,
+			relative_humidity,
+			precip_rate,
+			precip_1_hour,
+			precip_3_hours,
+			precip_6_hours,
+			precip_12_hours,
+			precip_24_hours,
+			precip_situation,
+		});
 	}
 }

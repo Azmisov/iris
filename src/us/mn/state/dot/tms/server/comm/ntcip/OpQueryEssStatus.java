@@ -28,6 +28,7 @@ import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.TemperatureSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.WindSensorsTable;
 import us.mn.state.dot.tms.server.comm.snmp.ASN1Object;
+import us.mn.state.dot.tms.utils.JsonBuilder;
 
 /**
  * Operation to query the status of a weather sensor.
@@ -111,9 +112,11 @@ public class OpQueryEssStatus extends OpEss {
 			queryMany(mess, new EssConvertible[]{
 				sr.moisture
 			});
-			return ss_table.isDone()
-			      ? QueryTotalSun
-			      : QuerySubSurfaceTable;
+			if (ss_table.isDone()){
+				log(EssConvertible.toLogString("ss_table", ss_table));
+				return QueryTotalSun;
+			}
+			return QuerySubSurfaceTable;
 		}
 	}
 
@@ -124,6 +127,7 @@ public class OpQueryEssStatus extends OpEss {
 			sr.temp,
 			sr.sensor_error
 		}, true);
+		log(EssConvertible.toLogString("SubSurfaceSensorError",sr.sensor_error));
 		// High Sierra RWIS controller can generates err: essSubSurfaceSensorError
 		return new QuerySubSurfaceMoisture(sr);
 	};
@@ -133,9 +137,11 @@ public class OpQueryEssStatus extends OpEss {
 		queryMany(mess, new EssConvertible[]{
 			ss_table.num_sensors
 		});
-		return ss_table.isDone()
-				? QueryTotalSun
-				: QuerySubSurfaceTable;
+		if (ss_table.isDone()){
+			log(EssConvertible.toLogString("ss_table", ss_table));
+			return QueryTotalSun;
+		}
+		return QuerySubSurfaceTable;
 	};
 
 	/** Phase to query mobile friction (as fallback).
@@ -207,8 +213,10 @@ public class OpQueryEssStatus extends OpEss {
 
 		public Pollable<ASN1Object> poll(CommMessage<ASN1Object> mess) throws IOException {
 			// Note: this object was introduced in V2
-			var err = queryMany(mess, new EssConvertible[]{pr.ice_or_water_depth});
-			// Note: essSurfaceConductivityV2 could be polled here
+			var err = queryMany(mess, new EssConvertible[]{
+				pr.ice_or_water_depth,
+				pr.conductivity
+			});
 			// Fallback to V1 water depth
 			if (err != null)
 				return new QueryPavementRowV1(pr);
@@ -227,18 +235,21 @@ public class OpQueryEssStatus extends OpEss {
 			pr.freeze_point,
 			pr.sensor_error,
 			pr.salinity,
-			pr.black_ice_signal
+			pr.black_ice_signal,
+			pr.sensor_model_info,
 		});
-		log("   PavementSurfaceStatus=" + pr.surface_status);
-		log("   PavementSensorError=" + pr.sensor_error);
+		log(EssConvertible.toLogString("PavementSurfaceStatus", pr.surface_status));
+		log(EssConvertible.toLogString("PavementSensorError", pr.sensor_error));
 		return new QueryPavementRowV2(pr);
 	};
 
 	/** Get phase to query next pavement sensor row */
 	Pollable<ASN1Object> nextPavementRow() {
-		return ps_table.isDone()
-		      ? QuerySubSurface
-		      : QueryPavementRow;
+		if (ps_table.isDone()){
+			log(EssConvertible.toLogString("ps_table", ps_table));
+			return QuerySubSurface;
+		}
+		return QueryPavementRow;
 	}
 
 	/** Phase to query pavement values */
@@ -266,7 +277,7 @@ public class OpQueryEssStatus extends OpEss {
 			P.precip_24_hours,
 			P.precip_situation
 		});
-		log("   essPrecipSituation=" + P.precip_situation);
+		log(EssConvertible.toLogString("essPrecipSituation", P.precip_situation));
 		return QueryPavement;
 	};
 
@@ -281,7 +292,7 @@ public class OpQueryEssStatus extends OpEss {
 		if (err != null)
 			return QueryPrecipitation;
 		if (ts_table.isDone()){
-			log(" ts_table=" + ts_table);
+			log(EssConvertible.toLogString("ts_table",ts_table));
 			return QueryPrecipitation;
 		}
 		return this.QueryTemperatureTable;
@@ -296,9 +307,11 @@ public class OpQueryEssStatus extends OpEss {
 			ts_table.max_air_temp,
 			ts_table.min_air_temp
 		});
-		return ts_table.isDone()
-				? QueryPrecipitation
-				: QueryTemperatureTable;
+		if (ts_table.isDone()){
+			log(EssConvertible.toLogString("ts_table",ts_table));
+			return QueryPrecipitation;
+		}
+		return QueryTemperatureTable;
 	};
 
 	/** Phase to query wind sensor values (V1) */
@@ -364,7 +377,7 @@ public class OpQueryEssStatus extends OpEss {
 			A.visibility,
 			A.visibility_situation
 		});
-		log("   essVisibilitySituation=" + A.visibility_situation);
+		log(EssConvertible.toLogString("essVisibilitySituation", A.visibility_situation));
 		return queryWindSensors();
 	};
 
@@ -391,8 +404,13 @@ public class OpQueryEssStatus extends OpEss {
 	@Override
 	public void cleanup() {
 		if (isSuccess()) {
-			w_sensor.setSample(ess_rec.toJson());
-			ess_rec.store(w_sensor);
+			try{
+				w_sensor.setSettings(new JsonBuilder().extend(ess_rec).toJson());
+				ess_rec.store(w_sensor);
+			} catch (JsonBuilder.Exception e){
+				log("Ess JSON serialization error: "+e);
+				log("\t: "+e.json);
+			}
 		}
 		super.cleanup();
 	}

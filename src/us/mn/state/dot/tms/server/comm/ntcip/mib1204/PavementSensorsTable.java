@@ -18,8 +18,7 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
 import us.mn.state.dot.tms.units.Distance;
 import static us.mn.state.dot.tms.units.Distance.Units.*;
-import us.mn.state.dot.tms.utils.Json;
-import us.mn.state.dot.tms.server.comm.ntcip.EssValues;
+import us.mn.state.dot.tms.utils.JsonBuilder;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PavementSensorError;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PavementSensorType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PavementType;
@@ -43,7 +42,7 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 	}
 
 	/** Table row */
-	static public class Row extends EssValues {
+	static public class Row implements JsonBuilder.Buildable {
 		/** Row/sensor number */
 		public final int number;
 		public final EssString location;
@@ -177,16 +176,11 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 			});
 		}
 
-		/** Get surface water depth formatted to meter units */
-		private String getWaterDepth(){
-			return water_depth.toString();
-		}
-
 		/** Get surface ice or water depth formatted to meter units */
-		private String getIceOrWaterDepth(){
-			String out = ice_or_water_depth.toString();
+		private Double getIceOrWaterDepth(){
+			Double out = ice_or_water_depth.toDouble();
 			// fallback to water depth if not present
-			return out == null ? getWaterDepth() : out;
+			return out == null ? water_depth.toDouble() : out;
 		}
 
 		/** Get surface freeze temp or null on error */
@@ -214,41 +208,52 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 			return sensor_model_info.toInteger();
 		}
 
+		/** Is the nth sensor active? */
+		public boolean isActive(){
+			var pse = sensor_error.get();
+			// These values were determined empirically, with valid
+			// temps present when sensor err was one of these:
+			return (pse == PavementSensorError.none ||
+				pse == PavementSensorError.noResponse ||
+				pse == PavementSensorError.other);
+		}
+
+		/** Logging string */
 		public String toString(){
-			StringBuilder sb = new StringBuilder();
-			sb.append(" surftemp(").append(number).append(")=").
-				append(getSurfTempC());
-			sb.append(" pvmttemp(").append(number).append(")=").
-				append(getSurfTempC());
-			sb.append(" pvmtsurfdepth(").append(number).append(")=").
-				append(getWaterDepth());
-			return sb.toString();
+			return new StringBuilder()
+				.append(EssConvertible.toLogString(new EssConvertible[]{
+					sensor_error,
+					surface_temp,
+					pavement_temp,
+					water_depth
+				}, number))
+				.append(EssConvertible.toLogString("isActive", isActive(), number))
+				.toString();
 		}
 		/** Get JSON representation */
-		public String toJson() {
-			StringBuilder sb = new StringBuilder();
-			sb.append('{');
-			sb.append(location.toJson());
-			sb.append(pavement_type.toJson());
-			sb.append(height.toJson());
-			sb.append(exposure.toJson());
-			sb.append(sensor_type.toJson());
-			sb.append(surface_status.toJson());
-			sb.append(surface_temp.toJson());
-			sb.append(pavement_temp.toJson());
-			sb.append(sensor_error.toJson());
-			sb.append(Json.num("ice_or_water_depth", getIceOrWaterDepth()));
-			sb.append(salinity.toJson());
-			sb.append(freeze_point.toJson());
-			sb.append(black_ice_signal.toJson());
-			sb.append(friction.toJson());
-			sb.append(conductivity.toJson());
-			sb.append(temp_depth.toJson());
-			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-			sb.append("},");
-			return sb.toString();
+		public void toJson(JsonBuilder jb) throws JsonBuilder.Exception {
+			jb.beginObject();
+			jb.extend(new EssConvertible[]{
+				location,
+				pavement_type,
+				height,
+				exposure,
+				sensor_type,
+				surface_status,
+				surface_temp,
+				pavement_temp,
+				sensor_error,
+				salinity,
+				freeze_point,
+				black_ice_signal,
+				friction,
+				conductivity,
+				temp_depth
+			});
+			var iw = getIceOrWaterDepth();
+			if (iw != null)
+				jb.pair("ice_or_water_depth", iw);
+			jb.endObject();
 		}
 	}
 
@@ -257,20 +262,48 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 		return new Row(row_num);
 	}
 
+	/** Get the first valid surf freeze temp or null on error */
+	public Integer getFirstValidSurfFreezeTemp(){
+		return findRowValue(r -> r.isActive() ? r.freeze_point.toInteger() : null);
+	}
+
+	/** Get the first valid pavement temp or null on error */
+	public Integer getFirstValidPvmtTemp() {
+		return findRowValue(r -> r.isActive() ? r.pavement_temp.toInteger() : null);
+	}
+
+	/** Get the row for the first valid surface temp or -1 on error */
+	public Row getFirstValidSurfTempRow() {
+		return findRow(r -> r.isActive() && !r.surface_temp.isNull());
+	}
+
+	/** Get the specified nth active sensor row or -1 if none.
+	 * @param nth Nth active sensor, ranges between 1 and size.
+	 * @return One-based row number of nth active sensor */
+	public int getNthActive(int nth) {
+		int[] active_count = {0};
+		var row = findRow(r -> r.isActive() ? ++active_count[0] == nth : false);
+		return row == null ? -1 : row.number;
+	}
+
 	/** To debug/log string */
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("PavementSensorsTable: ");
-		sb.append(" size=").append(size());
-		sb.append(super.toString());
-		return sb.toString();
+		return new StringBuilder()
+			.append("PavementSensorsTable: ")
+			.append(num_sensors.toLogString())
+			.append(EssConvertible.toLogString(
+				"firstValidSurfTempRow", getFirstValidSurfTempRow()))
+			.append(EssConvertible.toLogString(
+				"firstValidPvmtTemp", getFirstValidPvmtTemp()))
+			.append(EssConvertible.toLogString(
+				"firstValidSurfFreezeTemp", getFirstValidSurfFreezeTemp()))
+			.append(super.toString())
+			.toString();
 	}
 
 	/** Get JSON representation */
-	public String toJson() {
-		String rows = super.toString();
-		if (!rows.isEmpty())
-			rows = "\"pavement_sensor\":["+rows+"],";
-		return rows;
+	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+		jb.key("pavement_sensor");
+		super.toJson(jb);
 	}
 }

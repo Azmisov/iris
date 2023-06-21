@@ -16,9 +16,9 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.server.comm.ntcip.EssValues;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.CloudSituation;
 import static us.mn.state.dot.tms.units.Interval.Units.*;
+import us.mn.state.dot.tms.utils.JsonBuilder;
 
 /**
  * Solar radiation sample values.
@@ -26,7 +26,7 @@ import static us.mn.state.dot.tms.units.Interval.Units.*;
  * @author Douglas Lau
  * @author Isaac Nygaard
  */
-public class RadiationValues extends EssValues{
+public class RadiationValues implements JsonBuilder.Buildable{
 	/** Total daily minutes of sun (minutes) */
 	public final EssInterval total_sun = 
 		new EssInterval("total_sun", essTotalSun);
@@ -80,23 +80,20 @@ public class RadiationValues extends EssValues{
 	}
 
 	/** Get JSON representation */
-	public String toJson() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(total_sun.toJson());
-		sb.append(cloud_situation.toJson());
+	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+		jb.extend(new EssConvertible[] {
+			total_sun,
+			cloud_situation
+		});
 		if (!solar_radiation.isNull()){
-			sb.append(solar_radiation.toJson());
+			jb.extend(solar_radiation);
 		} else {
-			sb.append(instantaneous_terrestrial.toJson());
-			sb.append(instantaneous_solar.toJson());
-			sb.append(total_radiation.toJson());
-			sb.append(total_radiation_period.toJson());
+			jb.extend(new EssConvertible[]{
+				instantaneous_terrestrial,
+				instantaneous_solar,
+				total_radiation,
+				total_radiation_period
+			});
 		}
-		return sb.toString();
-	}
-
-	@Override
-	public String toString() {
-		return toJson(); // customize this?
 	}
 }

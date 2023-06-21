@@ -21,6 +21,8 @@ public final class Distance implements Comparable<Distance> {
 		DECIMETERS(0.1, "dm"),
 		CENTIMETERS(0.01, "cm"),
 		MILLIMETERS(0.001, "mm"),
+		TENTH_MILLIMETERS(0.0001, "\u2152mm"),
+		HUNDREDTH_MILLIMETERS(0.00001, "[1/100mm]"),
 		MICROMETERS(0.000001, "um"),
 		MILES(1609.344, "mi"),
 		FEET(MILES.meters / 5280, "ft"),

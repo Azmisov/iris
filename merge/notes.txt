@@ -5,6 +5,7 @@ Merged notes
 9832; dmsxml OpQueryMsg:
     - the createSignMessageWithBitmap isn't using beacon, while it was changed
         to use beacon in the other locations; may want to look into that
+        - probably not, as bitmap signs are relic from 1970's not used anymore; check if Doug's code uses it
     - when message doesnt have text and not rendered bitmap, duration has changed
         to duramins instead of null; I'm assuming that's to accomodate beacon +
         empty message, so leaving it; but could have been introduced by accident
@@ -175,12 +176,81 @@ Weather Patches Cluster:
     - swdToN units I think are messed up; e.g. 1mm*10 != .1mm; I'm going to leave the code
         as is with x100 multiplier, but may want to double check later
     - Doug/Michael both did a lot of refactoring on the table/values design. Starting to
-        see more drastic differences here. I think I will not add the methods from Michael's
-        version unless we know theyre getting called and there isn't a similar interface in
-        Doug's version.
+        see more drastic differences here. I like the idea of doing an abstract EssTable class,
+        since I do notice duplicate code. The various tables are:
+            AtmosphericValues, WindSensorsTable, TemperatureSensorsTable, PrecipitationValues,
+            PavementSensorsTable, SubSurfaceSensorsTable, RadiationValues
     - MIB1204 already merged
     - OpQueryEssStatus: all temp/pvmt rows are already getting queried; some newly added fields
         already queried, so just adding logging there; adding pavement temp depth, sensor model
+    - ice_or_water_depth conversion seems wrong; e.g. new Distance(100 * id, MICROMETERS) with
+        id being in 1/10mm? Shouldn't we just do new Distance(10 * id, MILLIMETERS)
+    - So I've ended up refactoring the conversion from MIB1204 raw types (ASN1Integer) to
+        more concrete java objects like Speed/Distance. The class hierarchy is
+        EssConvertible -> EssConverter ->
+            EssInteger ->
+                EssNumber -> EssUnits ->
+                    EssAngle, EssDistance, EssInterval, EssPressure, EssSpeed, EssTemperature
+                EssEnum
+            EssString
+        It ends up being a lot cleaner, and now we have a unified interface for all
+        converted MIB1204 types. The old code was inconsistent on how it converted from raw
+        values to data to be stored. E.g. sometimes a string, other times a double, other times
+        a rounded double. Would prefer the WeatherSensorImpl.store methods and the Json serialization
+        to use the same units and data type. But can come back and synchronize them up better later.
+    - I pulled out all the EssEnum types into an "enums" folder. Added EssEnumType interface so
+        we can reference them all centrally; pulled out some repeated methods there. The only
+        tricky thing here is the isValid method. Seems it was inconsistent sometimes whether
+        an enum was turned to null, e.g. does "unknown" convert to null? With the isValid method,
+        we always convert to null under the same conditions. Since it was previously inconsistent,
+        can double check later whhen testing to see if we want to change isValid impl for that enum.
+    - I fixed a problem with the OppController.Phase. That affected a lot of files, but the change
+        is actually minor. It had unnecessary use of generics. I also pulled out the poll method into
+        an interface so we can use lambdas instead. Lambda can't be used when passing state, so
+        still need to use Phase for that.
+    - Added queryMany helpers to OpEss which makes OpQueryEssXXX classes much less verbose, at
+        expense of minor memory overhead. It makes use of the unified EssConvertible interface
+        - This catches all errors, which in the current impl was not happening. May need to
+            add a version of queryMany that doesn't catch any errors.
+    - Circular dependency between QueryWindTableV2 and QueryWindSensorsV2; looks like a bug to me
+
+    BlackIceSignal: done; not including desriptions; "other" is converted to null instead; different filename
+    pavementsensorerror,
+    PavementSurfaceStatus,
+    SubSurfaceSensorError:
+        done via EssEnumType
+    PrecipSituation.java: done
+    VisibilitySituation: done
+    WeatherSensor: done
+    WeatherSensorHelper: put from method on the enum instead
+    WeatherSensorTheme:
+        added toStringValid on enum to accomodate; I've pulled this out into EssEnumType,
+        which makes some of changes made in patch #9905 obsolete
+    MainServer: done
+    PresWx: added with minor changes
+    WeatherSensorImpl: done
+    WeatherSensorPikalertJob: done
+    WeatherSensorXmlJob: done
+    EssTable: much is obsolete with my EssConvertible refactor; I've created a 
+        new EssTable implementation that pulls out a lot of the shared table code
+    PavementSensorsTable: done, major refactoring
+    PikalertRoadState: done, minor renaming
+    SubsurfaceSensorsTable: done, major refactoring
+    TemperatureSensorsTable: done, major refactoring
+    MIB1204: done
+    SString: TODO
+    OpQueryEssStatus: done, lots of refactoring
+    WeathersensorCsvWriter: a lot of the code can be eliminated if we just
+        use the EssConverter types for storage. I'm thinking also maybe we could
+        store a JSON EssConverter structure in WeatherSensor, and that would
+        eliminate all the storeXXX values. I'm not going to implement those in
+        the interest of time, but we could come back.
+
+        Maybe add toDouble/toInteger/toString(scale, units) to all the EssUnit
+        classes? Can make conversions a bit easier when we keep switching
+        between formats. Though preferably we'd just settle on a single
+        representation for the value.
+    EssRec: done, not including toString changes
 
 
 

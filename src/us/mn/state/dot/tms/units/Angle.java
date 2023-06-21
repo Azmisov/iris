@@ -162,6 +162,11 @@ final public class Angle {
 		return new Angle(floorRev(rads) + (ceilRev(rads) - rads), Units.RADIANS);
 	}
 
+	/** Add to the angle */
+	public Angle add(double degs) {
+		return new Angle(asDouble(Units.DEGREES) + degs);
+	}
+
 	/** Return the direction as a human readable string.
 	 * @return The direction as N, NE, E, SE, S, SW, W, NW */
 	public String toShortDir() {

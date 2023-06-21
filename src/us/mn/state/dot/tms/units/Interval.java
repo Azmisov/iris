@@ -84,7 +84,7 @@ public final class Interval implements Comparable<Interval> {
 
 	/** Get double representation of interval, converted to specified units */
 	public double asDouble(Units units){
-		return convert(units).value;
+		return (value*this.units.seconds)/units.seconds;
 	}
 
 	/** Convert an interval to specified units.

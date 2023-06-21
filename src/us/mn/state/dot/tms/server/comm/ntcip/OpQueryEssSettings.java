@@ -15,12 +15,9 @@
  */
 package us.mn.state.dot.tms.server.comm.ntcip;
 
-import java.io.IOException;
 import us.mn.state.dot.tms.server.WeatherSensorImpl;
-import us.mn.state.dot.tms.server.comm.CommMessage;
 import us.mn.state.dot.tms.server.comm.PriorityLevel;
-import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-
+import us.mn.state.dot.tms.utils.JsonBuilder;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssConvertible;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssRec;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssType;
@@ -28,14 +25,12 @@ import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.TemperatureSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.WindSensorsTable;
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PavementSensorType;
 import us.mn.state.dot.tms.server.comm.snmp.ASN1Object;
-import us.mn.state.dot.tms.server.comm.snmp.NoSuchName;
 
 /**
  * Operation to query a weather sensor's settings.
  *
- * @author Michael Darter
+ * @author Michael Darter, Isaac Nygaard
  * @author Douglas Lau
  */
 public class OpQueryEssSettings extends OpEss {
@@ -182,8 +177,14 @@ public class OpQueryEssSettings extends OpEss {
 	/** Cleanup the operation */
 	@Override
 	public void cleanup() {
-		if (isSuccess())
-			w_sensor.setSettings(ess_rec.toJson());
+		if (isSuccess()){
+			try{
+				w_sensor.setSettings(new JsonBuilder().extend(ess_rec).toJson());
+			} catch (JsonBuilder.Exception e){
+				log("Ess JSON serialization error: "+e);
+				log("\t: "+e.json);
+			}
+		}
 		super.cleanup();
 	}
 }

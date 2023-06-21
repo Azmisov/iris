@@ -2,7 +2,7 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import java.lang.UnsupportedOperationException;
 import us.mn.state.dot.tms.server.comm.snmp.ASN1OctetString;
-import us.mn.state.dot.tms.utils.Json;
+import us.mn.state.dot.tms.utils.JsonBuilder;
 
 /** Implementaiton of {@link EssConverter} for "display strings". If other
  * use cases become needed, this functionality can be pulled out into a
@@ -37,9 +37,10 @@ public class EssString extends EssConverter<String, ASN1OctetString>{
 	}
 	/** Json key + string, or an empty string if null */
 	@Override
-	public String toJson(){
-		var val = toString();
-		return val.isEmpty() ? val : Json.str(json_key, val);
+	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+		String val = get(e -> e.toString());
+		if (val != null)
+			jb.pairOrValue(json_key, val);
 	}
 
 	// numeric conversion not supported

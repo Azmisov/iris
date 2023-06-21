@@ -1,7 +1,7 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.server.comm.ntcip.EssValues;
+import us.mn.state.dot.tms.utils.JsonBuilder;
 
 /**
  * Temperature sensors data table, where each table row contains data read from
@@ -39,7 +39,7 @@ public class TemperatureSensorsTable extends EssTable<TemperatureSensorsTable.Ro
 		new EssTemperature("min_air_temp", essMinTemp);
 
 	/** Temperature table row */
-	static public class Row extends EssValues{
+	static public class Row implements JsonBuilder.Buildable{
 		/** Row number */
 		public final int number;
 		/** Sensor height in meters */
@@ -62,26 +62,20 @@ public class TemperatureSensorsTable extends EssTable<TemperatureSensorsTable.Ro
 
 		/** Get log/debug string representation */
 		public String toString(){
-			StringBuilder sb = new StringBuilder();
-			sb.append(" isActive(").append(number).append(")=").
-				append(isActive());
-			sb.append(" height(").append(number).append(")=").
-				append(height.toInteger());
-			sb.append(" temp(").append(number).append(")=").
-				append(air_temp.toInteger());
-			return sb.toString();
+			return new StringBuilder()
+				.append(EssConvertible.toLogString("isActive",isActive(),number))
+				.append(EssConvertible.toLogString(new EssConvertible[]{
+					height,
+					air_temp,
+				}))
+				.toString();
 		}
 		/** Get JSON representation */
-		public String toJson() {
-			StringBuilder sb = new StringBuilder();
-			sb.append('{');
-			sb.append(height.toJson());
-			sb.append(air_temp.toJson());
-			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-			sb.append("},");
-			return sb.toString();
+		public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+			jb.object(new EssConvertible[] {
+				height,
+				air_temp
+			});
 		}
 	}
 
@@ -91,32 +85,30 @@ public class TemperatureSensorsTable extends EssTable<TemperatureSensorsTable.Ro
 	}
 
 	/** Get the first valid temperature or null on error */
-	public Double getFirstValidTemp(){
-		var row = findRow(r -> r.isActive());
-		return row != null ? row.air_temp.toDouble() : null;
+	public EssTemperature getFirstValidTemp(){
+		return findRowValue(r -> r.isActive() ? r.air_temp : null);
 	}
 
 	/** Get log/debug string representation */
 	public String toString(){
-		StringBuilder sb = new StringBuilder();
-		sb.append("TemperatureSensorsTable:");
-		sb.append(" size=").append(num_temp_sensors);
-		sb.append(" firstValidTemp=").append(getFirstValidTemp());
-		sb.append(super.toString());
-		return sb.toString();
+		return new StringBuilder()
+			.append("TemperatureSensorsTable:")
+			.append(num_temp_sensors.toLogString())
+			.append(EssConvertible.toLogString("firstValidTemp", getFirstValidTemp()))
+			.append(super.toString())
+			.toString();
 	}
 	/** Get JSON representation */
-	public String toJson() {
-		StringBuilder sb = new StringBuilder();
-		if (table_rows.size() > 0) {
-			sb.append("\"temperature_sensor\":[");
-			sb.append(super.toJson());
-			sb.append("],");
+	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+		if (!isEmpty()){
+			jb.key("temperature_sensor");
+			super.toJson(jb);
 		}
-		sb.append(wet_bulb_temp.toJson());
-		sb.append(dew_point_temp.toJson());
-		sb.append(max_air_temp.toJson());
-		sb.append(min_air_temp.toJson());
-		return sb.toString();
+		jb.extend(new EssConvertible[]{
+			wet_bulb_temp,
+			dew_point_temp,
+			max_air_temp,
+			min_air_temp
+		});
 	}
 }

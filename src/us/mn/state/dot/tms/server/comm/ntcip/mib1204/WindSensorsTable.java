@@ -89,12 +89,9 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 				new EssEnum<WindSituation>("situation", windSensorSituation, row);
 		}
 
-		public String toString(){
-			return toJson();
-		}
 		/** Get JSON representation */
-		public void toJson(JsonBuilder jb){
-			return EssConvertible.toJsonObject(new EssConvertible[]{
+		public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+			jb.extend(new EssConvertible[]{
 				height,
 				avg_speed,
 				avg_direction,
@@ -147,26 +144,21 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 	}
 
 	/** Get JSON representation */
-	public String toJson() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("\"wind_sensor\":[");
-		if (!table_rows.isEmpty()) {
-			sb.append(super.toJson());
-		} else {
-			sb.append(
-			)
-			sb.append(height.toJson());
-			sb.append(avg_speed.toJson());
-			sb.append(avg_direction.toJson());
-			sb.append(spot_speed.toJson());
-			sb.append(spot_direction.toJson());
-			sb.append(gust_speed.toJson());
-			sb.append(gust_direction.toJson());
-			sb.append(situation.toJson());
-			// remove trailing comma
-			sb.setLength(sb.length() - 1);
+	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+		jb.key("wind_sensor");
+		if (!isEmpty())
+			super.toJson(jb);
+		else {
+			jb.list(new EssConvertible[]{
+				height,
+				avg_speed,
+				avg_direction,
+				spot_speed,
+				spot_direction,
+				gust_speed,
+				gust_direction,
+				situation
+			});
 		}
-		sb.append("],");
-		return sb.toString();
 	}
 }

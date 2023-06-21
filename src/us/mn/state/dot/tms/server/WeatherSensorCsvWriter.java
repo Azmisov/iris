@@ -1,17 +1,3 @@
-/*
- * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017-2018  Iteris Inc.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
 package us.mn.state.dot.tms.server;
 
 import java.io.IOException;
@@ -22,21 +8,28 @@ import java.util.TimeZone;
 import java.util.Iterator;
 import us.mn.state.dot.tms.WeatherSensor;
 import us.mn.state.dot.tms.WeatherSensorHelper;
+import us.mn.state.dot.tms.units.Distance;
 import us.mn.state.dot.tms.units.Pressure;
 import us.mn.state.dot.tms.units.Speed;
+import us.mn.state.dot.tms.units.Temperature;
 import us.mn.state.dot.tms.utils.SString;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssTemperature;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.EssEnumType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
 import us.mn.state.dot.tms.GeoLoc;
 import us.mn.state.dot.tms.GeoLocHelper;
 import us.mn.state.dot.tms.geo.Position;
+import us.mn.state.dot.tms.server.comm.snmp.ASN1Integer;
 
 /**
  * Write SSI ScanWeb CSV weather export files.
  *
- * @author Michael Darter
+ * @author Michael Darter, Isaac Nygaard
+ * @copyright 2017-2023 Iteris Inc.
+ * @license GPL-2.0
  */
 public class WeatherSensorCsvWriter extends XmlWriter {
 
@@ -151,31 +144,15 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		return MISSING;
 	}
 
-	/** Convert an NTCIP temperature to C.
-	 * @arg v Temperature in tenths of deg C else 1001 or null if missing.
-	 * @return Temperature in C or null for missing */
-	static private Double tNtcipToDouble(ASN1Integer v) {
-		if (v != null) {
-			Integer iv = v.getInteger();
-			if (iv != null && iv != 1001) {
-				Double degc = .1 * iv.doubleValue();
-				return degc;
-			}
-		}
-		return null;
-	}
-
 	/** Convert an NTCIP temperature to CSV temperature.
- 	 * @arg v Temperature in tenths of deg C else 1001 or null if missing.
+ 	 * @arg v base temperature
  	 * @return Temperature as hundredths of a degree C or 
  	 * 	   the empty string for missing */
-	static private String tNtcipToCsvString(ASN1Integer v) {
-		Double tc = tNtcipToDouble(v);
-		if (tc != null) {
-			return String.valueOf(Math.round(tc * 100));
-		} else {
-			return MISSING;
-		}
+	static private String essTempToCsv100(EssTemperature v) {
+		return v.get(
+			t -> String.valueOf(t.round(Temperature.Units.HUNDREDTH_CELSIUS)),
+			MISSING
+		);
 	}
 
 	/** Convert a temperature in C to a string.
@@ -189,7 +166,7 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 	 * @arg status - surface status
 	 * @return Pavement surface status description or empty if missing. */
 	static private String pssToN(SurfaceStatus status) {
-		if (status != null && status != SurfaceStatus.undefined)
+		if (EssEnumType.isValid(status))
 			return SString.splitCamel(status.toString());
 		return MISSING;
 	}
@@ -198,11 +175,11 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 	 * @arg row - row to fetch from
 	 * @return Pavement surface water depth in .1 mm or empty if missing */
 	static private String swdToN(PavementSensorsTable.Row row) {
-		// meters given; want to convert to 1/10th of mm
-		String val = row.getWaterDepth(100);
-		if (val != null)
-			return val;
-		return MISSING;
+		return row.water_depth.get(
+			// m -> 1/10 mm
+			d -> String.valueOf(d.round(Distance.Units.TENTH_MILLIMETERS)),
+			MISSING
+		);
 	}
 
 	/** Convert pressure in pascals to CSV pressure.
@@ -236,7 +213,7 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 	static private String visToCsv(WeatherSensorImpl w) {
 		Integer v = w.getVisibility();
 		return (v != null ? String.valueOf(v) : MISSING);
-		}
+	}
 
 	/** Convert precipitation accumulation to CSV units.
 	 * @arg v Precip accum in mm, null for missing.
@@ -467,8 +444,8 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		PavementSensorsTable ps_t = w.getPavementSensorsTable();
 		for (var row: ps_t){
 			String pss = pssToN(row.getSurfStatus());
-			String sft = tNtcipToCsvString(row.getSurfTempC());
-			String fzt = tNtcipToCsvString(row.getFreezePointC());
+			String sft = essTempToCsv100(row.surface_temp);
+			String fzt = essTempToCsv100(row.freeze_point);
 			String swd = swdToN(row);
 			String sst = MISSING; // pvmt temp is not subsurf
 			writeLine2(wr, sid, senid, dat, pss, sft, fzt, sst, swd);
@@ -481,7 +458,7 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 			String sft = MISSING;
 			String fzt = MISSING;
 			String swd = MISSING;
-			String sst = tToCsv(row.temp.toInteger());
+			String sst = tToCsv(row.temp.toDouble());
 			writeLine2(wr, sid, senid, dat, pss, sft, fzt, sst, swd);
 			++senid;
 		}

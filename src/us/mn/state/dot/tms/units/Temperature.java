@@ -30,6 +30,8 @@ public final class Temperature {
 	public enum Units {
 		KELVIN(1, 0, "\u00B0K"),
 		CELSIUS(1, 273.15, "\u00B0C"),
+		TENTH_CELSIUS(.1, 2731.5, "\u2152\u00B0C]"),
+		HUNDREDTH_CELSIUS(.01, 27315, "[1/100\u00B0C]"),
 		FAHRENHEIT(5.0 / 9.0, 459.67, "\u00B0F"),
 		RANKINE(Units.FAHRENHEIT.k_scale, 0, "\u00B0R");
 

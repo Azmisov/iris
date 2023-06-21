@@ -4,7 +4,7 @@ import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceSensorError;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceType;
 import static us.mn.state.dot.tms.units.Distance.Units.*;
-import us.mn.state.dot.tms.utils.JsonSerializable;
+import us.mn.state.dot.tms.utils.JsonBuilder;
 
 /**
  * SubSurface sensors data table, where each table row contains data read from a
@@ -26,7 +26,7 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 	}
 
 	/** Table row */
-	static public class Row implements JsonSerializable{
+	static public class Row implements JsonBuilder.Buildable{
 		/** Row/sensor number */
 		public final int number;
 		/** Sensor location as a display string */
@@ -61,19 +61,40 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 				new EssEnum<SubSurfaceSensorError>("sensor_error", essSubSurfaceSensorError, row);
 		}
 
+		/** Is this sensor active? */
+		public boolean isActive(){
+			// These values were determined empirically, with valid
+			// surface temps present when sensor err was one of these:
+			var se = sensor_error.get();
+			return (se == SubSurfaceSensorError.none || 
+				se == SubSurfaceSensorError.noResponse ||
+				se == SubSurfaceSensorError.other);
+		}
+
+		/** Logging format */
 		public String toString() {
-			return " subsurftemp(%d)=%d".formatted(number, temp.toInteger());	
+			return new StringBuilder()
+				.append(EssConvertible.toLogString(new EssConvertible[]{
+					temp,
+					location,
+					sub_surface_type,
+					depth,
+					moisture,
+					sensor_error
+				}, number))
+				.append(EssConvertible.toLogString("isActive",isActive(),number))
+				.toString();
 		}
 		/** Get JSON representation */
-		public String toJson() {
-			return EssConvertible.toJsonObject(new EssConvertible[]{
+		public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+			jb.extend(new EssConvertible[]{
 				location,
 				sub_surface_type,
 				depth,
 				temp,
 				moisture,
 				sensor_error
-			});
+			}).pair("active", isActive());
 		}
 	}
 
@@ -82,20 +103,23 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 		return new Row(row_num);
 	}
 
+	/** Get the first valid temperature or null on error */
+	public Integer getFirstValidTemp() {
+		return findRowValue(r -> r.isActive() ? r.temp.toInteger() : null);
+	}
+
 	/** To string */
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("SubsurfaceSensorsTable: ");
-		sb.append(" size=").append(size());
-		sb.append(super.toString());
-		return sb.toString();
+		return new StringBuilder()
+			.append("SubsurfaceSensorsTable: ")
+			.append(num_sensors.toLogString())
+			.append(super.toString())
+			.toString();
 	}
 
 	/** Get JSON representation */
-	public String toJson() {
-		String rows = super.toJson();
-		if (!rows.isEmpty())
-			rows = "\"sub_surface_sensor\":["+rows+"],";
-		return rows;
+	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+		jb.key("sub_surface_sensor");
+		super.toJson(jb);
 	}
 }

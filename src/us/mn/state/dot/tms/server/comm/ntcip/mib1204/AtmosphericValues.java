@@ -16,6 +16,8 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.VisibilitySituation;
+import us.mn.state.dot.tms.utils.JsonBuilder;
+
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
 import static us.mn.state.dot.tms.units.Distance.Units.*;
 
@@ -25,7 +27,7 @@ import static us.mn.state.dot.tms.units.Distance.Units.*;
  * @author Douglas Lau
  * @author Michael Darter, Isaac Nygaard
  */
-public class AtmosphericValues {
+public class AtmosphericValues implements JsonBuilder.Buildable{
 	/** Elevation of reference in meters */
 	public final EssDistance reference_elevation =
 		new EssDistance("ref_elevation", essReferenceHeight)
@@ -71,13 +73,13 @@ public class AtmosphericValues {
 	}
 
 	/** Get JSON representation */
-	public String toJson() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(reference_elevation.toJson());
-		sb.append(pressure_sensor_height.toJson());
-		sb.append(atmospheric_pressure.toJson());
-		sb.append(visibility.toJson());
-		sb.append(visibility_situation.toJson());
-		return sb.toString();
+	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+		jb.extend(new EssConvertible[]{
+			reference_elevation,
+			pressure_sensor_height,
+			atmospheric_pressure,
+			visibility,
+			visibility_situation
+		});
 	}
 }

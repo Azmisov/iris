@@ -1,8 +1,7 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import us.mn.state.dot.tms.server.comm.snmp.ASN1Object;
-import us.mn.state.dot.tms.utils.Json;
-import us.mn.state.dot.tms.utils.JsonSerializable;
+import us.mn.state.dot.tms.utils.JsonBuilder;
 
 /** An abstract class that manages conversion from raw MIB1204 nodes to
  * a converted Java object type. This reduces code duplication. There are 
@@ -64,6 +63,19 @@ abstract public class EssConverter<C, N extends ASN1Object> implements EssConver
 		this.json_key = json_key;
 		this.raw = raw;
 	}
+
+	/** Get name of this attribute */
+	public String getName(){
+		return json_key;
+	}
+	/** Fetch value and check if it is null */
+	public boolean isNull(){
+		return get() == null;
+	}
+	/** Fetch the raw value */
+	public ASN1Object getRaw(){
+		return raw;
+	}
 	
 	/** Convert from the raw {@link #node} */
 	abstract protected C convert();
@@ -81,16 +93,6 @@ abstract public class EssConverter<C, N extends ASN1Object> implements EssConver
 		return value;
 	}
 
-	/** Fetch value and check if it is null */
-	public boolean isNull(){
-		return get() == null;
-	}
-
-	/** Fetch the raw value */
-	public ASN1Object getRaw(){
-		return raw;
-	}
-
 	public static interface GetLambda<C, T>{
 		/** Receives the non-null, converted value and should return a
 		 * transformation on that value
@@ -100,10 +102,18 @@ abstract public class EssConverter<C, N extends ASN1Object> implements EssConver
 
 	/** Same as {@link #get}, but also perform an additional transformation if
 	 * the value is not null
+	 * @param fallback value to return if the value is null (the lambda can
+	 * 	still return null, however)
+	 */
+	public <T> T get(GetLambda<C, T> lambda, T fallback){
+		get();
+		return value != null ? lambda.operation(value) : fallback;
+	}
+	/** Same as {@link #get} with lambda transformation with `fallback`
+	 * defaulting to null
 	 */
 	public <T> T get(GetLambda<C, T> lambda){
-		get();
-		return value != null ? lambda.operation(value) : null;
+		return get(lambda, null);
 	}
 
 	/** Convert to a double output representation; by default, simply cast
@@ -121,21 +131,31 @@ abstract public class EssConverter<C, N extends ASN1Object> implements EssConver
 		return d != null ? Math.toIntExact(Math.round(d)) : null;
 	}
 
-	/** Serialize to a JSON string. The default implementation passes the
-	 * output of {@link #toString} to {@link Json#num}. An empty string is
-	 * returned if {@link #toString} was empty.
+	/** Serialize to a JSON. The default implementation uses
+	 * {@link JsonBuilder#pairOrValue} with {@link #json_key} and
+	 * {@link #toDouble} output. If the value is null, nothing is written
 	 */
-	public String toJson(){
-		var val = toString();
-		return val.isEmpty() ? val : Json.num(json_key, val);
+	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+		Double v = toDouble();
+		if (v != null)
+			jb.pairOrValue(json_key, v);
 	}
 
 	/** Get string representation. The default implementation passes the output
 	 * of {@link #toDouble} to {@link Double#toString}. An empty string is
-	 * returned if value is null.
+	 * returned if value is null. Double is converted to a long for more
+	 * compact serialization if possible.
 	 */
 	public String toString(){
 		var val = toDouble();
-		return val != null ? Double.toString(val) : "";
+		if (val == null)
+			return "";
+		// can represent as long?
+		if (Double.isFinite(val)){
+			long i = val.longValue();
+			if (i == val)
+				return Long.toString(i);
+		}
+		return Double.toString(val);
 	}
 }

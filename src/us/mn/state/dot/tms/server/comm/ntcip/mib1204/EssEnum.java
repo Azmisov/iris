@@ -2,7 +2,7 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.EssEnumType;
 import java.lang.reflect.ParameterizedType;
-import us.mn.state.dot.tms.utils.Json;
+import us.mn.state.dot.tms.utils.JsonBuilder;
 
 /** Converts {@link MIB1204} raw types to a generic enum type. The enum
  * should implement {@link EssEnumType}. A value that doesn't pass
@@ -57,12 +57,12 @@ public class EssEnum<T extends Enum<T> & EssEnumType> extends EssInteger<T>{
 	}
 	@Override
 	public String toString(){
-		String out = get(e -> e.toString());
-		return out == null ? "" : out;
+		return get(e -> e.toString(), "");
 	}
 	@Override
-	public String toJson(){
-		var val = toString();
-		return val.isEmpty() ? val : Json.str(json_key, val);
+	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+		String val = get(e -> e.toString());
+		if (val != null)
+			jb.pairOrValue(json_key, val);
 	}
 }
