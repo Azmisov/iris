@@ -89,6 +89,37 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		});
 	}
 
+	/** Return a value, given a key=value pair embedded in a string.
+	 * @param field A string containing 0 or more key=value 
+	 * 		pairs, never null.
+	 * @param key A string key corresponding to the returned 
+	 * 		value, never null.
+	 * @param dvalue The default value returned if the key is not found.
+	 * @return The value X extracted from the key value pair in the
+	 * 	   form "key=X", otherwise the default */
+	static private String parse(String field, String key, String dvalue) {
+		if (field == null || field.isEmpty())
+			return dvalue;
+		if (key == null || key.isEmpty())
+			return dvalue;
+		field = SString.stripCrLf(field);
+		String[] words = field.split(" ");
+		if (words == null)
+			return dvalue;
+		key += "=";
+		for (String w : words) {
+			//if (!w.contains(key))
+			//if (!w.equals(key))
+			if (!w.startsWith(key))
+				continue;
+			String[] kv = w.split("=");
+			if (kv == null || kv.length != 2)
+				continue;
+			return kv[1].trim();
+		}
+		return dvalue;
+	}
+
 	/** Get a mapping of the columns */
 	@Override
 	public Map<String, Object> getColumns() {
@@ -192,6 +223,23 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 			setSiteId(sid);
 		}
 	}
+
+	/** Get the pikalert site id from the notes field.
+	 * @return The string X extracted from the word "psiteid=X" 
+	 * 	   within the notes field else the siteid else the 
+	 * 	   name. If the specified pikalert site id is not
+	 * 	   between 4 and 6 chars an error message is logged */
+	public String getPikalertSiteId() {
+		final String PALERT_SITEID_KEY = "psiteid";
+		String pid = parse(getNotes(), PALERT_SITEID_KEY, getSiteId());
+		pid = (pid != null ? pid : "");
+		if (pid.length() < 4 || pid.length() > 6) {
+			System.err.println("Ignored Pikalert site" + 
+				" id for weather sensor " + getName()+ 
+				"(" + pid + "), width is not 4-6 chars.");
+		}
+		return pid;
+ 	}
 
 	/** Alt id (null for missing) */
 	private transient String alt_id;
@@ -902,6 +950,8 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 	public String toStringDebug() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(WeatherSensor: name=").append(name);
+		sb.append(" siteid=").append(getSiteId());
+		sb.append(" pikalertsiteid=").append(getSiteId());
 		sb.append(" time_stamp=").append(getStampString());
 		sb.append(" siteId=").append(getSiteId());
 		sb.append(" altId=").append(getAltId());
@@ -947,6 +997,9 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 			GeoLocHelper.getLocation(geo_loc)));
 		w.write(createAttribute("notes", 
 			SString.stripCrLf(getNotes())));
+		w.write(createAttribute("siteid", getSiteId()));
+		w.write(createAttribute("pikalertsiteid", 
+			getPikalertSiteId()));
 		Position pos = GeoLocHelper.getWgs84Position(geo_loc);
 		if (pos != null) {
 			w.write(createAttribute("lon",

@@ -468,7 +468,7 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		String lat = SString.doubleToString(pos.getLatitude(), 8); //1mm
 		String lon = SString.doubleToString(pos.getLongitude(), 8); //1mm
 
-		append(sb, w.getSiteId());		//stationID
+		append(sb, w.getPikalertSiteId());	//pikalert siteid
 		append(sb, formatDate2(w.getStamp()));	//observationTime
 		append(sb, lat);			//latitude
 		append(sb, lon);			//longitude
