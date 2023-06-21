@@ -44,31 +44,6 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 	/** CSV missing value */
 	static private final String MISSING = "";
 
-	/** Get the site id from the notes field.
-	 * @param ws Weather sensor
-	 * @return The string X extracted from the word "siteid=X" 
-	 * 	   within the notes field or the sensor's name. */
-	static private String getSiteId(WeatherSensorImpl ws) {
-		if (ws == null)
-			return MISSING;
-		String notes = ws.getNotes();
-		if (notes == null)
-			return ws.getName();
-		notes = SString.stripCrLf(notes);
-		String[] words = notes.split(" ");
-		if (words == null)
-			return ws.getName();
-		for (String w : words) {
-			if (!w.contains("siteid="))
-				continue;
-			String[] kv = w.split("=");
-			if (kv == null || kv.length != 2)
-				continue;
-			return kv[1].trim();
-		}
-		return ws.getName();
-	}
-
 	/** File type to generate */
 	final private int f_type;
 
@@ -408,7 +383,7 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		throws IOException
 	{
 		StringBuilder sb = new StringBuilder();
-		append(sb, getSiteId(w));		//Siteid
+		append(sb, w.getSiteId());		//Siteid
 		append(sb, formatDate(w.getStamp()));	//DtTm
 		append(sb, tIntToCsv100(w.getAirTemp()));	//AirTemp
 		append(sb, tIntToCsv100(w.getDewPointTemp()));	//Dewpoint
@@ -434,7 +409,7 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 	private void writeLine2(Writer wr, WeatherSensorImpl w) 
 		throws IOException
 	{
-		String sid = getSiteId(w);
+		String sid = w.getSiteId();
 		int senid = 0;
 		String dat = formatDate(w.getStamp());
 		// iterate through pavement sensor table
@@ -455,7 +430,7 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 			String sft = MISSING;
 			String fzt = MISSING;
 			String swd = MISSING;
-			String sst = tToCsv(row.temp.toDouble());
+			String sst = essTempToCsv100(row.temp);
 			writeLine2(wr, sid, senid, dat, pss, sft, fzt, sst, swd);
 			++senid;
 		}
@@ -493,7 +468,7 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		String lat = SString.doubleToString(pos.getLatitude(), 8); //1mm
 		String lon = SString.doubleToString(pos.getLongitude(), 8); //1mm
 
-		append(sb, getSiteId(w));		//stationID
+		append(sb, w.getSiteId());		//stationID
 		append(sb, formatDate2(w.getStamp()));	//observationTime
 		append(sb, lat);			//latitude
 		append(sb, lon);			//longitude

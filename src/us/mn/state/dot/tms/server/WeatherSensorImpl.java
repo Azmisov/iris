@@ -259,8 +259,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 	/** Get the humidity as a percentage (null if missing) */
 	@Override
 	public Integer getHumidity() {
-		// humidity of 0 is impossible and considered an error
-		return (humidity != 0 ? humidity : null);
+		return humidity;
 	}
 
 	/** Set the humidity.
