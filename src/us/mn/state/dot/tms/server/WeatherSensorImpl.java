@@ -281,7 +281,8 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 	 * @param hu Humidity as a percentage or null for missing */
 	public void setHumidityNotify(Integer hu) {
 		// humidity of 0 is impossible and considered an error
-		hu = (hu != 0 ? hu : null);
+		if (hu != null && hu == 0)
+			hu = null;
 		if (!objectEquals(hu, humidity)) {
 			humidity = hu;
 			notifyAttribute("humidity");
