@@ -337,12 +337,8 @@ public class SString {
 	 * @param str String that may be null
 	 * @return Argument with CR, LF tabs and extra spaces removed */
 	static public String stripCrLf(String str) {
-		if (str != null) {
-			str = str.replace("\n", " ");
-			str = str.replace("\r", " ");
-			str = str.replace("\t", " ");
-			str = str.trim();
-		}
-		return str;
+		return str != null
+			? str.replaceAll("\\s", " ").trim()
+			: str;
 	}
 }
