@@ -35,6 +35,9 @@ public class WeatherSensorPikalertJob extends Job {
 
 	/** Perform the job */
 	public void perform() throws IOException {
-		WeatherSensorCsvWriter.createWrite(3);
+		WeatherSensorCsvWriter wsw = WeatherSensorCsvWriter.create(
+			WeatherSensorFileEnum.PIKA);
+		if (wsw != null)
+			wsw.write();
 	}
 }

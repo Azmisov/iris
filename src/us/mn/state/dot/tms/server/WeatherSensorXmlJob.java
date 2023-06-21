@@ -35,9 +35,18 @@ public class WeatherSensorXmlJob extends Job {
 
 	/** Perform the job */
 	public void perform() throws IOException {
-		WeatherSensorXmlWriter writer = new WeatherSensorXmlWriter();
-		writer.write();
-		WeatherSensorCsvWriter.createWrite(1);
-		WeatherSensorCsvWriter.createWrite(2);
+		new WeatherSensorXmlWriter().write();
+		writeCsvFiles();
+	}
+
+	/** Write CSV files */
+	public void writeCsvFiles() throws IOException {
+		WeatherSensorCsvWriter ww;
+		ww = WeatherSensorCsvWriter.create(WeatherSensorFileEnum.ATMO);
+		if (ww != null)
+			ww.write();
+		ww = WeatherSensorCsvWriter.create(WeatherSensorFileEnum.SURF);
+		if (ww != null)
+			ww.write();
 	}
 }
