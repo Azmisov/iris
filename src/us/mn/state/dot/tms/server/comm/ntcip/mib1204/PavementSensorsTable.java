@@ -280,10 +280,9 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 	/** Get the specified nth active sensor row or -1 if none.
 	 * @param nth Nth active sensor, ranges between 1 and size.
 	 * @return One-based row number of nth active sensor */
-	public int getNthActive(int nth) {
-		int[] active_count = {0};
-		var row = findRow(r -> r.isActive() ? ++active_count[0] == nth : false);
-		return row == null ? -1 : row.number;
+	public Row getNthActive(int nth) {
+		int[] active_count = {0}; // lambda can't capture primitives by ref
+		return findRow(r -> r.isActive() ? ++active_count[0] == nth : false);
 	}
 
 	/** To debug/log string */

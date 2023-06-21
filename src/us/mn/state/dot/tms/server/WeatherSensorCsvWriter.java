@@ -10,7 +10,6 @@ import us.mn.state.dot.tms.WeatherSensor;
 import us.mn.state.dot.tms.WeatherSensorHelper;
 import us.mn.state.dot.tms.units.Distance;
 import us.mn.state.dot.tms.units.Pressure;
-import us.mn.state.dot.tms.units.Speed;
 import us.mn.state.dot.tms.units.Temperature;
 import us.mn.state.dot.tms.utils.SString;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssTemperature;
@@ -19,10 +18,9 @@ import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.EssEnumType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
-import us.mn.state.dot.tms.GeoLoc;
 import us.mn.state.dot.tms.GeoLocHelper;
 import us.mn.state.dot.tms.geo.Position;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Integer;
+import us.mn.state.dot.tms.server.comm.ntcip.PikalertRoadState;
 
 /**
  * Write SSI ScanWeb CSV weather export files.
@@ -273,26 +271,25 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 		PavementSensorsTable pst = w.getPavementSensorsTable();
 		if (pst == null)
 			return MISSING;
-		int row = pst.getNthActive(arown);
-		return tToCsv(pst.getSurfTemp(row));
+		var row = pst.getNthActive(arown);
+		return tToCsv(row == null ? null : row.surface_temp.toDouble());
 	}
 
 	/** Get the Pikalert road state ordinal, which is the road state of
 	 * of the first active sensor */
 	static private int getPikalertRoadState(WeatherSensorImpl w) {
 		PavementSensorsTable pst = w.getPavementSensorsTable();
+		PikalertRoadState state = PikalertRoadState.RS_NO_REPORT;
 		if (pst != null) {
-			int row = pst.getNthActive(1);
-			if (row >= 0) {
-				PavementSurfaceStatus pss = 
-					pst.getPvmtSurfStatusEnum(row);
-				BlackIceSignal bis = 
-					pst.getBlackIceSignalEnum(row);
-				return PikalertRoadState.
-					convert(pss, bis).ordinal();
+			var row = pst.getNthActive(1);
+			if (row != null) {
+				state = PikalertRoadState.convert(
+					row.surface_status.get(),
+					row.black_ice_signal.get()
+				);
 			}
 		}
-		return PikalertRoadState.RS_NO_REPORT.ordinal();
+		return state.ordinal();
 	}
 
 	/** Get the Pikalert present weather code */

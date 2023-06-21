@@ -121,55 +121,6 @@ Merged notes
         It is also difficult to add this logging since it is no longer CSV specific. I will add
         the enforcmenet+logging to PavementSensorsTable, but may want to revisit
         (seems like code is revised in 9947 again)
-
-Skipped
-==================
-9852:
-    - adds additional DmsMessagePriority to allowed types; Doug has reworked the
-        priority system completely, now it is SignMsgPriority with differen enum
-        values; may want to double check if that's a problem
-9853:
-    - Doug introduced LineMultiNormalizer which appears to strip fonts by default now;
-        updated test case seems to validate that
-9785, 9791:
-    - updating hgignore... figure we can update gitignore as we go easily later on if needed
-9857, 9861, 9870, 9881, 9886, 9910, 9921, 9927, 9942, 9944, 9955, 9959, 9961, 9965, 9969, 9972, 9976, 9981, 9992, 9995, 10018, 10034, 10040, 10044, 10047, 10051, 10057, 10062
-    - updating .hgtags; can add via git tag later if needed
-9786:
-    - changes build via mercurial; not relevant to git
-9893, 9937, 9894, 9896, 9938, 9962, 9973, 9982, 9996, 9997, 9998, 9999, 10000, 10001, 10002, 10010, 10012, 10014, 10015, 10054:
-    - webapp patches, which should go in an Iteris specific repo
-10021:
-    - json.org jar already in existing ant build
-9855, 9879, 9918, 10013:
-    - these are for install_jars[_client].sh; would go into iris specific repo I think, or else
-        will be unnecessary if we switch to doing containerized install instead
-9794, 9812, 9872, 9876, 10016, 10028:
-    - already merged
-9838:
-    - Doug implemented same/very similar thing
-9841:
-    - EscRec has been broken out into different classes; the non-integer types are exposed on those
-        classes, so doesn't seem like a good idea to change them all now to use integer. In any case,
-        the code, at least for EscRec when considered individually, appears simpler now with the
-        abstraction; so perhaps its purpose is served
-
-TODO
-===================
-9900, 9923:
-    - seem simple to add, just want to understand what ExternMap stuff is for first
-9795, 10007:
-    - divergent DMS implementation
-9796:
-    - depends on DMSHelper.getLandmark, patch 9795
-10055:
-    - BeaconXmlWriter and BeaconXmlJob don't appear in git, while they have Douglas name on them;
-        need to figure out what is up with those
-
-Weather Patches Cluster:
-------------------------
-- big commits: 9947/9949, 9985/9986, 10022; I suspect 10022 is just renaming files so should be easy;
-
 9947:
     - Doug implemented similar SurfaceBlackIceSignal/VisibilitySituation class
     - I'll add the fromOrdinal methods as they're needed, as well as my toStringValid method
@@ -252,6 +203,53 @@ Weather Patches Cluster:
         representation for the value.
     EssRec: done, not including toString changes
 
+Skipped
+==================
+9852:
+    - adds additional DmsMessagePriority to allowed types; Doug has reworked the
+        priority system completely, now it is SignMsgPriority with differen enum
+        values; may want to double check if that's a problem
+9853:
+    - Doug introduced LineMultiNormalizer which appears to strip fonts by default now;
+        updated test case seems to validate that
+9785, 9791:
+    - updating hgignore... figure we can update gitignore as we go easily later on if needed
+9857, 9861, 9870, 9881, 9886, 9910, 9921, 9927, 9942, 9944, 9955, 9959, 9961, 9965, 9969, 9972, 9976, 9981, 9992, 9995, 10018, 10034, 10040, 10044, 10047, 10051, 10057, 10062
+    - updating .hgtags; can add via git tag later if needed
+9786:
+    - changes build via mercurial; not relevant to git
+9893, 9937, 9894, 9896, 9938, 9962, 9973, 9982, 9996, 9997, 9998, 9999, 10000, 10001, 10002, 10010, 10012, 10014, 10015, 10054:
+    - webapp patches, which should go in an Iteris specific repo
+10021:
+    - json.org jar already in existing ant build
+9855, 9879, 9918, 10013:
+    - these are for install_jars[_client].sh; would go into iris specific repo I think, or else
+        will be unnecessary if we switch to doing containerized install instead
+9794, 9812, 9872, 9876, 10016, 10028:
+    - already merged
+9838:
+    - Doug implemented same/very similar thing
+9841:
+    - EscRec has been broken out into different classes; the non-integer types are exposed on those
+        classes, so doesn't seem like a good idea to change them all now to use integer. In any case,
+        the code, at least for EscRec when considered individually, appears simpler now with the
+        abstraction; so perhaps its purpose is served
+
+TODO
+===================
+9900, 9923:
+    - seem simple to add, just want to understand what ExternMap stuff is for first
+9795, 10007:
+    - divergent DMS implementation
+9796:
+    - depends on DMSHelper.getLandmark, patch 9795
+10055:
+    - BeaconXmlWriter and BeaconXmlJob don't appear in git, while they have Douglas name on them;
+        need to figure out what is up with those
+
+Weather Patches Cluster:
+------------------------
+- big commits: 9947/9949, 9985/9986, 10022; I suspect 10022 is just renaming files so should be easy;
 
 
 TODO after all else
