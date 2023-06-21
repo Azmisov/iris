@@ -310,21 +310,6 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		return humidity;
 	}
 
-	/** Get the QC humidity as a percentage (null if missing) */
-	public Integer getHumidityQC() {
-		if (humidity == null)
-			return null;
-		String sid = getSiteId();
-		if ("20100020".equals(sid)) // halleck ridge
-			return null;
-		else if ("20100012".equals(sid)) // herrick lane
-			return null;
-		else {
-			// humidity of 0 is impossible and considered an error
-			return (humidity != 0 ? humidity : null);
-		}
-	}
-
 	/** Set the humidity.
 	 * @param hu Humidity as a percentage or null for missing */
 	public void setHumidityNotify(Integer hu) {
@@ -974,7 +959,6 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 			VisibilitySituation.from(this));
 		sb.append(" water_depth_cm=").append(getWaterDepth());
 		sb.append(" humidity_perc=").append(getHumidity());
-		sb.append(" humidity_qc_perc=").append(getHumidityQC());
 		sb.append(" atmos_pressure_pa=").append(getPressure());
 		sb.append(" atmos_pressure_qc_pa=").append(getPressureQC());
 		sb.append(" atmos_pressure_sealevel_pa=").append(
@@ -1012,7 +996,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		w.write(createAttribute("alt_m", getElevation()));
 		w.write(createAttribute("air_temp_c", getAirTemp()));
 		w.write(createAttribute("water_depth_cm", getWaterDepth()));
-		w.write(createAttribute("humidity_perc", getHumidityQC()));
+		w.write(createAttribute("humidity_perc", getHumidity()));
 		w.write(createAttribute("dew_point_temp_c", 
 			getDewPointTemp()));
 		w.write(createAttribute("max_temp_c", getMaxTemp()));
