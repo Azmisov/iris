@@ -29,17 +29,18 @@ import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.EssEnumType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssTemperature;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssDistance;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
 
 /**
- * Weather sensor file type
+ * Weather sensor file types
  *
  * @author Michael Darter, Isaac Nygaard
  */
 public enum WeatherSensorFileEnum {
 
-	/** Weather sensor file types */
+	/* standard atmospheric and surface files */
 	ATMO("weather_sensor1.csv",
 		"Siteid,DtTm,AirTemp,Dewpoint,Rh," + 
 		"SpdAvg,SpdGust,DirMin,DirAvg,DirMax," + 
@@ -49,13 +50,27 @@ public enum WeatherSensorFileEnum {
 		"Siteid,senid,DtTm,sfcond,sftemp," + 
 		"frztemp,chemfactor,chempct,depth,icepct," + 
 		"subsftemp,waterlevel"),
+
+	/* pikalert */
 	PIKA("weather_sensor_pikalert.csv",
 		"stationID,observationTime,latitude," +
 		"longitude,altitude,dewpoint,precipRate," +
 		"relHumidity,roadTemperature1," +
 		"roadTemperature2,temperature,visibility," +
 		"windDir,windDirMax,windGust,windSpeed," +
-		"roadState1,presWx");
+		"roadState1,presWx"),
+
+	/* alternative atmospheric and surface files */
+	ATMO2("weather_sensor_alt1.csv",
+		"sysid,Rpuid,Senid,DtTm,AirTemp,Dewpoint,Rh," +
+		"SpdAvg,SpdGust,DirMin,DirAvg,DirMax," + 
+		"Pressure,PcIntens,PcType,PcRate,Pc10Min," + 
+		"Visibility,Pc1Hr,Pc3Hr,Pc6Hr,Pc12Hr,Pc24Hr," + 
+		"Height,snowdepth,Situation,,"),
+	SURF2("weather_sensor_alt2.csv",
+		"Sysid,Rpuid,senid,DtTm,sfcond,sftemp," + 
+		"frztemp,chemfactor,chempct,depth,icepct," + 
+		"SubSfTemp,friction,IceWaterThickness,waterlevel,,");
 
 	/** Missing value */
 	static final String MISSING = "";
@@ -68,6 +83,16 @@ public enum WeatherSensorFileEnum {
 		} else {
 			return MISSING;
 		}
+	}
+
+	/** Remove trailing character */
+	static StringBuilder delLastChar(StringBuilder sb) {
+		if (sb != null) {
+			int len = sb.length();
+			if (len > 0)
+				sb.setLength(len - 1);
+		}
+		return sb;
 	}
 
 	/** Return the specified date as a string in UTC.
@@ -94,6 +119,18 @@ public enum WeatherSensorFileEnum {
 			new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
 		return sdf.format(d);
+	}
+
+	/** Get system id
+	 * @return System id or the empty string for missing */
+	static private String getSysId() {
+		return "351";
+	}
+
+	/** Convert an integer to string.
+	 * @return Integer as a string or empty for missing */
+	static private String intToCsv(Integer iv) {
+		return (iv != null ? iv.toString() : MISSING);
 	}
 
 	/** Convert a temperature to CSV temperature.
@@ -139,8 +176,8 @@ public enum WeatherSensorFileEnum {
 	/** Convert surface water depth to CSV string
 	 * @arg row - row to fetch from
 	 * @return Pavement surface water depth in .1 mm or empty if missing */
-	static private String swdToN(PavementSensorsTable.Row row) {
-        return row.water_depth.get(
+	static private String distanceTo10thMM(EssDistance v) {
+        return v.get(
 			// m -> 1/10 mm
 			d -> String.valueOf(d.round(Distance.Units.TENTH_MILLIMETERS)),
 			MISSING
@@ -216,8 +253,34 @@ public enum WeatherSensorFileEnum {
 	}
 
 	/** Get 1h accum precip in .025 mm or empty for missing */ 
-	static private String apToCsv(WeatherSensorImpl w) {
+	static private String ap1hToCsv(WeatherSensorImpl w) {
 		return pToCsv(w.getPrecipOneHour());
+	}
+
+	/** Get 3h accum precip in .025 mm or empty for missing */ 
+	static private String ap3hToCsv(WeatherSensorImpl w) {
+		return pToCsv(w.getPrecip3Hour());
+	}
+
+	/** Get 6h accum precip in .025 mm or empty for missing */ 
+	static private String ap6hToCsv(WeatherSensorImpl w) {
+		return pToCsv(w.getPrecip6Hour());
+	}
+
+	/** Get 12h accum precip in .025 mm or empty for missing */ 
+	static private String ap12hToCsv(WeatherSensorImpl w) {
+		return pToCsv(w.getPrecip12Hour());
+	}
+
+	/** Get 24h accum precip in .025 mm or empty for missing */ 
+	static private String ap24hToCsv(WeatherSensorImpl w) {
+		return pToCsv(w.getPrecip24Hour());
+	}
+
+	/** Convert snow depth in cm to a string.
+	 * @return Snow depth in cm or empty string for missing */
+	static private String asdToCsv(WeatherSensorImpl w) {
+		return intToCsv(w.getAdjacentSnowDepth());
 	}
 
 	/** Append a CSV value to a StringBuffer */
@@ -317,27 +380,37 @@ public enum WeatherSensorFileEnum {
 		header_row = hr;
 	}
 
-	/** Get record(s) to be written to the file */
+	/** Get record(s) to be written to the file.
+	 * @return CSV line(s) with no trailing comma and no line 
+	 * 	   terminator on the last line. */
 	String getRecs(WeatherSensorImpl w) {
 		StringBuilder sb = new StringBuilder();
 		if (w != null) {
 			if (this == ATMO)
 				return getAtmoRec(w);
-			if (this == SURF)
+			else if (this == SURF)
 				return getSurfRecs(w);
-			if (this == PIKA)
-				return getAtmoRec(w);
+			else if (this == PIKA)
+				return getPikaRec(w);
+			else if (this == ATMO2)
+				return getAtmoAltRec(w);
+			else if (this == SURF2)
+				return getSurfAltRecs(w);
+			else
+				System.err.println("wsfe logic error");
 		}
 		return sb.toString();
 	}
 
-	/** Get a record for the ATMO file type */
+	/** Get a record for the ATMO file type.
+	 * @return CSV line with no trailing comma and no line terminator */
 	String getAtmoRec(WeatherSensorImpl w) {
 		StringBuilder sb = new StringBuilder();
 		append(sb, w.getSiteId());		 //Siteid
 		append(sb, formatDate(w.getStamp()));	 //DtTm
 		append(sb, tIntToCsv100(w.getAirTemp()));//AirTemp
-		append(sb, tIntToCsv100(w.getDewPointTemp()));//Dewpoint
+		append(sb, tIntToCsv100(
+			w.getDewPointTemp()));		 //Dewpoint
 		append(sb, w.getHumidity());		 //Rh
 		append(sb, spToCsv(w.getWindSpeed()));	 //SpdAvg
 		append(sb, spToCsv(
@@ -350,13 +423,15 @@ public enum WeatherSensorFileEnum {
 			getPrecipRateIntensity(w)));	 //PcIntens
 		append(sb, psToCsv(w));			 //PcType
 		append(sb, praToCsv(w));		 //PcRate
-		append(sb, apToCsv(w));			 //PcAccum
+		append(sb, ap1hToCsv(w));		 //PcAccum 1h
 		append(sb, visToCsv(w));		 //Visibility
-		sb.setLength(sb.length() - 1);
+		delLastChar(sb);			 //remove last comma
 		return sb.toString();
 	}
 
-	/** Get recs for SURF file type */
+	/** Get recs for SURF file type.
+	 * @return CSV lines with the last line having no trailing comma 
+	 * 		and no line terminator */
 	String getSurfRecs(WeatherSensorImpl w) {
 		StringBuilder sb = new StringBuilder();
 		String sid = w.getSiteId();
@@ -365,11 +440,11 @@ public enum WeatherSensorFileEnum {
         // iterate through pavement sensor table
 		PavementSensorsTable ps_t = w.getPavementSensorsTable();
 		for (var row: ps_t){
-			String pss = pssToN(row.getSurfStatus());
+			String pss = pssToN(row.surface_status.get());
 			String sft = essTempToCsv100(row.surface_temp);
 			String fzt = essTempToCsv100(row.freeze_point);
-			String swd = swdToN(row);
 			String sst = MISSING; // pvmt temp is not subsurf
+			String swd = distanceTo10thMM(row.water_depth); // tenths mm
 			sb.append(getSurfRec(sid, senid, dat, pss, sft, fzt, 
 				sst, swd));
 			++senid;
@@ -380,17 +455,21 @@ public enum WeatherSensorFileEnum {
 			String pss = MISSING;
 			String sft = MISSING;
 			String fzt = MISSING;
-			String swd = MISSING;
 			String sst = essTempToCsv100(row.temp);
-			sb.append(getSurfRec(sid, senid, dat, pss, sft, fzt, sst, swd));
+			String swd = MISSING;
+			sb.append(getSurfRec(sid, senid, dat, pss, sft, fzt,
+				sst, swd));
 			++senid;
 		}
+		delLastChar(sb); //remove trailing line terminator
 		return sb.toString();
 	}
 
-	/** Get a sensor record for SURF file type */
-	private String getSurfRec(String sid, int senid, String dat, String sfc, 
-		String sft, String fzt, String sst, String swd)
+	/** Get a sensor record for SURF file type.
+	 * @return CSV line with no trailing comma and a trailing line term */
+	private String getSurfRec(String sid, int senid, String dat, 
+		String sfc, String sft, String fzt, String sst, 
+		String swd)
 	{
 		String ssenid = String.valueOf(senid);
 		StringBuilder sb = new StringBuilder();
@@ -406,12 +485,13 @@ public enum WeatherSensorFileEnum {
 		append(sb, MISSING);	//icepct
 		append(sb, sst);	//subsftemp
 		append(sb, MISSING);	//waterlevel
-//mtod need \n? 
-		sb.setLength(sb.length() - 1);
+		delLastChar(sb);	//remove trailing comma
+		sb.append('\n');
 		return sb.toString();
 	}
 
-	/** Get record for PIKA file type */
+	/** Get record for PIKA file type.
+	 * @return CSV line with no trailing comma and no trailing line term */
 	String getPikaRec(WeatherSensorImpl w) {
 		StringBuilder sb = new StringBuilder();
 		Position pos = GeoLocHelper.getWgs84Position(w.getGeoLoc());
@@ -438,7 +518,113 @@ public enum WeatherSensorFileEnum {
 			w.getWindSpeed()));		//windSpeed
 		append(sb, getPikalertRoadState(w));	//roadState1
 		append(sb, getPikalertPresWx(w));	//presWx
-		sb.setLength(sb.length() - 1);
+		delLastChar(sb);			//remove trailing comma
+		return sb.toString();
+	}
+
+	/** Get an alternative record for the ATMO file type.
+	 * @return CSV line with no trailing comma and no line terminator */
+	String getAtmoAltRec(WeatherSensorImpl w) {
+		StringBuilder sb = new StringBuilder();
+		append(sb, getSysId());			 //sysid
+		append(sb, w.getSiteId());		 //Rpuid
+		append(sb, "TBD");			 //Senid
+		append(sb, formatDate(w.getStamp()));	 //DtTm
+		append(sb, tIntToCsv100(w.getAirTemp()));//AirTemp
+		append(sb, tIntToCsv100(w.getDewPointTemp()));//Dewpoint
+		append(sb, w.getHumidity());		 //Rh
+		append(sb, spToCsv(w.getWindSpeed()));	 //SpdAvg
+		append(sb, spToCsv(
+			w.getMaxWindGustSpeed()));	 //SpdGust
+		append(sb, MISSING);			 //DirMin
+		append(sb, w.getWindDir());		 //DirAvg
+		append(sb, w.getMaxWindGustDir());	 //DirMax
+		append(sb, prToCsv(w.getPressure()));	 //Pressure
+		append(sb, cap(WeatherSensorHelper.
+			getPrecipRateIntensity(w)));	 //PcIntens
+		append(sb, psToCsv(w));			 //PcType
+		append(sb, praToCsv(w));		 //PcRate
+		append(sb, MISSING);			 //Pc10Min
+		append(sb, visToCsv(w));		 //Visibility
+		append(sb, ap1hToCsv(w));		 //Pc1Hr
+		append(sb, ap3hToCsv(w));		 //Pc3Hr
+		append(sb, ap6hToCsv(w));		 //Pc6Hr
+		append(sb, ap12hToCsv(w));		 //Pc12Hr
+		append(sb, ap24hToCsv(w));		 //Pc24Hr
+		append(sb, "TBD");			 //Height
+		append(sb, asdToCsv(w));		 //snowdepth
+		append(sb, "TBD");			 //Situation
+		append(sb, MISSING);			 //empty
+		append(sb, MISSING);			 //empty
+		delLastChar(sb);			 //remove trailing comma
+		return sb.toString();
+	}
+
+	/** Get recs for SURF file type.
+	 * @return CSV lines with the last line having no trailing comma 
+	 * 		and no line terminator */
+	String getSurfAltRecs(WeatherSensorImpl w) {
+		StringBuilder sb = new StringBuilder();
+		String sid = w.getSiteId();
+		int senid = 0;
+		String dat = formatDate(w.getStamp());
+		// iterate through pavement sensor table
+		PavementSensorsTable pst = w.getPavementSensorsTable();
+		for (var row : pst) {
+			String pss = pssToN(row.surface_status.get());
+			String sft = essTempToCsv100(row.surface_temp);
+			String fzt = essTempToCsv100(row.freeze_point);
+			String swd = distanceTo10thMM(row.water_depth); // tenths mm
+			String sst = MISSING; // pvmt temp is not subsurf
+			String iwd = distanceTo10thMM(row.ice_or_water_depth);
+			sb.append(getSurfAltRec(sid, senid, dat, pss, sft, fzt, 
+				sst, swd, iwd));
+			++senid;
+		}
+		// iterate through subsurface sensor table
+		SubSurfaceSensorsTable ss_t = w.getSubsurfaceSensorsTable();
+		for (var row : ss_t) {
+			String pss = MISSING;
+			String sft = MISSING;
+			String fzt = MISSING;
+			String swd = MISSING;
+			String sst = essTempToCsv100(row.temp);
+			String iwd = MISSING;
+			sb.append(getSurfAltRec(sid, senid, dat, pss, sft, fzt, 
+				sst, swd, iwd));
+			++senid;
+		}
+		delLastChar(sb); //remove trailing line terminator
+		return sb.toString();
+	}
+
+	/** Get a sensor record for an alternate SURF file type.
+	 * @return CSV line with no trailing comma and a trailing line term */
+	private String getSurfAltRec(String sid, int senid, String dat, 
+		String sfc, String sft, String fzt, String sst, String swd, 
+		String iwd)
+	{
+		String ssenid = String.valueOf(senid);
+		StringBuilder sb = new StringBuilder();
+		append(sb, getSysId());	//sysid
+		append(sb, "TBD");	//Rpuid
+		append(sb, sid);	//Senid
+		append(sb, dat);	//DtTm
+		append(sb, sfc);	//sfcond
+		append(sb, sft);	//sftemp
+		append(sb, fzt);	//frztemp
+		append(sb, MISSING);	//chemfactor
+		append(sb, MISSING);	//chempct
+		append(sb, swd);	//depth .1mm
+		append(sb, MISSING);	//icepct
+		append(sb, sst);	//subsftemp
+		append(sb, MISSING);	//friction
+		append(sb, iwd);	//IceWaterThickness
+		append(sb, MISSING);	//waterlevel
+		append(sb, MISSING);	//empty
+		append(sb, MISSING);	//empty
+		delLastChar(sb);	//remove trailing comma
+		sb.append('\n');
 		return sb.toString();
 	}
 }

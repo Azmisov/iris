@@ -270,6 +270,7 @@ public class OpQueryEssStatus extends OpEss {
 		var P = ess_rec.precip_values;
 		queryMany(mess, new EssConvertible[]{
 			P.water_depth,
+			P.snow_depth,
 			P.relative_humidity,
 			P.precip_rate,
 			P.precip_1_hour,

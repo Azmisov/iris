@@ -85,8 +85,12 @@ public interface WeatherSensor extends Device {
 	/** Get precip situation essPrecipSituation (null for missing) */
 	Integer getPrecipSituation();
 
-	/** Get precipitation accumulation for 1h in mm (null for missing) */
+	/** Get precipitation accumulation in mm (null for missing) */
 	Integer getPrecipOneHour();
+	Integer getPrecip3Hour();
+	Integer getPrecip6Hour();
+	Integer getPrecip12Hour();
+	Integer getPrecip24Hour();
 
 	/** Get visibility in meters (null for missing) */
 	Integer getVisibility();
@@ -97,6 +101,9 @@ public interface WeatherSensor extends Device {
 
 	/** Get water depth in cm (null for missing) */
 	Integer getWaterDepth();
+
+	/** Get the adjacent snow depth in cm (null for missing) */
+	Integer getAdjacentSnowDepth();
 
 	/** Get relative humidity as a percent (null for missing) */
 	Integer getHumidity();

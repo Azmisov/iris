@@ -16,7 +16,6 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.units.Distance;
 import static us.mn.state.dot.tms.units.Distance.Units.*;
 import us.mn.state.dot.tms.utils.JsonBuilder;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PavementSensorError;
@@ -132,41 +131,6 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 					.setRange(1, 256, 0);
 		}
 
-		/** Get the sensor location */
-		public String getSensorLocation() {
-			return location.get();
-		}
-
-		/** Get pavement type or null on error */
-		public PavementType getPavementType() {
-			return pavement_type.get();
-		}
-
-		/** Get pavement sensor type or null on error */
-		public PavementSensorType getPavementSensorType() {
-			return sensor_type.get();
-		}
-
-		/** Get surface status or null on error */
-		public SurfaceStatus getSurfStatus() {
-			return surface_status.get();
-		}
-
-		/** Get surface temp or null on error */
-		public Integer getSurfTempC() {
-			return surface_temp.toInteger();
-		}
-
-		/** Get pavement temp or null on error */
-		public Integer getPvmtTempC() {
-			return pavement_temp.toInteger();
-		}
-
-		/** Get pavement sensor error or null on error */
-		public PavementSensorError getPavementSensorError(){
-			return sensor_error.get();
-		}
-
 		/** Get surface water depth formatted to meter units, mulitplied by
 		 * `scale` to do on-the-fly conversion to another format
 		 */
@@ -181,31 +145,6 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 			Double out = ice_or_water_depth.toDouble();
 			// fallback to water depth if not present
 			return out == null ? water_depth.toDouble() : out;
-		}
-
-		/** Get surface freeze temp or null on error */
-		public Integer getFreezePointC() {
-			return freeze_point.toInteger();
-		}
-
-		/** Get black ice signal or null on error */
-		public SurfaceBlackIceSignal getBlackIceSignal() {
-			return black_ice_signal.get();
-		}
-
-		/** Get conductivity in 0.1 milli-mhos/cm, or null if missing */
-		public Integer getConductivity(){
-			return conductivity.toInteger();
-		}
-
-		/** Get pavement temperature sensor depth in cm, or null if out of 2-10cm range */
-		public Distance getTempDepth(){
-			return temp_depth.get();
-		}
-
-		/** Get sensor model information, or null if not available */
-		public Integer getModelInfo(){
-			return sensor_model_info.toInteger();
 		}
 
 		/** Is the nth sensor active? */
@@ -225,7 +164,8 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 					sensor_error,
 					surface_temp,
 					pavement_temp,
-					water_depth
+					water_depth,
+					ice_or_water_depth
 				}, number))
 				.append(EssConvertible.toLogString("isActive", isActive(), number))
 				.toString();

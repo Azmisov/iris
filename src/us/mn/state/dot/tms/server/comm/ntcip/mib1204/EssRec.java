@@ -73,11 +73,17 @@ public class EssRec implements JsonBuilder.Buildable {
 
 	/** Store precipitation samples */
 	private void storePrecip(WeatherSensorImpl ws) {
-		ws.setWaterDepthNotify(precip_values.water_depth.toInteger());
-		ws.setHumidityNotify(precip_values.relative_humidity.toInteger());
-		ws.setPrecipRateNotify(precip_values.precip_rate.toInteger());
-		ws.setPrecipOneHourNotify(precip_values.precip_1_hour.toInteger());
-		PrecipSituation ps = precip_values.getPrecipSituation();
+		var P = precip_values;
+		ws.setWaterDepthNotify(P.water_depth.toInteger());
+		ws.setAdjacentSnowDepthNotify(P.snow_depth.toInteger());
+		ws.setHumidityNotify(P.relative_humidity.toInteger());
+		ws.setPrecipRateNotify(P.precip_rate.toInteger());
+		ws.setPrecipOneHourNotify(P.precip_1_hour.toInteger());
+		ws.setPrecip3HourNotify(P.precip_3_hours.toInteger());
+		ws.setPrecip6HourNotify(P.precip_6_hours.toInteger());
+		ws.setPrecip12HourNotify(P.precip_12_hours.toInteger());
+		ws.setPrecip24HourNotify(P.precip_24_hours.toInteger());
+		PrecipSituation ps = P.getPrecipSituation();
 		ws.setPrecipSituationNotify((ps != null) ? ps.ordinal() : null);
 	}
 
@@ -100,9 +106,9 @@ public class EssRec implements JsonBuilder.Buildable {
 				// Try sensor 3 then 4
 				for (int row_num = 3; row_num <=4; ++row_num) {
 					row = ps_table.getRow(row_num);
-					if (row.getPavementSensorError() != null) {
-						surf_temp = row.getSurfTempC();
-						pvmt_surf_status = row.getSurfStatus();
+					if (!row.sensor_error.isNull()) {
+						surf_temp = row.surface_temp.toInteger();
+						pvmt_surf_status = row.surface_status.get();
 						break;
 					}
 				}
@@ -112,8 +118,8 @@ public class EssRec implements JsonBuilder.Buildable {
 				// the surface status and first valid surf temp
 				// should come from the same sensor.
 				var valid_row = ps_table.getFirstValidSurfTempRow();
-				pvmt_surf_status = valid_row.getSurfStatus();
-				surf_temp = valid_row.getSurfTempC();
+				pvmt_surf_status = valid_row.surface_status.get();
+				surf_temp = valid_row.surface_temp.toInteger();
 				pvmt_surf_temp = ps_table.getFirstValidPvmtTemp();
 				surf_freeze_temp = ps_table.getFirstValidSurfFreezeTemp();				
 			}

@@ -58,7 +58,9 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 			WeatherSensor ws = it.next();
 			if(ws instanceof WeatherSensorImpl) {
 				WeatherSensorImpl wsi = (WeatherSensorImpl)ws;
-				writeLine(wr, f_type.getRecs(wsi));
+				String line = f_type.getRecs(wsi);
+				if (!line.isEmpty())
+					writeLine(wr, line);
 			}
 		}
 	}

@@ -301,6 +301,24 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		}
 	}
 
+	/** Adjacent snow depth in cm (null for missing) */
+	private transient Integer adjacent_snow_depth;
+
+	/** Get the adjacent snow depth cm (null if missing) */
+	@Override
+	public Integer getAdjacentSnowDepth() {
+		return adjacent_snow_depth;
+	}
+
+	/** Set the adjacent snow depth.
+	 * @param asd Adjacent snow depth in cm or null for missing */
+	public void setAdjacentSnowDepthNotify(Integer asd) {
+		if (!objectEquals(asd, adjacent_snow_depth)) {
+			adjacent_snow_depth = asd;
+			notifyAttribute("adjacentSnowDepth");
+		}
+	}
+
 	/** Humidity as a percentage (null for missing) */
 	private transient Integer humidity;
 
@@ -601,6 +619,74 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		if (!objectEquals(pr, precip_one_hour)) {
 			precip_one_hour = pr;
 			notifyAttribute("precipOneHour");
+		}
+	}
+
+	/** Precipitation accumulation 3h in mm (null for missing) */
+	private transient Integer precip_3_hour;
+
+	/** Get precipitation 3h in mm (null for missing) */
+	@Override
+	public Integer getPrecip3Hour() {
+		return precip_3_hour;
+	}
+
+	/** Set precipitation 3h in mm (null for missing) */
+	public void setPrecip3HourNotify(Integer pr) {
+		if (!objectEquals(pr, precip_3_hour)) {
+			precip_3_hour = pr;
+			notifyAttribute("precip3Hour");
+		}
+	}
+
+	/** Precipitation accumulation 6h in mm (null for missing) */
+	private transient Integer precip_6_hour;
+
+	/** Get precipitation 6h in mm (null for missing) */
+	@Override
+	public Integer getPrecip6Hour() {
+		return precip_6_hour;
+	}
+
+	/** Set precipitation 6h in mm (null for missing) */
+	public void setPrecip6HourNotify(Integer pr) {
+		if (!objectEquals(pr, precip_6_hour)) {
+			precip_6_hour = pr;
+			notifyAttribute("precip6Hour");
+		}
+	}
+
+	/** Precipitation accumulation 12h in mm (null for missing) */
+	private transient Integer precip_12_hour;
+
+	/** Get precipitation 12h in mm (null for missing) */
+	@Override
+	public Integer getPrecip12Hour() {
+		return precip_12_hour;
+	}
+
+	/** Set precipitation 12h in mm (null for missing) */
+	public void setPrecip12HourNotify(Integer pr) {
+		if (!objectEquals(pr, precip_12_hour)) {
+			precip_12_hour = pr;
+			notifyAttribute("precip12Hour");
+		}
+	}
+
+	/** Precipitation accumulation 24h in mm (null for missing) */
+	private transient Integer precip_24_hour;
+
+	/** Get precipitation 24h in mm (null for missing) */
+	@Override
+	public Integer getPrecip24Hour() {
+		return precip_24_hour;
+	}
+
+	/** Set precipitation 24h in mm (null for missing) */
+	public void setPrecip24HourNotify(Integer pr) {
+		if (!objectEquals(pr, precip_24_hour)) {
+			precip_24_hour = pr;
+			notifyAttribute("precip24Hour");
 		}
 	}
 
@@ -954,10 +1040,15 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		sb.append(" precip_rate_mmhr=").append(getPrecipRate());
 		sb.append(" precip_situation=").append(getPrecipSituation());
 		sb.append(" precip_1h_mm=").append(getPrecipOneHour());
+		sb.append(" precip_3h_mm=").append(getPrecip3Hour());
+		sb.append(" precip_6h_mm=").append(getPrecip6Hour());
+		sb.append(" precip_12h_mm=").append(getPrecip12Hour());
+		sb.append(" precip_24h_mm=").append(getPrecip24Hour());
 		sb.append(" visibility_m=").append(getVisibility());
 		sb.append(" visibility_situation=").append(
 			VisibilitySituation.from(this));
 		sb.append(" water_depth_cm=").append(getWaterDepth());
+		sb.append(" adj_snow_depth_cm=").append(getAdjacentSnowDepth());
 		sb.append(" humidity_perc=").append(getHumidity());
 		sb.append(" atmos_pressure_pa=").append(getPressure());
 		sb.append(" atmos_pressure_qc_pa=").append(getPressureQC());
@@ -996,6 +1087,8 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		w.write(createAttribute("alt_m", getElevation()));
 		w.write(createAttribute("air_temp_c", getAirTemp()));
 		w.write(createAttribute("water_depth_cm", getWaterDepth()));
+		w.write(createAttribute("adjacent_snow_depth_cm", 
+			getAdjacentSnowDepth()));
 		w.write(createAttribute("humidity_perc", getHumidity()));
 		w.write(createAttribute("dew_point_temp_c", 
 			getDewPointTemp()));
@@ -1015,6 +1108,10 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		w.write(createAttribute("precip_situation", 
 			getPrecipSituation()));
 		w.write(createAttribute("precip_1h_mm", getPrecipOneHour()));
+		w.write(createAttribute("precip_3h_mm", getPrecip3Hour()));
+		w.write(createAttribute("precip_6h_mm", getPrecip3Hour()));
+		w.write(createAttribute("precip_12h_mm", getPrecip6Hour()));
+		w.write(createAttribute("precip_24h_mm", getPrecip12Hour()));
 		w.write(createAttribute("visibility_m", getVisibility()));
 		w.write(createAttribute("visibility_situation",
 			VisibilitySituation.from(this)));

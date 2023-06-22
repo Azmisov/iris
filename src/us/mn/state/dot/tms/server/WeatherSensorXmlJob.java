@@ -48,5 +48,11 @@ public class WeatherSensorXmlJob extends Job {
 		ww = WeatherSensorCsvWriter.create(WeatherSensorFileEnum.SURF);
 		if (ww != null)
 			ww.write();
+		ww = WeatherSensorCsvWriter.create(WeatherSensorFileEnum.ATMO2);
+		if (ww != null)
+			ww.write();
+		ww = WeatherSensorCsvWriter.create(WeatherSensorFileEnum.SURF2);
+		if (ww != null)
+			ww.write();
 	}
 }

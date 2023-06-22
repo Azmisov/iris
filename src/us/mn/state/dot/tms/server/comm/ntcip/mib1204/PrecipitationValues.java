@@ -22,6 +22,12 @@ public class PrecipitationValues implements JsonBuilder.Buildable{
 		new EssDistance("water_depth", essWaterDepth)
 			.setUnits(1, CENTIMETERS);
 
+	/** Water depth in cm */
+	public final EssDistance snow_depth =
+		new EssDistance("snow_depth", essAdjacentSnowDepth)
+			.setUnits(1, CENTIMETERS)
+			.setRange(0, 3001);
+
 	/** Relative humidity in percent from 0-100 */
 	public final EssNumber relative_humidity =
 		EssNumber.Percent("relative_humidity", essRelativeHumidity);
