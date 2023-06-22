@@ -112,12 +112,16 @@ for patch in patches:
 
 # strip prefix for our staging directory
 file_list = list(files.keys())
-if len(file_list) == 1:
+if len(file_list) == 0:
+    raise Exception("no files found to patch")
+elif len(file_list) == 1:
     single = file_list[0]
     fname = os.path.basename(single)
     prefix = single[:-len(fname)]
 else:
-    prefix = os.path.commonprefix(file_list)
+    prefix = os.path.commonpath(file_list)
+    if len(prefix):
+        prefix = prefix+os.path.sep
 if prefix:
     print("Using common prefix:", prefix)
 with open(os.path.join(__dir__, "diff", "prefix"), "w") as f:

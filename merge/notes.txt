@@ -202,6 +202,18 @@ Merged notes
         between formats. Though preferably we'd just settle on a single
         representation for the value.
     EssRec: done, not including toString changes
+- 9949: some changes obsolete; it seems a future version WeatherSensorImp.getSiteId has been
+    merged already. Come back to this if we don't see that future patch.
+- 9960: overwrites 9949 getSiteId, but still not including; come back if still
+    don't see the change later
+9985:
+    - actually not too complicated, WeatherSensorFileEnum is mainly just a rename
+        of old WeathersensorCsvWriter
+9986:
+    - EssRec changes done, mostly obsolete with EssConvertible; I'm not going to rigorously
+        go through and check the units are all exact; I'm pretty sure they're the same,
+        but we'll want to verify against v4 output to see if they are the same scales
+        (e.g. in UI, XML, CSV outputs)
 
 Skipped
 ==================
@@ -225,7 +237,7 @@ Skipped
 9855, 9879, 9918, 10013:
     - these are for install_jars[_client].sh; would go into iris specific repo I think, or else
         will be unnecessary if we switch to doing containerized install instead
-9794, 9812, 9872, 9876, 10016, 10028:
+9794, 9812, 9867, 9872, 9876, 10016, 10028:
     - already merged
 9838:
     - Doug implemented same/very similar thing
@@ -234,6 +246,17 @@ Skipped
         classes, so doesn't seem like a good idea to change them all now to use integer. In any case,
         the code, at least for EscRec when considered individually, appears simpler now with the
         abstraction; so perhaps its purpose is served
+9924, 9933:
+    - obsolete with future patches
+9952, 9970:
+    - obsolete with EssConvertible changes
+9956:
+    - seems a future patch has split out NTCIP versions into separate poll Phases
+        instead; so leaving as is, but moving some of the attrs I erroneously
+        put into V1 from patch 9947
+    - NtcipVer added to OpEss; will have to see in future patches whether
+        that is actually necessary now
+
 
 TODO
 ===================
@@ -249,7 +272,8 @@ TODO
 
 Weather Patches Cluster:
 ------------------------
-- big commits: 9947/9949, 9985/9986, 10022; I suspect 10022 is just renaming files so should be easy;
+- big commits: 9985-89 (89 probalby conflicts with DMS a bit), 10022; I suspect 10022 is just renaming files so should be easy;
+
 
 
 TODO after all else
