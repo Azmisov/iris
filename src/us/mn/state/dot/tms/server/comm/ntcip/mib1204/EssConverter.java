@@ -73,8 +73,14 @@ abstract public class EssConverter<C, N extends ASN1Object> implements EssConver
 		return get() == null;
 	}
 	/** Fetch the raw value */
-	public ASN1Object getRaw(){
+	public N getRaw(){
 		return raw;
+	}
+	/** Manually set the converted value; this will bypass the conversion from
+	 * raw ASN1Object using {@link #convert} */
+	public void setValue(C val){
+		value = val;
+		converted = true;
 	}
 	
 	/** Convert from the raw {@link #node} */

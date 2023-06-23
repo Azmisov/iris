@@ -32,6 +32,11 @@ public class EssNumber extends EssInteger<Double>{
         return this;
     }
 
+    /** Allows int to double for use with {@link #setValue} */
+    public void setValue(int val){
+		setValue(Double.valueOf(val));
+	}
+
 	@Override
 	protected Double convert(){
 		return ranged(i -> scale*i);

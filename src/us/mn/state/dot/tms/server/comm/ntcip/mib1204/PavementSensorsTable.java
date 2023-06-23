@@ -36,7 +36,8 @@ import java.io.IOException;
 public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
 	implements XmlBuilder.Buildable
 {
-	/** Number of sensors in table */
+	/** Number of sensors in table; May be manually modified by High Sierra
+	 * remapping */
 	public final EssNumber num_sensors =
 		EssNumber.Count("size", numEssPavementSensors);
 	
@@ -56,13 +57,16 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
 		public final EssNumber exposure;
 		/** Pavement sensor type enum */
 		public final EssEnum<PavementSensorType> sensor_type;
-		/** Surface status enum */
-		public final EssEnum<SurfaceStatus> surface_status;
-		/** Surface temp in celcius */
-		public final EssTemperature surface_temp;
+		/** Surface status enum; may be manually overwritten by High Sierra
+		 * remapping */
+		public EssEnum<SurfaceStatus> surface_status;
+		/** Surface temp in celcius; may be manually overwritten by High Sierra
+		 * remapping */
+		public EssTemperature surface_temp;
 		/** Pavement temp in celcius */
 		public final EssTemperature pavement_temp;
-		/** Pavement sensor error enum */
+		/** Pavement sensor error enum; may be manually modified by High Sierra
+		 * remapping */
 		public final EssEnum<PavementSensorError> sensor_error;
 		/** Surface water depth in meters */
 		public final EssDistance water_depth;
@@ -135,15 +139,6 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
 					.setRange(1, 256, 0);
 		}
 
-		/** Get surface water depth formatted to meter units, mulitplied by
-		 * `scale` to do on-the-fly conversion to another format
-		 */
-		public String getWaterDepth(float scale){
-			return water_depth.get(d -> {
-				return Num.format(d.asDouble(METERS)*scale, 3);
-			});
-		}
-
 		/** Get surface ice or water depth formatted to meter units */
 		private Double getIceOrWaterDepth(){
 			Double out = ice_or_water_depth.toDouble();
@@ -155,7 +150,8 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
 		public boolean isActive(){
 			var pse = sensor_error.get();
 			// These values were determined empirically, with valid
-			// temps present when sensor err was one of these:
+			// temps present when sensor err was one of those below.
+			// This was validated by NCAR.
 			return (pse == PavementSensorError.none ||
 				pse == PavementSensorError.noResponse ||
 				pse == PavementSensorError.other);
@@ -166,10 +162,13 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
 			return new StringBuilder()
 				.append(EssConvertible.toLogString(new EssConvertible[]{
 					sensor_error,
+					surface_status,
 					surface_temp,
 					pavement_temp,
 					water_depth,
-					ice_or_water_depth
+					freeze_point,
+					ice_or_water_depth,
+					black_ice_signal
 				}, number))
 				.append(EssConvertible.toLogString("isActive", isActive(), number))
 				.toString();
@@ -202,13 +201,16 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
 		/** Get XML representation */
 		public void toXml(XmlBuilder xb) throws IOException{
 			xb.tag("pvmt_sensor")
-				.attr("index", number-1)
+				.attr("index", number)
 				.attr("isactive", isActive())
-				.attr("pvmtSensErr", sensor_error)
-				.attr("surftemp", surface_temp)
-				.attr("pvmttemp", pavement_temp)
-				.attr("surfwaterdepth_mm", water_depth.get(v -> v.round(MILLIMETERS)))
-				.attr("icewaterdepth_mm", ice_or_water_depth.get(v -> v.round(MILLIMETERS)));
+				.attr("pvmt_sens_err", sensor_error)
+				.attr("pvmt_surf_status", surface_status)
+				.attr("surf_temp_c", surface_temp)
+				.attr("pvmt_temp_c", pavement_temp)
+				.attr("surf_water_depth_mm", water_depth.get(v -> v.round(MILLIMETERS)))
+				.attr("surf_freeze_temp_c", freeze_point)
+				.attr("ice_water_depth_mm", ice_or_water_depth.get(v -> v.round(MILLIMETERS)))
+				.attr("surf_black_ice_signal", black_ice_signal);
 		}
 	}
 
@@ -231,6 +233,36 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
 	public Row getFirstValidSurfTempRow() {
 		return findRow(r -> r.isActive() && !r.surface_temp.isNull());
 	}
+
+	/** Get the row for the first valid High Sierra surface temp,
+	 * which is stored in rows 3 or 4 (1-based) */
+	private Row getFirstValidSurfTempRowHighSierra() {
+		for (int i = 2; i < Math.min(table_rows.size(), 4); ++i) {
+			var row = table_rows.get(i);
+			if (!row.surface_temp.isNull())
+				return row;
+		}
+		return null;
+	}
+
+	/** Recreate High Sierra table. Valid pavement sensor rows start
+	 * at 3 or 4. This is remapped to row 1 */
+	public void recreateHighSierra() {
+		// Have seen rows with missing temperature but status present.
+		// In that case, the logic below returns no surf status.
+		// The row must have temperature present to be used.
+		var row = getFirstValidSurfTempRowHighSierra();
+		clear();
+		if (row != null){
+			num_sensors.setValue(1);
+			var nrow = addRow();
+			nrow.surface_status = row.surface_status;
+			nrow.surface_temp = row.surface_temp;
+			nrow.sensor_error.setValue(PavementSensorError.none);
+		}
+	}
+
+
 
 	/** Get the specified nth active sensor row or -1 if none.
 	 * @param nth Nth active sensor, ranges between 1 and size.

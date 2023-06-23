@@ -26,7 +26,7 @@ public class EssTemperature extends EssUnits<Temperature, Temperature.Units>{
     private void init(){
         setRange(-1000, 1001);
 		setUnits(0.1, Units.CELSIUS);
-		setOutput(1, Units.CELSIUS, 1);
+		setOutput(1, Units.CELSIUS, 2);
     }
 
 	@Override

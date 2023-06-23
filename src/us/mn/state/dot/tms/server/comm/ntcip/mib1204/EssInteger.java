@@ -67,10 +67,13 @@ public class EssInteger<C> extends EssConverter<C, ASN1Integer>{
 	}
 
 	/** Manually overwrite the raw value. Used to accomodate fallback properties
-	 * e.g. mobile friction gets stored in pavement friction
-	*/
+	 * e.g. mobile friction gets stored in pavement friction. This will reset
+	 * the internal `converted` flag, meaning subsequent value fetches will
+	 * convert from this new raw value.
+	 */
 	public void setRawValue(int val){
 		raw.setInteger(val);
+		converted = false;
 	}
 	/** Fetch the raw value */
 	public int getRawValue(){

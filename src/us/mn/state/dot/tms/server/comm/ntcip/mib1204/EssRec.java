@@ -3,8 +3,8 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 import us.mn.state.dot.sched.TimeSteward;
 import us.mn.state.dot.tms.server.WeatherSensorImpl;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
 import us.mn.state.dot.tms.utils.JsonBuilder;
+import us.mn.state.dot.sched.DebugLog;
 
 /**
  * A collection of weather condition values which can be converted to JSON.
@@ -39,8 +39,15 @@ public class EssRec implements JsonBuilder.Buildable {
 	/** Solar radiation values */
 	public final RadiationValues rad_values = new RadiationValues();
 
-	/** Create a new ESS record */
-	public EssRec() { }
+	/** Variables for debugging */
+	private DebugLog dlog;
+	private String dlog_prefix;
+
+
+	/** Logger */
+	private void log(String msg) {
+		dlog.log(dlog_prefix + msg);
+	}
 
 	/** Store the atmospheric values */
 	private void storeAtmospheric(WeatherSensorImpl ws) {
@@ -89,62 +96,57 @@ public class EssRec implements JsonBuilder.Buildable {
 
 	/** Store pavement sensor related values */
 	private void storePavement(WeatherSensorImpl ws) {
-		PavementSensorsTable.Row row = ps_table.getRow(1);
-		// default is null if not available, or e.g. High Sierra has an error
-		Integer pvmt_surf_temp = null,
-			surf_temp = null,
-			surf_freeze_temp = null;
-		SurfaceStatus pvmt_surf_status = null;
-
-		if (row != null){
-			// High Sierra device value mapping is a little different
-			if (ws.getType() == EssType.HIGH_SIERRA){
-				// Note: Subsurf is stored in essPavementTemperature for this
-				// device, e.g. row.getPvmtTempC() (not currently used)
-
-				// High Sierra stores surface temp in sensors 3 and 4.
-				// Try sensor 3 then 4
-				for (int row_num = 3; row_num <=4; ++row_num) {
-					row = ps_table.getRow(row_num);
-					if (!row.sensor_error.isNull()) {
-						surf_temp = row.surface_temp.toInteger();
-						pvmt_surf_status = row.surface_status.get();
-						break;
-					}
-				}
-			}
-			// Otherwise generic type; ignore all but first sensor
-			else{
-				// the surface status and first valid surf temp
-				// should come from the same sensor.
-				var valid_row = ps_table.getFirstValidSurfTempRow();
-				pvmt_surf_status = valid_row.surface_status.get();
-				surf_temp = valid_row.surface_temp.toInteger();
-				pvmt_surf_temp = ps_table.getFirstValidPvmtTemp();
-				surf_freeze_temp = ps_table.getFirstValidSurfFreezeTemp();				
-			}
-		}
-		ws.setPvmtTempNotify(pvmt_surf_temp);
-		ws.setSurfTempNotify(surf_temp);
-		ws.setPvmtSurfStatusNotify(
-			pvmt_surf_status == null ? null : pvmt_surf_status.ordinal());
-		ws.setSurfFreezeTempNotify(surf_freeze_temp);
+		// extract table values to locals
+		// the surface status and first valid surf temp
+		// should come from the same sensor.
+		var valid_row = ps_table.getFirstValidSurfTempRow();
+		ws.setSurfTempNotify(valid_row.surface_temp.toInteger());
+		ws.setPvmtSurfStatusNotify(valid_row.surface_status.toInteger());
+		ws.setPvmtTempNotify(ps_table.getFirstValidPvmtTemp());
+		ws.setSurfFreezeTempNotify(ps_table.getFirstValidSurfFreezeTemp());
 		ws.setPavementSensorsTable(ps_table);
 	}
 
 	/** Store subsurface sensor values */
 	private void storeSubSurface(WeatherSensorImpl ws) {
-		Integer t = null;
-		// High Sierra stores nothing in this table;
-		// Subsurface temps are stored in pvmt table. (not currently!)
-		if (ws.getType() != EssType.HIGH_SIERRA)
-			t = ss_table.getFirstValidTemp();
-		ws.setSubSurfTempNotify(t);
+		ws.setSubSurfTempNotify(ss_table.getFirstValidTemp());
 		ws.setSubsurfaceSensorsTable(ss_table);
+	}
+	  
+	/** Reorganize the tables for the High Sierra controllers, 
+	 * so standard data extraction can be used. This must be 
+	 * performed before data is extracted. */
+	private void reorgHighSierra(){
+		// High Sierra always has 4 pavement sensor rows
+		if (ps_table.size() < 4) {
+			log("reorgHighSierra: bad pst.size=" + ps_table.size());
+			ps_table.clear();
+			ss_table.clear();
+			return;
+		}
+
+		// High Sierra stores subsurface temp in row 1 of pavement
+		// sensor table. Ignore other row 1 values.
+		var ss_temp = ps_table.getRow(1).pavement_temp;
+		log("EssRec.reorg: subSurfTemp=" + ss_temp);
+
+		// rebuild tables so they are not vendor specific
+		ps_table.recreateHighSierra();
+		ss_table.recreateHighSierra(ss_temp);
 	}
 
 	/** Store all sample values */
-	public void store(WeatherSensorImpl ws) {
+	public void store(DebugLog dl, WeatherSensorImpl ws) {
+		// setup logging
+		dlog = dl;
+		dlog_prefix = ws.getName()+": ";
+		// High Sierra device value mapping is a little different
+		log("EssRec.store: sensorType=" + ws.getType());
+		if (ws.getType() == EssType.HIGH_SIERRA) {
+			log("EssRec.store: pre.pst=" + ps_table);
+			log("EssRec.store: pre.sst=" + ss_table);
+			reorgHighSierra();
+		}
 		storeAtmospheric(ws);
 		storeWinds(ws);
 		storeTemps(ws);

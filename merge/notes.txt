@@ -232,7 +232,18 @@ Merged notes
         static for it to work; don't see any future patches that would fix that
         bug, but I see v47 doesn't have it in the code, so maybe a patch that
         was not included
-
+9989:
+    - OpNtcip: done
+    - OpQueryEssSettings won't delete since seems to be used later; so not modifying NtcipPoller either
+    - PavementSensorsTable: done
+    - SubsurfaceSensorsTable: done
+    - SString/SStringTest: done
+    - just a note to think about using same names for json/string/xml representation;
+        can rename EssConverter.json_key to be just `name`
+    - EssRec: done
+    - OpQueryEssStatus: not including some logging, but can add later if needed still
+    - EssTable: I changed EssTemperature to 2 digits; but I think many places still
+        fetch as an Integer, so will need to go back and verify they're right
 
 
 
@@ -298,7 +309,6 @@ TODO
 Weather Patches Cluster:
 ------------------------
 - big commits: 9985-89 (89 probalby conflicts with DMS a bit), 10022; I suspect 10022 is just renaming files so should be easy;
-
 
 
 TODO after all else

@@ -44,7 +44,7 @@ import us.mn.state.dot.tms.utils.MultiString;
 abstract public class OpNtcip extends OpDevice<ASN1Object> {
 
 	/** NTCIP debug log */
-	static private final DebugLog NTCIP_LOG = new DebugLog("ntcip");
+	static protected final DebugLog NTCIP_LOG = new DebugLog("ntcip");
 
 	/** Lookup a sign message number */
 	static protected int lookupMsgNum(String ms) {

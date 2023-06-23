@@ -4,9 +4,7 @@ import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceSensorError;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceType;
 import static us.mn.state.dot.tms.units.Distance.Units.*;
-
 import java.io.IOException;
-
 import us.mn.state.dot.tms.utils.JsonBuilder;
 import us.mn.state.dot.tms.utils.XmlBuilder;
 
@@ -23,7 +21,8 @@ import us.mn.state.dot.tms.utils.XmlBuilder;
 public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 	implements XmlBuilder.Buildable
 {
-	/** Number of temperature sensors in table */
+	/** Number of temperature sensors in table; may be manually modified by High
+	 * Sierra remapping */
 	public final EssNumber num_sensors =
 		EssNumber.Count("subsurface_sensors", numEssSubSurfaceSensors);
 	
@@ -41,11 +40,13 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 		public final EssEnum<SubSurfaceType> sub_surface_type;
 		/** Subsurface depth in meters */
 		public final EssDistance depth;
-		/** Subsurface temperature in celcius */
-		public final EssTemperature temp;
+		/** Subsurface temperature in celcius; may be overwritten by High Sierra
+		 * remapping */
+		public EssTemperature temp;
 		/** Moisture in percent 0-100 */
 		public final EssNumber moisture;
-		/** Subsurface sensor error enum */
+		/** Subsurface sensor error enum; may be manually modified by High
+		 * Sierra remapping */
 		public final EssEnum<SubSurfaceSensorError> sensor_error;
 
 		/** Create a table row */
@@ -105,14 +106,14 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 		/** Get Xml representation */
 		public void toXml(XmlBuilder xb) throws IOException{
 			xb.tag("subsurf_sensor")
-				.attr("index", number-1)
+				.attr("index", number)
 				.attr("isactive",isActive())
 				.attr("location",location)
-				.attr("type",sub_surface_type)
-				.attr("depth",depth)
-				.attr("temp_c",temp)
-				.attr("moisture",moisture)
-				.attr("error",sensor_error);
+				.attr("subsurf_type",sub_surface_type)
+				.attr("subsurf_depth",depth)
+				.attr("subsurf_temp_c",temp)
+				.attr("subsurf_moisture",moisture)
+				.attr("subsurf_sensor_error",sensor_error);
 		}
 	}
 
@@ -124,6 +125,17 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 	/** Get the first valid temperature or null on error */
 	public Integer getFirstValidTemp() {
 		return findRowValue(r -> r.isActive() ? r.temp.toInteger() : null);
+	}
+
+	/** Recreate High Sierra table with a single row containing 
+	 * subsurface temperature and status
+	 * @param ss_temp subsurface temperature to use */
+	public void recreateHighSierra(EssTemperature ss_temp) {
+		clear();
+		num_sensors.setValue(1);
+		var nrow = addRow();
+		nrow.temp = ss_temp;
+		nrow.sensor_error.setValue(SubSurfaceSensorError.none);
 	}
 
 	/** To string */

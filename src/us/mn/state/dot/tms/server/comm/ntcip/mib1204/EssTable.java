@@ -46,6 +46,12 @@ abstract public class EssTable<R extends JsonBuilder.Buildable>
 		return table_rows.size() >= size();
 	}
 
+	/** Remove all rows and set sensor count to zero */
+	public void clear(){
+		sensor_count.setValue(0);
+		table_rows.clear();
+	}
+
     /** Used to instantiate a new row with that (1-based) row number */
     abstract protected R createRow(int row_num);
 

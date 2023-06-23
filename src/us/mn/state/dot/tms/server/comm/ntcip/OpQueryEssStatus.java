@@ -408,7 +408,7 @@ public class OpQueryEssStatus extends OpEss {
 	public void cleanup() {
 		if (isSuccess()) {
 			w_sensor.setSettings(new JsonBuilder().extend(ess_rec).toJson());
-			ess_rec.store(w_sensor);
+			ess_rec.store(NTCIP_LOG, w_sensor);
 		}
 		super.cleanup();
 	}

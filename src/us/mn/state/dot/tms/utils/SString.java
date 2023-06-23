@@ -141,17 +141,22 @@ public class SString {
 	/** Convert double to string with rounding */
 	static public String doubleToString(double d, int numdecplaces) {
 		if (numdecplaces < 0)
-			return Double.valueOf(d).toString();
-		else if (numdecplaces == 0) {
-			String ret = Double.valueOf(Math.round(d)).toString();
-			if (ret.endsWith(".0"))
-				return ret.replace(".0","");
-			else
-				return ret;
-		} else {
+			return Double.toString(d);
+		else{
+			String ret = Double.toString(round(d, numdecplaces));
+			if (numdecplaces == 0 && ret.endsWith(".0"))
+ 				return ret.replace(".0","");
+			return ret;
+		}
+	}
+
+	/** Round a double to the specified number of decimal places */
+	static public double round(double value, int numdecplaces) {
+		if (numdecplaces >= 0) {
 			double mult = Math.pow(10, numdecplaces);
-			return Double.valueOf(Math.round(d * mult) / mult)
-				.toString();
+			return Math.round(value * mult) / mult;
+		} else {
+			return value;
 		}
 	}
 
