@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import us.mn.state.dot.sched.DebugLog;
 import us.mn.state.dot.sonar.SonarException;
 import us.mn.state.dot.tms.DeviceRequest;
 import us.mn.state.dot.tms.GeoLoc;
@@ -56,6 +57,9 @@ import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.VisibilitySituation;
  * @author Michael Darter
  */
 public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
+
+	/** Debug log */
+	static private final DebugLog LOG = new DebugLog("weather_sensor");
 
 	/** Sample period for weather sensors (seconds) */
 	static private final int SAMPLE_PERIOD_SEC = 60;
@@ -235,8 +239,9 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		String pid = parse(getNotes(), PALERT_SITEID_KEY, getSiteId());
 		pid = (pid != null ? pid : "");
 		if (pid.length() < 4 || pid.length() > 6) {
-			System.err.println("Ignored Pikalert site" + 
-				" id for weather sensor " + getName()+ 
+			LOG.log("WeatherSensorImpl:" +
+				" Ignored Pikalert site" + 
+				" id for weather sensor " + getName() + 
 				"(" + pid + "), width is not 4-6 chars.");
 		}
 		return pid;
