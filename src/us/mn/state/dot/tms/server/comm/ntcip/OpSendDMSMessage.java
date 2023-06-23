@@ -250,12 +250,25 @@ public class OpSendDMSMessage extends OpDMS {
 			catch (BadValue e) {
 				// This should only happen if the message
 				// status is "validating" ...
+				log("MsgModifyReq.poll: ex=" + e);
 				return new ChkControlMode();
 			}
 			catch (GenError e) {
 				// This should never happen (but of
 				// course, it does for some vendors)
+				log("MsgModifyReq.poll: ex=" + e);
 				return new ChkControlMode();
+			}
+			catch (NoSuchName e) {
+				// Thrown if msg num is >= dmsMaxChangeableMsg
+				log("MsgModifyReq.poll: msg_num=" + msg_num + 
+					" ex=" + e);
+				throw e;
+			}
+			catch (Exception e) {
+				// Log all other exceptions
+				log("MsgModifyReq.poll: unknown ex=" + e);
+				throw e;
 			}
 			return new ChkControlMode();
 		}
