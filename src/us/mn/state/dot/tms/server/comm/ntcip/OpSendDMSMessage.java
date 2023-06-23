@@ -2,6 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2000-2023  Minnesota Department of Transportation
  * Copyright (C) 2017       SRF Consulting Group
+ * Copyright (C) 2017       Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,6 +77,7 @@ import us.mn.state.dot.tms.utils.MultiSyntaxError;
  *
  * @author Douglas Lau
  * @author John L. Stanley
+ * @author Michael Darter
  */
 public class OpSendDMSMessage extends OpDMS {
 
@@ -273,6 +275,15 @@ public class OpSendDMSMessage extends OpDMS {
 			mess.queryProps();
 			logQuery(mode);
 			logQuery(status);
+
+			// Some DMS are connected to the local sign port via 
+			// IP-to-serial port devices, resulting in the signs
+			// reporting their mode as not being central, which
+			// results in erroneous DMS errors.
+			final boolean ignore_mode = false;
+			if (ignore_mode)
+				return new ModifyMsg();
+
 			switch (mode.getEnum()) {
 			case central:
 			case centralOverride:
