@@ -280,7 +280,7 @@ public class OpSendDMSMessage extends OpDMS {
 			// IP-to-serial port devices, resulting in the signs
 			// reporting their mode as not being central, which
 			// results in erroneous DMS errors.
-			final boolean ignore_mode = false;
+			final boolean ignore_mode = true;
 			if (ignore_mode)
 				return new ModifyMsg();
 
