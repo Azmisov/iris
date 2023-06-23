@@ -222,6 +222,19 @@ Merged notes
         as expected. I'm imagining you can have a single OutputFormat class of sorts,
         where you can tune whether the output is JSON, XML or debugging string. They all
         seem to be identical formats almost, just different delimiter formatting.
+9806, 9807, 9809:
+    - renamed ModifyingMsg -> ModifyMsg in patch 9806 instead so not committing buggy code
+    - do we want to make this configurable somewhere, rather than hardcoded?
+9811, 9821:
+    - could make this configurable so could be used by MNDOT
+9865:
+    - not including logging in OpNtcip, since would need to make all log() methods
+        static for it to work; don't see any future patches that would fix that
+        bug, but I see v47 doesn't have it in the code, so maybe a patch that
+        was not included
+
+
+
 
 Skipped
 ==================
@@ -264,6 +277,10 @@ Skipped
         put into V1 from patch 9947
     - NtcipVer added to OpEss; will have to see in future patches whether
         that is actually necessary now
+9988:
+    - bug fix; code has changed so much, don't know if it applies anymore; will
+        want to just verify later that all the RWIS sensor info we want is getting
+        queried
 
 
 TODO
