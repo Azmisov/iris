@@ -642,21 +642,36 @@ public class OpSendDMSMessage extends OpDMS {
 			//       stupid sign bug.  It may no longer be needed.
 			ASN1Integer time = dmsMessageTimeRemaining.makeInt();
 			time.setInteger(getDuration());
-			// WYDOT always sets comm and power for recovery
-			setCommAndPower();
-			//if (SignMessageHelper.isScheduledIndefinite(message))
-			//	setCommAndPower();
-			//else
-			//	setCommAndPowerBlank();
+			//if (isScheduledIndefinite())
+			if (restoreSignMessage()) {
+                                log("SetLossMsgs.poll: setting comm and power loss message=msg");
+				setCommAndPower();
+			} else {
+                                log("SetLossMsgs.poll: setting comm and power loss message=blank");
+				setCommAndPowerBlank();
+			}
 			mess.add(time);
 			mess.add(comm_msg);
 			mess.add(long_msg);
 			logStore(time);
 			logStore(comm_msg);
 			logStore(long_msg);
-			mess.storeProps();
+			try {
+				mess.storeProps();
+			} catch (BadValue e) {
+				// ignore due to being in local mode
+				log("SetLossMsgs.poll: ignoring ex=" +
+					e.toString());
+			}
 			return null;
 		}
+	}
+
+ 	/** Determine if original message should be restored or blanked */
+ 	private boolean restoreSignMessage() {
+		boolean blank = SignMessageHelper.isBlank(message);
+		log("restoreSignMessage: isblank=" + blank);
+		return !blank;
 	}
 
 	/** Set the comm loss and power recovery msgs */
