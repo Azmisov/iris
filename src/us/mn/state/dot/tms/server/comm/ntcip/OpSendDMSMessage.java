@@ -642,10 +642,12 @@ public class OpSendDMSMessage extends OpDMS {
 			//       stupid sign bug.  It may no longer be needed.
 			ASN1Integer time = dmsMessageTimeRemaining.makeInt();
 			time.setInteger(getDuration());
-			if (SignMessageHelper.isScheduledIndefinite(message))
-				setCommAndPower();
-			else
-				setCommAndPowerBlank();
+			// WYDOT always sets comm and power for recovery
+			setCommAndPower();
+			//if (SignMessageHelper.isScheduledIndefinite(message))
+			//	setCommAndPower();
+			//else
+			//	setCommAndPowerBlank();
 			mess.add(time);
 			mess.add(comm_msg);
 			mess.add(long_msg);
