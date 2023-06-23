@@ -2,7 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2012-2022  Minnesota Department of Transportation
  * Copyright (C) 2011  Berkeley Transportation Systems Inc.
- * Copyright (C) 2012  Iteris Inc.
+ * Copyright (C) 2012-2020  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,8 @@ import us.mn.state.dot.tms.DMS;
 import us.mn.state.dot.tms.DMSHelper;
 import us.mn.state.dot.tms.RampMeter;
 import us.mn.state.dot.tms.RampMeterHelper;
+import us.mn.state.dot.tms.WeatherSensor;
+import us.mn.state.dot.tms.WeatherSensorHelper;
 
 /**
  * This class writes out the TMS configuration data to an XML file.
@@ -172,6 +174,7 @@ public class TmsConfigXmlWriter extends XmlWriter {
 		writeCommLinkBody(w);
 		writeControllerBody(w);
 		writeDmsBody(w);
+		writeWeatherSensorBody(w);
 	}
 
 	/** Write the r_node elements */
@@ -233,6 +236,16 @@ public class TmsConfigXmlWriter extends XmlWriter {
 			DMS dms = it.next();
 			if (dms instanceof DMSImpl)
 				((DMSImpl) dms).writeXml(w);
+		}
+	}
+
+	/** Write the weather sensor elements */
+	private void writeWeatherSensorBody(Writer w) throws IOException {
+		Iterator<WeatherSensor> it = WeatherSensorHelper.iterator();
+		while(it.hasNext()) {
+			WeatherSensor ws = it.next();
+			if(ws instanceof WeatherSensorImpl)
+				((WeatherSensorImpl)ws).writeXml(w);
 		}
 	}
 

@@ -1070,10 +1070,31 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		return sb.toString();
 	}
 
-	/** Write object as xml */
-	public void writeWeatherSensorXml(Writer w) throws IOException {
+	/** Write weather sensor configuration data as an XML element */
+	public void writeXml(Writer w) throws IOException {
 		var xb = new XmlBuilder(w).setPrettyPrint(true);
 		xb.INDENT = ""; // disable indent currently
+		xb.tag("weather_sensor")
+			.attr("name", getName())
+			.attr("description",GeoLocHelper.getLocation(geo_loc))
+			.attr("notes", SString.stripCrLf(getNotes()))
+			.attr("siteid", getSiteId())
+			.attr("pikalertsiteid", getPikalertSiteId());
+		Position pos = GeoLocHelper.getWgs84Position(geo_loc);
+		var lon = (pos != null ? pos.getLongitude() : 0);
+		var lat = (pos != null ? pos.getLongitude() : 0);
+		xb.attr("lon", formatDouble(lon))
+			.attr("lat", formatDouble(lat));
+		w.write(xb.toXml()+'\n');
+	}
+
+	/** Write real-time weather data as an xml element */
+	public void writeWeatherSensorDataXml(Writer w) throws IOException {
+		var xb = new XmlBuilder(w).setPrettyPrint(true);
+		xb.INDENT = ""; // disable indent currently
+		// metadata
+		// FIXME: would be better to not write metadata 
+		//        but customers already depend on it.
 		xb.tag("weather_sensor")
 			.attr("name", getName())
 			.attr("description",GeoLocHelper.getLocation(geo_loc))
@@ -1085,6 +1106,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 			xb.attr("lon", formatDouble(pos.getLongitude()))
 				.attr("lat", formatDouble(pos.getLatitude()));
 		}
+		// real-time data
 		xb.attr("site_id", getSiteId())
 			.attr("alt_id", getAltId())
 			.attr("alt_m", getElevation())
