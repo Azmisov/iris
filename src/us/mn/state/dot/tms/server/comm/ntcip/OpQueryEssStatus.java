@@ -407,13 +407,8 @@ public class OpQueryEssStatus extends OpEss {
 	@Override
 	public void cleanup() {
 		if (isSuccess()) {
-			try{
-				w_sensor.setSettings(new JsonBuilder().extend(ess_rec).toJson());
-				ess_rec.store(w_sensor);
-			} catch (JsonBuilder.Exception e){
-				log("Ess JSON serialization error: "+e);
-				log("\t: "+e.json);
-			}
+			w_sensor.setSettings(new JsonBuilder().extend(ess_rec).toJson());
+			ess_rec.store(w_sensor);
 		}
 		super.cleanup();
 	}

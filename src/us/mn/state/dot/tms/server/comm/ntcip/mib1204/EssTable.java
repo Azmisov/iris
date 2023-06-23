@@ -122,7 +122,7 @@ abstract public class EssTable<R extends JsonBuilder.Buildable>
 
     /** Convert to Json representation; the abstract implementation will
      * serialize the table rows as a list */
-    public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+    public void toJson(JsonBuilder jb){
 		// TODO: Iterable<T> signature not working here?
 		jb.beginList();
 		for (R row : table_rows)

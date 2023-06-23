@@ -71,7 +71,7 @@ public class TemperatureSensorsTable extends EssTable<TemperatureSensorsTable.Ro
 				.toString();
 		}
 		/** Get JSON representation */
-		public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+		public void toJson(JsonBuilder jb){
 			jb.object(new EssConvertible[] {
 				height,
 				air_temp
@@ -99,7 +99,7 @@ public class TemperatureSensorsTable extends EssTable<TemperatureSensorsTable.Ro
 			.toString();
 	}
 	/** Get JSON representation */
-	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+	public void toJson(JsonBuilder jb){
 		if (!isEmpty()){
 			jb.key("temperature_sensor");
 			super.toJson(jb);

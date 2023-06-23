@@ -41,11 +41,11 @@ public class JsonBuilder {
 
 	/** Interface to indicate JSON can be generated from that object */
 	public interface Buildable{
-		public void toJson(JsonBuilder jb) throws Exception;
+		public void toJson(JsonBuilder jb);
 	}
 
 	/** Custom Exception thrown when trying to build invalid JSON */
-	public static class Exception extends java.lang.Exception{
+	public static class Exception extends RuntimeException{
 		/** JSON string at time of error */
 		public final String json;
 		/** What was expected */
@@ -98,12 +98,12 @@ public class JsonBuilder {
 		return stack.peek();
 	}
 	/** Throws exception if state matches mask */
-	private void ensureNotState(int mask) throws Exception{
+	private void ensureNotState(int mask){
 		if ((state().f & mask) != 0)
 			throw error();
 	}
 	/** Throws exception if state doesn't matches mask */
-	private void ensureState(int mask) throws Exception{
+	private void ensureState(int mask){
 		if ((state().f & mask) == 0)
 			throw error();
 	}
@@ -146,7 +146,7 @@ public class JsonBuilder {
 	///////////// FINALIZATION //////////////
 
 	/** Return serialized JSON */
-	public String toJson() throws Exception{
+	public String toJson(){
 		ensureState(State.complete.f);
 		return toString();
 	}
@@ -201,7 +201,7 @@ public class JsonBuilder {
 	///////////// JSON STRUCTURES ////////////////
 
 	/** Begin JSON object, `{...}` */
-	public JsonBuilder beginObject() throws Exception{
+	public JsonBuilder beginObject(){
 		ensureNotState(State.object_key.f | State.string.f | State.complete.f);
 		separator();
 		separator = false;
@@ -210,7 +210,7 @@ public class JsonBuilder {
 		return this;
 	}
 	/** End JSON object, `{...}` */
-	public JsonBuilder endObject() throws Exception{
+	public JsonBuilder endObject(){
 		ensureState(State.object_key.f);
 		sb.append('}');
 		pop();
@@ -218,7 +218,7 @@ public class JsonBuilder {
 	}
 
 	/** Begin JSON list, `[...]` */
-	public JsonBuilder beginList() throws Exception{
+	public JsonBuilder beginList(){
 		ensureNotState(State.object_key.f | State.string.f | State.complete.f);
 		separator();
 		separator = false;
@@ -227,7 +227,7 @@ public class JsonBuilder {
 		return this;
 	}
 	/** End JSON object, `[...]` */
-	public JsonBuilder endList() throws Exception{
+	public JsonBuilder endList(){
 		ensureState(State.list.f);
 		sb.append(']');
 		pop();
@@ -235,7 +235,7 @@ public class JsonBuilder {
 	}
 
 	/** Begin JSON string, `"..."` */
-	public JsonBuilder beginString() throws Exception{
+	public JsonBuilder beginString(){
 		ensureNotState(State.complete.f | State.string.f);
 		separator();
 		separator = false;
@@ -244,7 +244,7 @@ public class JsonBuilder {
 		return this;
 	}
 	/** End JSON object, `"..."` */
-	public JsonBuilder endString() throws Exception{
+	public JsonBuilder endString(){
 		ensureState(State.string.f);
 		sb.append('"');
 		pop();
@@ -252,100 +252,100 @@ public class JsonBuilder {
 	}
 
 	/** Extend current JSON with serialization from multiple ordered objects */
-	public JsonBuilder extend(Iterable<Buildable> lst) throws Exception{
+	public JsonBuilder extend(Iterable<Buildable> lst){
 		for (var val : lst)
 			val.toJson(this);
 		return this;
 	}
 	/** Extend current JSON with serialization from multiple ordered objects */
-	public JsonBuilder extend(Buildable[] lst) throws Exception{
+	public JsonBuilder extend(Buildable[] lst){
 		return extend(Arrays.asList(lst));
 	}
 	/** Extend current JSON with serialization from a single object */
-	public JsonBuilder extend(Buildable val) throws Exception{
+	public JsonBuilder extend(Buildable val){
 		val.toJson(this);
 		return this;
 	}
 
 	/** Create an empty list */
-	public JsonBuilder list() throws Exception{
+	public JsonBuilder list(){
 		return beginList().endList();
 	}
 	/** Create a list with contents delegated to a single object */
-	public JsonBuilder list(Buildable val) throws Exception{
+	public JsonBuilder list(Buildable val){
 		return beginList().extend(val).endList();
 	}
 	/** Create a list with contents delegated to multiple objects */
-	public JsonBuilder list(Iterable<Buildable> lst) throws Exception{
+	public JsonBuilder list(Iterable<Buildable> lst){
 		return beginList().extend(lst).endList();
 	}
 	/** Create a list with contents delegated to multiple objects */
-	public JsonBuilder list(Buildable[] lst) throws Exception{
+	public JsonBuilder list(Buildable[] lst){
 		return beginList().extend(lst).endList();
 	}
 	/** Create a list with contents given by multiple values */
-	public <T> JsonBuilder list(T[] vals) throws Exception{
+	public <T> JsonBuilder list(T[] vals){
 		return beginList().values(vals).endList();
 	}
 	/** Create a list with contents given by multiple values */
-	public JsonBuilder list(Float[] vals) throws Exception{
+	public JsonBuilder list(Float[] vals){
 		return beginList().values(vals).endList();
 	}
 	/** Create a list with contents given by multiple values */
-	public JsonBuilder list(Double[] vals) throws Exception{
+	public JsonBuilder list(Double[] vals){
 		return beginList().values(vals).endList();
 	}
 	/** Create a list with contents given by multiple values */
-	public JsonBuilder list(String[] vals) throws Exception{
+	public JsonBuilder list(String[] vals){
 		return beginList().values(vals).endList();
 	}
 
 	/** Create an empty object */
-	public JsonBuilder object() throws Exception{
+	public JsonBuilder object(){
 		return beginObject().endObject();
 	}
 	/** Create an object with contents delegated to a single object */
-	public JsonBuilder object(Buildable val) throws Exception{
+	public JsonBuilder object(Buildable val){
 		return beginObject().extend(val).endObject();
 	}
 	/** Create an object with contents given by multiple ordered objects */
-	public JsonBuilder object(Iterable<Buildable> lst) throws Exception{
+	public JsonBuilder object(Iterable<Buildable> lst){
 		return beginObject().extend(lst).endObject();
 	}
 	/** Create an object with contents given by multiple ordered objects */
-	public JsonBuilder object(Buildable[] lst) throws Exception{
+	public JsonBuilder object(Buildable[] lst){
 		return beginObject().extend(lst).endObject();
 	}
 
 	/** Inserts an object key, which is a string*/
-	public <K> JsonBuilder key(K key) throws Exception{
+	public <K> JsonBuilder key(K key){
 		ensureState(State.object_key.f);
 		return string(key);
 	}
 
 	/** Insert a key+value pair into an object */
-	public <K,V> JsonBuilder pair(K key, V val) throws Exception{
+	public <K,V> JsonBuilder pair(K key, V val){
 		return key(key).value(val);
 	}
 	/** Specialization of {@link #pair} */
-	public <K> JsonBuilder pair(K key, String val) throws Exception{
+	public <K> JsonBuilder pair(K key, String val){
 		return key(key).string(val);
 	}
 	/** Specialization of {@link #pair} */
-	public <K> JsonBuilder pair(K key, Double val) throws Exception{
+	public <K> JsonBuilder pair(K key, Double val){
 		return key(key).value(val);
 	}
 	/** Specialization of {@link #pair} */
-	public <K> JsonBuilder pair(K key, Float val) throws Exception{
+	public <K> JsonBuilder pair(K key, Float val){
 		return key(key).value(val);
 	}
 	/** Specialization of {@link #pair} */
-	public <K> JsonBuilder pair(K key, Buildable val) throws Exception{
+	public <K> JsonBuilder pair(K key, Buildable val){
 		return key(key).extend(val);
 	}
 
 	/** Insert key, but only if in an object */
-	private <K> JsonBuilder maybeKey(K key) throws Exception{
+	private <K> JsonBuilder maybeKey(K key){
 		var s = state();
 		if (s == State.complete)
 			throw error();
@@ -358,23 +358,23 @@ public class JsonBuilder {
 	 * the current context. If we're not inside an object, just the value will
 	 * be inserted.
 	 */
-	public <K, V> JsonBuilder pairOrValue(K key, V val) throws Exception{
+	public <K, V> JsonBuilder pairOrValue(K key, V val){
 		return maybeKey(key).value(val);
 	}
 	/** Specialization of {@link #pairOrValue} */
-	public <K> JsonBuilder pairOrValue(K key, String val) throws Exception{
+	public <K> JsonBuilder pairOrValue(K key, String val){
 		return maybeKey(key).string(val);
 	}
 	/** Specialization of {@link #pairOrValue} */
-	public <K> JsonBuilder pairOrValue(K key, Double val) throws Exception{
+	public <K> JsonBuilder pairOrValue(K key, Double val){
 		return maybeKey(key).value(val);
 	}
 	/** Specialization of {@link #pairOrValue} */
-	public <K> JsonBuilder pairOrValue(K key, Float val) throws Exception{
+	public <K> JsonBuilder pairOrValue(K key, Float val){
 		return maybeKey(key).value(val);
 	}
 	/** Specialization of {@link #pairOrValue} */
-	public <K> JsonBuilder pairOrValue(K key, Buildable val) throws Exception{
+	public <K> JsonBuilder pairOrValue(K key, Buildable val){
 		return maybeKey(key).extend(val);
 	}
 
@@ -394,7 +394,7 @@ public class JsonBuilder {
 	 * @param value will be converted to a string via {@link String#valueOf};
 	 * 	null is converted to empty string
 	 */
-	public <T> JsonBuilder append(T value) throws Exception{
+	public <T> JsonBuilder append(T value){
 		ensureState(State.string.f);
 		sb.append(escaped(value));
 		return this;
@@ -402,7 +402,7 @@ public class JsonBuilder {
 	/** Inserts a value as a new JSON string. Null values are serialized as
 	 * an empty string
 	 */
-	public <T> JsonBuilder string(T value) throws Exception{
+	public <T> JsonBuilder string(T value){
 		ensureNotState(State.complete.f | State.string.f);
 		separator();
 		sb.append('"').append(escaped(value)).append('"');
@@ -436,21 +436,21 @@ public class JsonBuilder {
 	 * using `String.valueOf`, so can result in invalid JSON if the object
 	 * is not returning a valid literal.
 	 */
-	public <T> JsonBuilder value(T value) throws Exception{
+	public <T> JsonBuilder value(T value){
 		ensureNotState(State.object_key.f | State.string.f | State.complete.f);
 		return raw(value);
 	}
 	/** Same as {@link #value}, but converts infinities and NaN's to null,
 	 * as they are not suppoted in JSON. Other than these, the numbers are
 	 * serialized with full precision. */
-	public JsonBuilder value(Float value) throws Exception{
+	public JsonBuilder value(Float value){
 		ensureNotState(State.object_key.f | State.string.f | State.complete.f);
 		return raw(serializeFloat(value));
 	}
 	/** Same as {@link #value}, but converts infinities and NaN's to null,
 	 * as they are not suppoted in JSON. Other than these, the numbers are
 	 * serialized with full precision. */
-	public JsonBuilder value(Double value) throws Exception{
+	public JsonBuilder value(Double value){
 		ensureNotState(State.object_key.f | State.string.f | State.complete.f);
 		return raw(serializeDouble(value));
 	}
@@ -459,7 +459,7 @@ public class JsonBuilder {
 	 * e.g. you want to serialize a number in a custom foramt, use {@link #raw}
 	 * instead.
 	 */
-	public JsonBuilder value(String value) throws Exception{
+	public JsonBuilder value(String value){
 		return string(value);
 	}
 
@@ -468,28 +468,28 @@ public class JsonBuilder {
 	 * erasure on collections, no `Iterable<T>` method signature is currently
 	 * provided
 	 */
-	public <T> JsonBuilder values(T[] lst) throws Exception{
+	public <T> JsonBuilder values(T[] lst){
 		ensureState(State.list.f);
 		return raws(Arrays.asList(lst));
 	}
 	/** Same as {@link #value}, but inserts multiple values. Use this for
 	 * inserting the contents of a list
 	 */
-	public JsonBuilder values(Float[] lst) throws Exception{
+	public JsonBuilder values(Float[] lst){
 		ensureState(State.list.f);
 		return rawsTransform(Arrays.asList(lst), v -> serializeFloat(v));
 	}
 	/** Same as {@link #value}, but inserts multiple values. Use this for
 	 * inserting the contents of a list
 	 */
-	public JsonBuilder values(Double[] lst) throws Exception{
+	public JsonBuilder values(Double[] lst){
 		ensureState(State.list.f);
 		return rawsTransform(Arrays.asList(lst), v -> serializeDouble(v));
 	}
 	/** Same as {@link #value}, but inserts multiple values. Use this for
 	 * inserting the contents of a list
 	 */
-	public JsonBuilder values(String[] lst) throws Exception{
+	public JsonBuilder values(String[] lst){
 		ensureState(State.list.f);
 		return rawsTransform(Arrays.asList(lst), v -> {
 			return '"'+escaped(v)+'"';
@@ -503,7 +503,7 @@ public class JsonBuilder {
 	 * using the safe JSON methods, otherwise the resulting JSON could be
 	 * invalid.
 	 */
-	public <T> JsonBuilder raw(T value) throws Exception{
+	public <T> JsonBuilder raw(T value){
 		separator();
 		sb.append(String.valueOf(value));
 		pop(true);
@@ -512,7 +512,7 @@ public class JsonBuilder {
 	/** Same as {@link #values}, but does not validate the current state. This
 	 * bears the same warnings as {@link #raw}
 	 */
-	public <T> JsonBuilder raws(Iterable<T> lst) throws Exception{
+	public <T> JsonBuilder raws(Iterable<T> lst){
 		for (var val : lst){
 			separator();
 			sb.append(String.valueOf(val));
@@ -528,7 +528,7 @@ public class JsonBuilder {
 	/** Used internally to implement {@link #values} variants */
 	private <O,T> JsonBuilder rawsTransform(
 		Iterable<O> lst, TransformLambda<O,T> transformation
-	) throws Exception{
+	){
 		for (var val : lst){
 			separator();
 			sb.append(String.valueOf(

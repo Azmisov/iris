@@ -90,7 +90,7 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 		}
 
 		/** Get JSON representation */
-		public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+		public void toJson(JsonBuilder jb){
 			jb.extend(new EssConvertible[]{
 				height,
 				avg_speed,
@@ -144,7 +144,7 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 	}
 
 	/** Get JSON representation */
-	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+	public void toJson(JsonBuilder jb){
 		jb.key("wind_sensor");
 		if (!isEmpty())
 			super.toJson(jb);

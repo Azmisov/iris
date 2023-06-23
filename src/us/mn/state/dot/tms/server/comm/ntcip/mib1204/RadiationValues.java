@@ -80,7 +80,7 @@ public class RadiationValues implements JsonBuilder.Buildable{
 	}
 
 	/** Get JSON representation */
-	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+	public void toJson(JsonBuilder jb){
 		jb.extend(new EssConvertible[] {
 			total_sun,
 			cloud_situation

@@ -214,6 +214,14 @@ Merged notes
         go through and check the units are all exact; I'm pretty sure they're the same,
         but we'll want to verify against v4 output to see if they are the same scales
         (e.g. in UI, XML, CSV outputs)
+9987:
+    - added XmlBuilder and test cases
+    - I really think we should unify the representations units/names here if possible;
+        I'm not sure how formal the XML output needs to be, so trying to keep as close
+        to original as possible, but will want to validate later that the output is
+        as expected. I'm imagining you can have a single OutputFormat class of sorts,
+        where you can tune whether the output is JSON, XML or debugging string. They all
+        seem to be identical formats almost, just different delimiter formatting.
 
 Skipped
 ==================

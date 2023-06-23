@@ -89,7 +89,7 @@ public class PrecipitationValues implements JsonBuilder.Buildable{
 	}
 
 	/** Get JSON representation */
-	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+	public void toJson(JsonBuilder jb){
 		jb.extend(new EssConvertible[]{
 			water_depth,
 			relative_humidity,

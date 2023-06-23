@@ -4,7 +4,11 @@ import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceSensorError;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceType;
 import static us.mn.state.dot.tms.units.Distance.Units.*;
+
+import java.io.IOException;
+
 import us.mn.state.dot.tms.utils.JsonBuilder;
+import us.mn.state.dot.tms.utils.XmlBuilder;
 
 /**
  * SubSurface sensors data table, where each table row contains data read from a
@@ -16,7 +20,9 @@ import us.mn.state.dot.tms.utils.JsonBuilder;
  * @copyright 2019-2023  Minnesota Department of Transportation
  * @license GPL-2.0
  */
-public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>{
+public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
+	implements XmlBuilder.Buildable
+{
 	/** Number of temperature sensors in table */
 	public final EssNumber num_sensors =
 		EssNumber.Count("subsurface_sensors", numEssSubSurfaceSensors);
@@ -26,7 +32,7 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 	}
 
 	/** Table row */
-	static public class Row implements JsonBuilder.Buildable{
+	static public class Row implements JsonBuilder.Buildable, XmlBuilder.Buildable{
 		/** Row/sensor number */
 		public final int number;
 		/** Sensor location as a display string */
@@ -86,7 +92,7 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 				.toString();
 		}
 		/** Get JSON representation */
-		public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+		public void toJson(JsonBuilder jb){
 			jb.extend(new EssConvertible[]{
 				location,
 				sub_surface_type,
@@ -95,6 +101,18 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 				moisture,
 				sensor_error
 			}).pair("active", isActive());
+		}
+		/** Get Xml representation */
+		public void toXml(XmlBuilder xb) throws IOException{
+			xb.tag("subsurf_sensor")
+				.attr("index", number-1)
+				.attr("isactive",isActive())
+				.attr("location",location)
+				.attr("type",sub_surface_type)
+				.attr("depth",depth)
+				.attr("temp_c",temp)
+				.attr("moisture",moisture)
+				.attr("error",sensor_error);
 		}
 	}
 
@@ -118,8 +136,15 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 	}
 
 	/** Get JSON representation */
-	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+	public void toJson(JsonBuilder jb){
 		jb.key("sub_surface_sensor");
 		super.toJson(jb);
+	}
+	/** Get XML representation */
+	public void toXml(XmlBuilder xb) throws IOException{
+		xb.tag("subsurf_sensors").attr("size",size()).child();
+		for (var row: table_rows)
+			row.toXml(xb);
+		xb.parent();
 	}
 }

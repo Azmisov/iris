@@ -135,7 +135,7 @@ abstract public class EssConverter<C, N extends ASN1Object> implements EssConver
 	 * {@link JsonBuilder#pairOrValue} with {@link #json_key} and
 	 * {@link #toDouble} output. If the value is null, nothing is written
 	 */
-	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+	public void toJson(JsonBuilder jb){
 		Double v = toDouble();
 		if (v != null)
 			jb.pairOrValue(json_key, v);

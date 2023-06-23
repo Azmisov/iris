@@ -73,7 +73,7 @@ public class AtmosphericValues implements JsonBuilder.Buildable{
 	}
 
 	/** Get JSON representation */
-	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+	public void toJson(JsonBuilder jb){
 		jb.extend(new EssConvertible[]{
 			reference_elevation,
 			pressure_sensor_height,

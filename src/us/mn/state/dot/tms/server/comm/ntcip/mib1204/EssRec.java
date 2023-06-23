@@ -156,7 +156,7 @@ public class EssRec implements JsonBuilder.Buildable {
 	}
 
 	/** Get JSON representation */
-	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception {
+	public void toJson(JsonBuilder jb) {
 		jb.object(new JsonBuilder.Buildable[]{
 			atmospheric_values,
 			ws_table,

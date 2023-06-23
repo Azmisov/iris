@@ -177,14 +177,8 @@ public class OpQueryEssSettings extends OpEss {
 	/** Cleanup the operation */
 	@Override
 	public void cleanup() {
-		if (isSuccess()){
-			try{
-				w_sensor.setSettings(new JsonBuilder().extend(ess_rec).toJson());
-			} catch (JsonBuilder.Exception e){
-				log("Ess JSON serialization error: "+e);
-				log("\t: "+e.json);
-			}
-		}
+		if (isSuccess())
+			w_sensor.setSettings(new JsonBuilder().extend(ess_rec).toJson());
 		super.cleanup();
 	}
 }

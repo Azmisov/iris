@@ -32,6 +32,7 @@ import us.mn.state.dot.tms.WeatherSensorHelper;
 import us.mn.state.dot.tms.geo.Position;
 import us.mn.state.dot.tms.units.Pressure;
 import us.mn.state.dot.tms.utils.SString;
+import us.mn.state.dot.tms.utils.XmlBuilder;
 import static us.mn.state.dot.tms.server.Constants.MISSING_DATA;
 import static us.mn.state.dot.tms.server.XmlWriter.createAttribute;
 import us.mn.state.dot.tms.server.comm.DevicePoller;
@@ -1066,67 +1067,56 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 
 	/** Write object as xml */
 	public void writeWeatherSensorXml(Writer w) throws IOException {
-		w.write("<weather_sensor");
-		w.write(createAttribute("name", getName()));
-		w.write(createAttribute("description",
-			GeoLocHelper.getLocation(geo_loc)));
-		w.write(createAttribute("notes", 
-			SString.stripCrLf(getNotes())));
-		w.write(createAttribute("siteid", getSiteId()));
-		w.write(createAttribute("pikalertsiteid", 
-			getPikalertSiteId()));
+		var xb = new XmlBuilder(w).setPrettyPrint(true);
+		xb.INDENT = ""; // disable indent currently
+		xb.tag("weather_sensor")
+			.attr("name", getName())
+			.attr("description",GeoLocHelper.getLocation(geo_loc))
+			.attr("notes", SString.stripCrLf(getNotes()))
+			.attr("siteid", getSiteId())
+			.attr("pikalertsiteid", getPikalertSiteId());
 		Position pos = GeoLocHelper.getWgs84Position(geo_loc);
 		if (pos != null) {
-			w.write(createAttribute("lon",
-				formatDouble(pos.getLongitude())));
-			w.write(createAttribute("lat",
-				formatDouble(pos.getLatitude())));
+			xb.attr("lon", formatDouble(pos.getLongitude()))
+				.attr("lat", formatDouble(pos.getLatitude()));
 		}
-		w.write(createAttribute("site_id", getSiteId()));
-		w.write(createAttribute("alt_id", getAltId()));
-		w.write(createAttribute("alt_m", getElevation()));
-		w.write(createAttribute("air_temp_c", getAirTemp()));
-		w.write(createAttribute("water_depth_cm", getWaterDepth()));
-		w.write(createAttribute("adjacent_snow_depth_cm", 
-			getAdjacentSnowDepth()));
-		w.write(createAttribute("humidity_perc", getHumidity()));
-		w.write(createAttribute("dew_point_temp_c", 
-			getDewPointTemp()));
-		w.write(createAttribute("max_temp_c", getMaxTemp()));
-		w.write(createAttribute("min_temp_c", getMinTemp()));
-		w.write(createAttribute("avg_wind_speed_kph", getWindSpeed()));
-		w.write(createAttribute("max_wind_gust_speed_kph", 
-			getMaxWindGustSpeed()));
-		w.write(createAttribute("max_wind_gust_dir_degs", 
-			getMaxWindGustDir()));
-		w.write(createAttribute("avg_wind_dir_degs", getWindDir()));
-		w.write(createAttribute("spot_wind_speed_kph", 
-			getSpotWindSpeed()));
-		w.write(createAttribute("spot_wind_dir_degs", 
-			getSpotWindDir()));
-		w.write(createAttribute("precip_rate_mmhr", getPrecipRate()));
-		w.write(createAttribute("precip_situation", 
-			getPrecipSituation()));
-		w.write(createAttribute("precip_1h_mm", getPrecipOneHour()));
-		w.write(createAttribute("precip_3h_mm", getPrecip3Hour()));
-		w.write(createAttribute("precip_6h_mm", getPrecip3Hour()));
-		w.write(createAttribute("precip_12h_mm", getPrecip6Hour()));
-		w.write(createAttribute("precip_24h_mm", getPrecip12Hour()));
-		w.write(createAttribute("visibility_m", getVisibility()));
-		w.write(createAttribute("visibility_situation",
-			VisibilitySituation.from(this)));
-		w.write(createAttribute("atmos_pressure_pa", getPressureQC()));
-		w.write(createAttribute("atmos_pressure_sealevel_pa", 
-			getSeaLevelPressure()));
-		w.write(createAttribute("pvmt_temp_c", getPvmtTemp()));
-		w.write(createAttribute("surf_temp_c", getSurfTempQC()));
-		w.write(createAttribute("pvmt_surf_status", 
-			getPvmtSurfStatus()));
-		w.write(createAttribute("surf_freeze_temp_c", 
-			getSurfFreezeTemp()));
-		w.write(createAttribute("subsurf_temp_c", 
-			getSubSurfTemp()));
-		w.write(createAttribute("time_stamp", getStampString()));
-		w.write("/>\n");
+		xb.attr("site_id", getSiteId())
+			.attr("alt_id", getAltId())
+			.attr("alt_m", getElevation())
+			.attr("air_temp_c", getAirTemp())
+			.attr("water_depth_cm", getWaterDepth())
+			.attr("adjacent_snow_depth_cm", getAdjacentSnowDepth())
+			.attr("humidity_perc", getHumidity())
+			.attr("dew_point_temp_c", getDewPointTemp())
+			.attr("max_temp_c", getMaxTemp())
+			.attr("min_temp_c", getMinTemp())
+			.attr("avg_wind_speed_kph", getWindSpeed())
+			.attr("max_wind_gust_speed_kph", getMaxWindGustSpeed())
+			.attr("max_wind_gust_dir_degs", getMaxWindGustDir())
+			.attr("avg_wind_dir_degs", getWindDir())
+			.attr("spot_wind_speed_kph", getSpotWindSpeed())
+			.attr("spot_wind_dir_degs", getSpotWindDir())
+			.attr("precip_rate_mmhr", getPrecipRate())
+			.attr("precip_situation", getPrecipSituation())
+			.attr("precip_1h_mm", getPrecipOneHour())
+			.attr("precip_3h_mm", getPrecip3Hour())
+			.attr("precip_6h_mm", getPrecip3Hour())
+			.attr("precip_12h_mm", getPrecip6Hour())
+			.attr("precip_24h_mm", getPrecip12Hour())
+			.attr("visibility_m", getVisibility())
+			.attr("visibility_situation", VisibilitySituation.from(this))
+			.attr("atmos_pressure_pa", getPressureQC())
+			.attr("atmos_pressure_sealevel_pa", getSeaLevelPressure())
+			.attr("pvmt_temp_c", getPvmtTemp())
+			.attr("surf_temp_c", getSurfTempQC())
+			.attr("pvmt_surf_status", getPvmtSurfStatus())
+			.attr("surf_freeze_temp_c", getSurfFreezeTemp())
+			.attr("subsurf_temp_c", getSubSurfTemp())
+			.attr("time_stamp", getStampString());
+		xb.child()
+			.extend(ps_table)
+			.extend(ss_table)
+			.parent(true);
+		w.write("\n");
 	}
 }

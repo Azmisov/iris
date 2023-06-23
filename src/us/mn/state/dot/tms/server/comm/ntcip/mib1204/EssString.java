@@ -37,7 +37,7 @@ public class EssString extends EssConverter<String, ASN1OctetString>{
 	}
 	/** Json key + string, or an empty string if null */
 	@Override
-	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+	public void toJson(JsonBuilder jb){
 		String val = get(e -> e.toString());
 		if (val != null)
 			jb.pairOrValue(json_key, val);

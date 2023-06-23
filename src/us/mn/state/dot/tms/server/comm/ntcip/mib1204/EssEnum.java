@@ -60,7 +60,7 @@ public class EssEnum<T extends Enum<T> & EssEnumType> extends EssInteger<T>{
 		return get(e -> e.toString(), "");
 	}
 	@Override
-	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+	public void toJson(JsonBuilder jb){
 		String val = get(e -> e.toString());
 		if (val != null)
 			jb.pairOrValue(json_key, val);

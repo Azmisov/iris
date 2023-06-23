@@ -5,7 +5,7 @@ import org.junit.Test;
 
 public class JsonBuilderTest{
 	private interface JsonTest{
-		public void run() throws JsonBuilder.Exception;
+		public void run();
 	}
 
 	public void noThrow(JsonTest lambda){

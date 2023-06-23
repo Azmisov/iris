@@ -18,11 +18,13 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
 import static us.mn.state.dot.tms.units.Distance.Units.*;
 import us.mn.state.dot.tms.utils.JsonBuilder;
+import us.mn.state.dot.tms.utils.XmlBuilder;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PavementSensorError;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PavementSensorType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PavementType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceBlackIceSignal;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
+import java.io.IOException;
 
 /**
  * Pavement sensors data table, where each table row contains data read from
@@ -31,7 +33,9 @@ import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
  * @author Michael Darter, Isaac Nygaard
  * @author Douglas Lau
  */
-public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
+public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
+	implements XmlBuilder.Buildable
+{
 	/** Number of sensors in table */
 	public final EssNumber num_sensors =
 		EssNumber.Count("size", numEssPavementSensors);
@@ -41,7 +45,7 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 	}
 
 	/** Table row */
-	static public class Row implements JsonBuilder.Buildable {
+	static public class Row implements JsonBuilder.Buildable, XmlBuilder.Buildable {
 		/** Row/sensor number */
 		public final int number;
 		public final EssString location;
@@ -171,7 +175,7 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 				.toString();
 		}
 		/** Get JSON representation */
-		public void toJson(JsonBuilder jb) throws JsonBuilder.Exception {
+		public void toJson(JsonBuilder jb) {
 			jb.beginObject();
 			jb.extend(new EssConvertible[]{
 				location,
@@ -195,6 +199,17 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 				jb.pair("ice_or_water_depth", iw);
 			jb.endObject();
 		}
+		/** Get XML representation */
+		public void toXml(XmlBuilder xb) throws IOException{
+			xb.tag("pvmt_sensor")
+				.attr("index", number-1)
+				.attr("isactive", isActive())
+				.attr("pvmtSensErr", sensor_error)
+				.attr("surftemp", surface_temp)
+				.attr("pvmttemp", pavement_temp)
+				.attr("surfwaterdepth_mm", water_depth.get(v -> v.round(MILLIMETERS)))
+				.attr("icewaterdepth_mm", ice_or_water_depth.get(v -> v.round(MILLIMETERS)));
+		}
 	}
 
 	@Override
@@ -212,7 +227,7 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 		return findRowValue(r -> r.isActive() ? r.pavement_temp.toInteger() : null);
 	}
 
-	/** Get the row for the first valid surface temp or -1 on error */
+	/** Get the row for the first valid surface temp or null on error */
 	public Row getFirstValidSurfTempRow() {
 		return findRow(r -> r.isActive() && !r.surface_temp.isNull());
 	}
@@ -241,8 +256,15 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>{
 	}
 
 	/** Get JSON representation */
-	public void toJson(JsonBuilder jb) throws JsonBuilder.Exception{
+	public void toJson(JsonBuilder jb){
 		jb.key("pavement_sensor");
 		super.toJson(jb);
+	}
+	/** Get XML representation */
+	public void toXml(XmlBuilder xb) throws IOException{
+		xb.tag("pvmt_sensors").attr("size", size()).child();
+		for (var row : table_rows)
+			row.toXml(xb);
+		xb.parent();
 	}
 }
