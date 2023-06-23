@@ -35,7 +35,6 @@ import us.mn.state.dot.tms.units.Pressure;
 import us.mn.state.dot.tms.utils.SString;
 import us.mn.state.dot.tms.utils.XmlBuilder;
 import static us.mn.state.dot.tms.server.Constants.MISSING_DATA;
-import static us.mn.state.dot.tms.server.XmlWriter.createAttribute;
 import us.mn.state.dot.tms.server.comm.DevicePoller;
 import us.mn.state.dot.tms.server.comm.WeatherPoller;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssType;
@@ -921,7 +920,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		Pressure slp = WeatherSensorHelper.calcSeaLevelPressure(this);
 		if (slp != null) {
 			double pi = slp.convert(Pressure.Units.PASCALS).value;
-			return new Integer((int)Math.round(pi));
+			return Integer.valueOf((int)Math.round(pi));
 		} else
 			return null;
 	}
@@ -1084,8 +1083,9 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		var lon = (pos != null ? pos.getLongitude() : 0);
 		var lat = (pos != null ? pos.getLongitude() : 0);
 		xb.attr("lon", formatDouble(lon))
-			.attr("lat", formatDouble(lat));
-		w.write(xb.toXml()+'\n');
+			.attr("lat", formatDouble(lat))
+			.ancestor(0); // force write
+		w.write('\n');
 	}
 
 	/** Write real-time weather data as an xml element */
@@ -1139,6 +1139,8 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 			.attr("pvmt_surf_status", getPvmtSurfStatus())
 			.attr("surf_freeze_temp_c", getSurfFreezeTemp())
 			.attr("subsurf_temp_c", getSubSurfTemp())
+			.attr("n_pvmt_sensors", ps_table.size())
+			.attr("n_subsurf_sensors", ss_table.size())
 			.attr("time_stamp", getStampString());
 		xb.child()
 			.extend(ps_table)
