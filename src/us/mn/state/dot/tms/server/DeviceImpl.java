@@ -17,7 +17,6 @@ package us.mn.state.dot.tms.server;
 
 import us.mn.state.dot.sched.DebugLog;
 import us.mn.state.dot.sonar.SonarException;
-import us.mn.state.dot.tms.CommLink;
 import us.mn.state.dot.tms.ControllerHelper;
 import us.mn.state.dot.tms.Device;
 import us.mn.state.dot.tms.DeviceRequest;
@@ -226,6 +225,12 @@ abstract public class DeviceImpl extends ControllerIoImpl implements Device {
 	protected int getPollPeriodSec() {
 		ControllerImpl c = controller;	// Avoid race
 		return (c != null) ? c.getPollPeriodSec() : 30;
+	}
+
+	/** Check if the device is on a "connected" comm link */
+	protected boolean isConnected() {
+		ControllerImpl c = controller;
+		return (c != null) && c.isConnected();
 	}
 
 	/** Check if dial-up is required to communicate */

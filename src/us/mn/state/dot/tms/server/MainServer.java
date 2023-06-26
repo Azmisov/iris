@@ -1,7 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2000-2022  Minnesota Department of Transportation
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2021  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -229,6 +229,7 @@ public class MainServer {
 		FLUSH.addJob(new IncidentXmlJob());
 		FLUSH.addJob(new WeatherSensorXmlJob());
 		FLUSH.addJob(new WeatherSensorPikalertJob());
+		FLUSH.addJob(new WeatherSensorVerifyJob());
 		FLUSH.addJob(new EventPurgeJob());
 	}
 

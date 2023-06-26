@@ -1177,6 +1177,11 @@ public class ControllerImpl extends BaseObjectImpl implements Controller {
 		return (cl != null) && cl.isDialUpRequired();
 	}
 
+	/** Check if the controller comm link is currently connected */
+	public boolean isConnected() {
+		return comm_link != null && comm_link.getConnected();
+	}
+
 	/** Write the controller as an XML element */
 	public void writeXml(Writer w) throws IOException {
 		w.write("<controller");
