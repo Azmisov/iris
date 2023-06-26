@@ -29,13 +29,6 @@ import us.mn.state.dot.tms.server.comm.snmp.NoSuchName;
  */
 abstract public class OpEss extends OpNtcip {
 
-	/** NTCIP 1204 versions */
-	enum NtcipVer {UNKNOWN, V1, V2, V3};
-
-	/** NTCIP 1204 version number */
-	// TODO: add version detection
-	protected NtcipVer ntcip_ver = NtcipVer.UNKNOWN;
-
 	/** Field sensor */
 	protected final WeatherSensorImpl w_sensor; 
 

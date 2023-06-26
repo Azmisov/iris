@@ -84,7 +84,7 @@ public class OpQueryEssSettings extends OpEss {
 			pr.exposure,
 			pr.sensor_type
 		});
-		log("   PavementSensorType=" + pr.pavement_type);
+		log(EssConvertible.toLogString("PavementSensorType", pr.pavement_type));
 		return ps_table.isDone()
 				? QuerySubSurface
 				: this.QueryPavementTable;

@@ -24,14 +24,15 @@ import us.mn.state.dot.tms.units.Pressure;
 import us.mn.state.dot.tms.units.Distance;
 import us.mn.state.dot.tms.units.Temperature;
 import us.mn.state.dot.tms.utils.SString;
-import us.mn.state.dot.tms.server.comm.ntcip.PikalertRoadState;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.EssEnumType;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PikalertRoadState;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.VisibilitySituation;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssTemperature;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssDistance;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PresWx;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
 
 /**
@@ -448,7 +449,7 @@ public enum WeatherSensorFileEnum {
 		int senid = 0;
 		String dat = formatDate(w.getStamp());
 		PavementSensorsTable ps_t = w.getPavementSensorsTable();
-		SubSurfaceSensorsTable ss_t = w.getSubsurfaceSensorsTable();
+		SubSurfaceSensorsTable ss_t = w.getSubSurfaceSensorsTable();
 
 		// Configuration for pairing pavement and subsurface sensors.
 		// At some point this will be enabled for WYDOT.
@@ -589,7 +590,7 @@ public enum WeatherSensorFileEnum {
 		String dat = formatDate(w.getStamp());
 		// iterate through pavement sensor table
 		PavementSensorsTable pst = w.getPavementSensorsTable();
-		SubSurfaceSensorsTable ss_t = w.getSubsurfaceSensorsTable();
+		SubSurfaceSensorsTable ss_t = w.getSubSurfaceSensorsTable();
 		for (var row : pst) {
 			String pss = pssToN(row.surface_status.get());
 			String sft = essTempToCsv100(row.surface_temp, MSNG_32767);

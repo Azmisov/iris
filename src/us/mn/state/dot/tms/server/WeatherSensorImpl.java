@@ -1025,13 +1025,13 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 	}
 
 	/** Set subsurface sensors table */
-	public void setSubsurfaceSensorsTable(SubSurfaceSensorsTable sst) {
+	public void setSubSurfaceSensorsTable(SubSurfaceSensorsTable sst) {
 		if (sst != null)
 			ss_table = sst;
 	}
 
 	/** Get subsurface sensors table */
-	public SubSurfaceSensorsTable getSubsurfaceSensorsTable() {
+	public SubSurfaceSensorsTable getSubSurfaceSensorsTable() {
 		return ss_table;
 	}
 

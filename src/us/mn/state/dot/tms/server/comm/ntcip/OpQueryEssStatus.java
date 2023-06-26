@@ -238,14 +238,17 @@ public class OpQueryEssStatus extends OpEss {
 			// Note: this object was introduced in V2
 			var err = queryMany(mess, new EssConvertible[]{
 				pr.ice_or_water_depth,
-				pr.conductivity,
-				pr.sensor_model_info,
-				pr.temp_depth
+				// pr.conductivity,
+				// pr.sensor_model_info,
+				// pr.temp_depth
 			}, true);
 			// Fallback to V1 water depth
 			if (err != null)
 				return new QueryPavementRowV1(pr);
-			return new QueryPavementRowV4(pr);
+			else{
+				pr.ice_or_water_depth.reset();
+				return new QueryPavementRowV4(pr);
+			}			
 		}
 	}
 
@@ -260,9 +263,9 @@ public class OpQueryEssStatus extends OpEss {
 			pr.freeze_point,
 			pr.sensor_error,
 			pr.salinity,
-			pr.black_ice_signal
+			pr.black_ice_signal,
 		});
-		log(EssConvertible.toLogString("PavementSurfaceStatus", pr.surface_status));
+		log(EssConvertible.toLogString("SurfaceStatus", pr.surface_status));
 		log(EssConvertible.toLogString("PavementSensorError", pr.sensor_error));
 		return new QueryPavementRowV2(pr);
 	};
@@ -433,7 +436,6 @@ public class OpQueryEssStatus extends OpEss {
 	@Override
 	protected Pollable<ASN1Object> phaseTwo() {
 		log("phaseTwo: rwis_type=" + w_sensor.getType());
-		log("phaseTwo: ntcip_version=" + ntcip_ver);
 		return QueryPressure;
 	}	
 

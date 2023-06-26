@@ -114,7 +114,7 @@ public class EssRec implements JsonBuilder.Buildable {
 	/** Store subsurface sensor values */
 	private void storeSubSurface(WeatherSensorImpl ws) {
 		ws.setSubSurfTempNotify(ss_table.getFirstValidTemp());
-		ws.setSubsurfaceSensorsTable(ss_table);
+		ws.setSubSurfaceSensorsTable(ss_table);
 	}
 	  
 	/** Reorganize the tables for the High Sierra controllers, 

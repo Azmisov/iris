@@ -141,7 +141,7 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 	/** To string */
 	public String toString() {
 		return new StringBuilder()
-			.append("SubsurfaceSensorsTable: ")
+			.append("SubSurfaceSensorsTable: ")
 			.append(num_sensors.toLogString())
 			.append(super.toString())
 			.toString();
