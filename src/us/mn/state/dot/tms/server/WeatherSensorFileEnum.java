@@ -447,21 +447,29 @@ public enum WeatherSensorFileEnum {
 		String sid = w.getSiteId();
 		int senid = 0;
 		String dat = formatDate(w.getStamp());
-        // iterate through pavement sensor table
 		PavementSensorsTable ps_t = w.getPavementSensorsTable();
+		SubSurfaceSensorsTable ss_t = w.getSubsurfaceSensorsTable();
+
+		// Configuration for pairing pavement and subsurface sensors.
+		// At some point this will be enabled for WYDOT.
+		final boolean PAIR_SENSORS = false;
+
+        // iterate through pavement sensor table
 		for (var row: ps_t){
 			String pss = pssToN(row.surface_status.get());
 			String sft = essTempToCsv100(row.surface_temp, MSNG);
 			String fzt = essTempToCsv100(row.freeze_point, MSNG);
-			String sst = MSNG; // pvmt temp is not subsurf
+			String sst = (PAIR_SENSORS ?
+				essTempToCsv100(ss_t.getRow(row.number).temp, MSNG) : MSNG);
 			String swd = distanceTo10thMM(row.water_depth, MSNG); // .1 mm
 			sb.append(getSurfRec(sid, senid, dat, pss, sft, fzt, 
 				sst, swd));
 			++senid;
 		}
 		// iterate through subsurface sensors table
-		SubSurfaceSensorsTable ss_t = w.getSubsurfaceSensorsTable();
-		for (var row: ss_t){
+		final int irow = (PAIR_SENSORS ? ps_t.size() + 1 : 1);
+		for (int r = irow; r <= ss_t.size(); ++r){
+			var row = ss_t.getRow(r);
 			String pss = MSNG;
 			String sft = MSNG;
 			String fzt = MSNG;

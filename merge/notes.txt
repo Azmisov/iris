@@ -266,7 +266,8 @@ Merged notes
     - I added EssBoolean, InstrumentValues, and associated enums; I included some
         extra metadata from NTCIP 1204 that seemed to fit the InstrumentValues
         category. I am putting the query phase for it inside OpQueryEssSettings
-
+10011:
+    - make this option non-hardcoded configuration?
 
 Skipped
 ==================
