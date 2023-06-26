@@ -5,7 +5,7 @@ import us.mn.state.dot.tms.utils.JsonBuilder;
 
 /** An abstract class that manages conversion from raw MIB1204 nodes to
  * a converted Java object type. This reduces code duplication. There are 
- * five options for taking the converted value and transforming it into an
+ * several options for taking the converted value and transforming it into an
  * output value:
  * 
  * <ul>
@@ -13,11 +13,14 @@ import us.mn.state.dot.tms.utils.JsonBuilder;
  *      pass a lambda to convert it to a custom representation on the fly
  *  </li>
  *  <li> {@link #toDouble}: Outputs a double in custom units </li>
+ *  <li> {@link #toFloat}: Same as {@link #toDouble}, but for floats; the
+ *      default implementation casts from {@link #toDouble} to a float
+ *  </li>
  *  <li> {@link #toInteger}: A rounded/int representation in custom units; the
- *      default implementation rounds+casts the output of toDouble
+ *      default implementation rounds+casts the output of {@link #toDouble}
  *  </li>
  *  <li> {@link #toString}: String representation; the default implementation
- *      converts the double representation to a string
+ *      converts the output of {@link #toDouble} to a string
  *  </li>
  *  <li> {@link #toJson}: Json representation; the default implmentation
  *      converts to a Json object member, with {@link #json_key} as the key
@@ -123,16 +126,20 @@ abstract public class EssConverter<C, N extends ASN1Object> implements EssConver
 	}
 
 	/** Convert to a double output representation; by default, simply cast
-	 * from the converted value
-	 */
-	public Double toDouble() throws UnsupportedOperationException{
+	 * from the converted value */
+	public Double toDouble(){
 		return (Double) get();
 	}
-
+	/** Convert to a double output representation; by default, simply cast
+	 * from the output of {@link #toDouble} */
+	public Float toFloat(){
+		var d = toDouble();
+		return d != null ? (float) d.doubleValue() : null;
+	}
 	/** Convert to an integer output representation; by default, rounded from
-	 * {@link #toDouble}
+	 * the output of {@link #toDouble}
 	 */
-	public Integer toInteger() throws UnsupportedOperationException{
+	public Integer toInteger(){
 		var d = toDouble();
 		return d != null ? Math.toIntExact(Math.round(d)) : null;
 	}

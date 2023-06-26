@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017 Iteris Inc.
+ * Copyright (C) 2017-2023 Iteris Inc.
  * Copyright (C) 2019-2023  Minnesota Department of Transportation
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,11 +20,11 @@ import us.mn.state.dot.tms.server.comm.PriorityLevel;
 import us.mn.state.dot.tms.utils.JsonBuilder;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssConvertible;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssRec;
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.TemperatureSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.WindSensorsTable;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.EssType;
 import us.mn.state.dot.tms.server.comm.snmp.ASN1Object;
 
 /**
@@ -115,7 +115,7 @@ public class OpQueryEssSettings extends OpEss {
 	final Pollable<ASN1Object> QueryTemperatureSensors = mess -> {
 		queryMany(mess, new EssConvertible[]{
 			ts_table.num_temp_sensors
-		});
+		}, true);
 		return ts_table.isDone()
 				? QueryPavement
 				: QueryTemperatureTable;
@@ -159,8 +159,30 @@ public class OpQueryEssSettings extends OpEss {
 		queryMany(mess, new EssConvertible[]{
 			A.reference_elevation,
 			A.pressure_sensor_height
-		});
+		}, true);
 		return QueryWindSensorsV2;
+	};
+
+	/** Phase to query metadata about station/device/instrument */
+	final Pollable<ASN1Object> QueryMetadata = mess -> {
+		var I = ess_rec.instrument_values;
+		var err = queryMany(mess, new EssConvertible[]{
+			I.description,
+			I.mobility,
+			I.data_collection,
+			I.battery,
+			I.door_open,
+			I.line_volts
+		}, true);
+		if (err != null){
+			I.description.setValue(null);
+			I.mobility.reset();
+			I.data_collection.reset();
+			I.battery.reset();
+			I.door_open.reset();
+			I.line_volts.reset();
+		}
+		return QueryElevation;
 	};
 
 	/** Create the second phase of the operation */
@@ -171,7 +193,7 @@ public class OpQueryEssSettings extends OpEss {
 		log("Inferring EssType:" + 
 			" rwis_type=" + w_sensor.getType() + 
 			" sys_descr=" + controller.getSetup("sys_descr"));
-		return QueryElevation;
+		return QueryMetadata;
 	}
 
 	/** Cleanup the operation */

@@ -14,6 +14,9 @@ import us.mn.state.dot.tms.utils.JsonBuilder;
  * @copyright 2009-2023 Minnesota Department of Transportation
  */
 public class EssString extends EssConverter<String, ASN1OctetString>{
+	public EssString(String json_key, MIB1204 mib_attr){
+		super(json_key, new ASN1OctetString(mib_attr.node));
+	}
 	public EssString(String json_key, MIB1204 mib_attr, int row){
 		super(json_key, new ASN1OctetString(mib_attr.node, row));
 	}
@@ -29,6 +32,9 @@ public class EssString extends EssConverter<String, ASN1OctetString>{
 		}
 		return sb.isEmpty() ? null : sb.toString();
 	}
+
+	// TODO: how to properly reset ASN1OctetString?
+
 	/** String or empty string if null */
 	@Override
 	public String toString(){
@@ -44,10 +50,6 @@ public class EssString extends EssConverter<String, ASN1OctetString>{
 	}
 
 	// numeric conversion not supported
-	@Override
-	public Integer toInteger(){
-		throw new UnsupportedOperationException();
-	}
 	@Override
 	public Double toDouble(){
 		throw new UnsupportedOperationException();

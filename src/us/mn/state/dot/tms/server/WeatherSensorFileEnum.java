@@ -28,6 +28,7 @@ import us.mn.state.dot.tms.server.comm.ntcip.PikalertRoadState;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.EssEnumType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.VisibilitySituation;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssTemperature;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssDistance;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
@@ -73,7 +74,10 @@ public enum WeatherSensorFileEnum {
 		"SubSfTemp,friction,IceWaterThickness,waterlevel,,");
 
 	/** Missing value */
-	static final String MISSING = "";
+	static final String MSNG = "";
+	static final String MSNG_101 = "101";
+	static final String MSNG_32767 = "32767";
+	static final String MSNG_65535 = "65535";
 
 	/** Capitalize the specified string, e.g. "aBC" becomes "Abc" */
 	static private String cap(String str) {
@@ -81,7 +85,7 @@ public enum WeatherSensorFileEnum {
 			return str.substring(0, 1).toUpperCase() + 
 				str.substring(1).toLowerCase();
 		} else {
-			return MISSING;
+			return MSNG;
 		}
 	}
 
@@ -100,7 +104,7 @@ public enum WeatherSensorFileEnum {
 	 * @return A string in UTC as MM/dd/yyyy HH:mm:ss */
 	static private String formatDate(Long stamp) {
 		if (stamp == null || stamp < 0)
-			return MISSING;
+			return MSNG;
 		Date d = new Date(stamp);
 		SimpleDateFormat sdf = 
 			new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
@@ -113,7 +117,7 @@ public enum WeatherSensorFileEnum {
 	 * @return A string in UTC as yyyy-MM-dd HH:mm:ss */
 	static private String formatDate2(Long stamp) {
 		if (stamp == null || stamp < 0)
-			return MISSING;
+			return MSNG;
 		Date d = new Date(stamp);
 		SimpleDateFormat sdf = 
 			new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -121,16 +125,29 @@ public enum WeatherSensorFileEnum {
 		return sdf.format(d);
 	}
 
+	/** Return the specified date as a string in UTC.
+	 * @param stamp A time stamp, null or < 0 for missing
+	 * @return A string in UTC as MM/dd/yy HH:mm */
+	static private String formatDate3(Long stamp) {
+		if (stamp == null || stamp < 0)
+			return MSNG;
+		Date d = new Date(stamp);
+		SimpleDateFormat sdf = 
+			new SimpleDateFormat("MM/dd/yy HH:mm");
+		sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+		return sdf.format(d);
+	}
+
 	/** Get system id
 	 * @return System id or the empty string for missing */
 	static private String getSysId() {
-		return "351";
+		return "351"; //TODO get from system attribute
 	}
 
-	/** Convert an integer to string.
+	/** Convert an integer to string, ignoring any error values.
 	 * @return Integer as a string or empty for missing */
-	static private String intToCsv(Integer iv) {
-		return (iv != null ? iv.toString() : MISSING);
+	static private String intToCsv(Integer iv, String missing) {
+		return (iv != null ? iv.toString() : missing);
 	}
 
 	/** Convert a temperature to CSV temperature.
@@ -142,7 +159,7 @@ public enum WeatherSensorFileEnum {
 			int i = v.intValue() * 100;
 			return String.valueOf(i);
 		} else {
-			return MISSING;
+			return MSNG;
 		}
 	}
 
@@ -150,10 +167,10 @@ public enum WeatherSensorFileEnum {
  	 * @arg v base temperature
  	 * @return Temperature as hundredths of a degree C or 
  	 * 	   the empty string for missing */
-	static private String essTempToCsv100(EssTemperature v) {
+	static private String essTempToCsv100(EssTemperature v, String missing) {
 		return v.get(
 			t -> String.valueOf(t.round(Temperature.Units.HUNDREDTH_CELSIUS)),
-			MISSING
+			missing
 		);
 	}
 
@@ -161,7 +178,7 @@ public enum WeatherSensorFileEnum {
 	 * @arg tc NTCIP temp in C or null on error.
 	 * @return Temperature in degrees C or empty string for missing */
 	static private String tToCsv(Double tc) {
-		return (tc != null ? SString.doubleToString(tc, 4) : MISSING);
+		return (tc != null ? SString.doubleToString(tc, 4) : MSNG);
 	}
 
 	/** Convert pavement surface status to CSV string
@@ -170,17 +187,17 @@ public enum WeatherSensorFileEnum {
 	static private String pssToN(SurfaceStatus status) {
 		if (EssEnumType.isValid(status))
 			return SString.splitCamel(status.toString());
-		return MISSING;
+		return MSNG;
 	}
 
 	/** Convert surface water depth to CSV string
 	 * @arg row - row to fetch from
 	 * @return Pavement surface water depth in .1 mm or empty if missing */
-	static private String distanceTo10thMM(EssDistance v) {
+	static private String distanceTo10thMM(EssDistance v, String missing) {
         return v.get(
 			// m -> 1/10 mm
 			d -> String.valueOf(d.round(Distance.Units.TENTH_MILLIMETERS)),
-			MISSING
+			missing
 		);
 	}
 
@@ -192,14 +209,14 @@ public enum WeatherSensorFileEnum {
 		if (v != null) {
 			return String.valueOf(new Pressure((double)v).ntcip());
 		} else
-			return MISSING;
+			return MSNG;
 	}
 
 	/** Return precip rate in CSV units. See essPrecipRate.
 	 * @return Precip rate as .025 mm/hr or empty for missing */
 	static private String praToCsv(WeatherSensorImpl w) {
 		Integer v = w.getPrecipRate(); // mm/hr or null
-		return (v != null ? String.valueOf(v * 40): MISSING);
+		return (v != null ? String.valueOf(v * 40): MSNG);
 	}
 
 	/** Convert precip rate to Pikalert CSV units. See essPrecipRate.
@@ -207,7 +224,7 @@ public enum WeatherSensorFileEnum {
 	 * @return Precip rate in mm over 1 hour or empty for missing */
 	static private String praToCsvPikalert(WeatherSensorImpl w) {
 		Integer v = w.getPrecipRate(); // mm/hr or null
-		return (v != null ? String.valueOf(v): MISSING);
+		return (v != null ? String.valueOf(v): MSNG);
 	}
 
 	/** Convert visibility to CSV units, see essVisibility.
@@ -215,15 +232,16 @@ public enum WeatherSensorFileEnum {
 	 * @return Distance in meters or empty for missing. */
 	static private String visToCsv(WeatherSensorImpl w) {
 		Integer v = w.getVisibility();
-		return (v != null ? String.valueOf(v) : MISSING);
+		return (v != null ? String.valueOf(v) : MSNG);
 	}
 
 	/** Convert precipitation accumulation to CSV units.
 	 * @arg v Precip accum in mm, null for missing.
 	 * @return Precip accumulation in .025 mm or empty for missing. 
 	 *         See essPrecipitationOneHour */
-	static private String pToCsv(Integer v) {
-		return (v != null ? String.valueOf(v * 40) : MISSING);
+	static private String pToCsv(Float v) {
+		return (v != null ? 
+			String.valueOf(Math.round(v * 40f)) : MSNG);
 	}
 
 	/** Convert speed to CSV units.
@@ -233,7 +251,7 @@ public enum WeatherSensorFileEnum {
 		if (v != null)
 			return String.valueOf(v);
 		else
-			return MISSING;
+			return MSNG;
 	}
 
 	/** Convert speed to Pikalert CSV units.
@@ -243,45 +261,27 @@ public enum WeatherSensorFileEnum {
 		if (v != null)
 			return SString.doubleToString(v * .2777777778, 4);
 		else
-			return MISSING;
+			return MSNG;
 	}
 
 	/** Get the precipitation situation */
 	static private String psToCsv(WeatherSensorImpl w) {
 		var ps = PrecipSituation.from(w);
-		return (ps != null ? ps.desc_csv : MISSING);
+		return (ps != null ? ps.desc_csv : MSNG);
 	}
 
-	/** Get 1h accum precip in .025 mm or empty for missing */ 
-	static private String ap1hToCsv(WeatherSensorImpl w) {
-		return pToCsv(w.getPrecipOneHour());
+	/** Get the visibility situation as an integer or empty fo missing */
+	static private String vsToCsv(WeatherSensorImpl w) {
+		int ord = VisibilitySituation.from(w).ordinal();
+		return (ord != 0 ? SString.intToString(ord) : MSNG);
 	}
 
-	/** Get 3h accum precip in .025 mm or empty for missing */ 
-	static private String ap3hToCsv(WeatherSensorImpl w) {
-		return pToCsv(w.getPrecip3Hour());
-	}
-
-	/** Get 6h accum precip in .025 mm or empty for missing */ 
-	static private String ap6hToCsv(WeatherSensorImpl w) {
-		return pToCsv(w.getPrecip6Hour());
-	}
-
-	/** Get 12h accum precip in .025 mm or empty for missing */ 
-	static private String ap12hToCsv(WeatherSensorImpl w) {
-		return pToCsv(w.getPrecip12Hour());
-	}
-
-	/** Get 24h accum precip in .025 mm or empty for missing */ 
-	static private String ap24hToCsv(WeatherSensorImpl w) {
-		return pToCsv(w.getPrecip24Hour());
-	}
-
-	/** Convert snow depth in cm to a string.
-	 * @return Snow depth in cm or empty string for missing */
-	static private String asdToCsv(WeatherSensorImpl w) {
-		return intToCsv(w.getAdjacentSnowDepth());
-	}
+	/** Convert adjacent snow depth in cm to a string. A value of 
+	 * 3001 is returned for missing. 
+	 * @return Snow depth in cm, empty string if missing, 3001 on error */
+	static private String asdToCsv(WeatherSensorImpl w, String missing) {
+		return intToCsv(w.getAdjacentSnowDepth(), missing);
+ 	}
 
 	/** Append a CSV value to a StringBuffer */
 	static private StringBuilder append(StringBuilder sb, String value) {
@@ -329,7 +329,7 @@ public enum WeatherSensorFileEnum {
 	 * 	   string if missing */
 	static private String getAltitude(WeatherSensorImpl w) {
 		Integer elv = w.getElevation();
-		return (elv != null ? Integer.toString(elv) : MISSING);
+		return (elv != null ? Integer.toString(elv) : MSNG);
 	}
 
 	/** Get Pikalert road surface temperature of the nth active sensor.
@@ -341,7 +341,7 @@ public enum WeatherSensorFileEnum {
 	{
 		PavementSensorsTable pst = w.getPavementSensorsTable();
 		if (pst == null)
-			return MISSING;
+			return MSNG;
         var row = pst.getNthActive(arown);
 		return tToCsv(row == null ? null : row.surface_temp.toDouble());
 	}
@@ -366,6 +366,16 @@ public enum WeatherSensorFileEnum {
 	/** Get the Pikalert present weather code */
 	static private String getPikalertPresWx(WeatherSensorImpl w) {
 		return PresWx.create(w).toString();
+	}
+
+	/** Return a missing value of 101 */
+	static public Integer missing101(Integer i) {
+		return (i != null ? i : 101);
+	}
+
+	/** Return a missing value of 65535 */
+	static public String missing65535(String str) {
+		return (str != null && !str.isEmpty() ? str : MSNG_65535);
 	}
 
 	/** File name */
@@ -415,7 +425,7 @@ public enum WeatherSensorFileEnum {
 		append(sb, spToCsv(w.getWindSpeed()));	 //SpdAvg
 		append(sb, spToCsv(
 			w.getMaxWindGustSpeed()));	 //SpdGust
-		append(sb, MISSING);			 //DirMin
+		append(sb, MSNG);			 //DirMin
 		append(sb, w.getWindDir());		 //DirAvg
 		append(sb, w.getMaxWindGustDir());	 //DirMax
 		append(sb, prToCsv(w.getPressureQC()));	 //Pressure
@@ -423,7 +433,7 @@ public enum WeatherSensorFileEnum {
 			getPrecipRateIntensity(w)));	 //PcIntens
 		append(sb, psToCsv(w));			 //PcType
 		append(sb, praToCsv(w));		 //PcRate
-		append(sb, ap1hToCsv(w));		 //PcAccum 1h
+		append(sb, pToCsv(w.getPrecipOneHour()));//PcAccum 1h
 		append(sb, visToCsv(w));		 //Visibility
 		delLastChar(sb);			 //remove last comma
 		return sb.toString();
@@ -441,10 +451,10 @@ public enum WeatherSensorFileEnum {
 		PavementSensorsTable ps_t = w.getPavementSensorsTable();
 		for (var row: ps_t){
 			String pss = pssToN(row.surface_status.get());
-			String sft = essTempToCsv100(row.surface_temp);
-			String fzt = essTempToCsv100(row.freeze_point);
-			String sst = MISSING; // pvmt temp is not subsurf
-			String swd = distanceTo10thMM(row.water_depth); // tenths mm
+			String sft = essTempToCsv100(row.surface_temp, MSNG);
+			String fzt = essTempToCsv100(row.freeze_point, MSNG);
+			String sst = MSNG; // pvmt temp is not subsurf
+			String swd = distanceTo10thMM(row.water_depth, MSNG); // .1 mm
 			sb.append(getSurfRec(sid, senid, dat, pss, sft, fzt, 
 				sst, swd));
 			++senid;
@@ -452,11 +462,11 @@ public enum WeatherSensorFileEnum {
 		// iterate through subsurface sensors table
 		SubSurfaceSensorsTable ss_t = w.getSubsurfaceSensorsTable();
 		for (var row: ss_t){
-			String pss = MISSING;
-			String sft = MISSING;
-			String fzt = MISSING;
-			String sst = essTempToCsv100(row.temp);
-			String swd = MISSING;
+			String pss = MSNG;
+			String sft = MSNG;
+			String fzt = MSNG;
+			String sst = essTempToCsv100(row.temp, MSNG);
+			String swd = MSNG;
 			sb.append(getSurfRec(sid, senid, dat, pss, sft, fzt,
 				sst, swd));
 			++senid;
@@ -479,12 +489,12 @@ public enum WeatherSensorFileEnum {
 		append(sb, sfc);	//sfcond
 		append(sb, sft);	//sftemp
 		append(sb, fzt);	//frztemp
-		append(sb, MISSING);	//chemfactor
-		append(sb, MISSING);	//chempct
+		append(sb, MSNG);	//chemfactor
+		append(sb, MSNG);	//chempct
 		append(sb, swd);	//depth .1mm
-		append(sb, MISSING);	//icepct
+		append(sb, MSNG);	//icepct
 		append(sb, sst);	//subsftemp
-		append(sb, MISSING);	//waterlevel
+		append(sb, MSNG);	//waterlevel
 		delLastChar(sb);	//remove trailing comma
 		sb.append('\n');
 		return sb.toString();
@@ -518,7 +528,7 @@ public enum WeatherSensorFileEnum {
 			w.getWindSpeed()));		//windSpeed
 		append(sb, getPikalertRoadState(w));	//roadState1
 		append(sb, getPikalertPresWx(w));	//presWx
-		delLastChar(sb);			//remove trailing comma
+		delLastChar(sb);
 		return sb.toString();
 	}
 
@@ -526,37 +536,38 @@ public enum WeatherSensorFileEnum {
 	 * @return CSV line with no trailing comma and no line terminator */
 	String getAtmoAltRec(WeatherSensorImpl w) {
 		StringBuilder sb = new StringBuilder();
-		append(sb, getSysId());			 //sysid
-		append(sb, w.getSiteId());		 //Rpuid
-		append(sb, "TBD");			 //Senid
-		append(sb, formatDate(w.getStamp()));	 //DtTm
-		append(sb, tIntToCsv100(w.getAirTemp()));//AirTemp
-		append(sb, tIntToCsv100(w.getDewPointTemp()));//Dewpoint
-		append(sb, w.getHumidity());		 //Rh
-		append(sb, spToCsv(w.getWindSpeed()));	 //SpdAvg
+		append(sb, getSysId());				//1:1: Sysid
+		append(sb, SString.stringToInt(w.getSiteId()));	//2:1: Rpuid
+		append(sb, "0");				//3:1: Senid
+		append(sb, formatDate3(w.getStamp()));		//4:2: DtTm
+		append(sb, tIntToCsv100(w.getAirTemp()));	//5:3: AirTemp
+		append(sb, tIntToCsv100(w.getDewPointTemp()));	//6:4: Dewpoint
+		append(sb, missing101(w.getHumidity()));	//7:5: Rh
+		append(sb, spToCsv(w.getWindSpeed()));		//8:6: SpdAvg
 		append(sb, spToCsv(
-			w.getMaxWindGustSpeed()));	 //SpdGust
-		append(sb, MISSING);			 //DirMin
-		append(sb, w.getWindDir());		 //DirAvg
-		append(sb, w.getMaxWindGustDir());	 //DirMax
-		append(sb, prToCsv(w.getPressure()));	 //Pressure
+			w.getMaxWindGustSpeed()));		//9:7: SpdGust
+		append(sb, MSNG);				//10:8: DirMin
+		append(sb, w.getWindDir());			//11:9: DirAvg
+		append(sb, w.getMaxWindGustDir()); 		//12:10: DirMax
+		append(sb, missing65535(
+			prToCsv(w.getPressure())));		//13:11: Pres
 		append(sb, cap(WeatherSensorHelper.
-			getPrecipRateIntensity(w)));	 //PcIntens
-		append(sb, psToCsv(w));			 //PcType
-		append(sb, praToCsv(w));		 //PcRate
-		append(sb, MISSING);			 //Pc10Min
-		append(sb, visToCsv(w));		 //Visibility
-		append(sb, ap1hToCsv(w));		 //Pc1Hr
-		append(sb, ap3hToCsv(w));		 //Pc3Hr
-		append(sb, ap6hToCsv(w));		 //Pc6Hr
-		append(sb, ap12hToCsv(w));		 //Pc12Hr
-		append(sb, ap24hToCsv(w));		 //Pc24Hr
-		append(sb, "TBD");			 //Height
-		append(sb, asdToCsv(w));		 //snowdepth
-		append(sb, "TBD");			 //Situation
-		append(sb, MISSING);			 //empty
-		append(sb, MISSING);			 //empty
-		delLastChar(sb);			 //remove trailing comma
+			getPrecipRateIntensity(w)));		//14:12: PcInten
+		append(sb, psToCsv(w));				//15:13: PcType
+		append(sb, praToCsv(w));			//16:14: PcRate
+		append(sb, "-1");				//17:*: Pc10Min
+		append(sb, visToCsv(w));			//18:16: Vis
+		append(sb, pToCsv(w.getPrecipOneHour()));	//19: Pc1Hr
+		append(sb, pToCsv(w.getPrecip3Hour()));		//20: Pc3Hr
+		append(sb, pToCsv(w.getPrecip6Hour()));		//21: Pc6Hr
+		append(sb, pToCsv(w.getPrecip12Hour()));	//22: Pc12Hr
+		append(sb, pToCsv(w.getPrecip24Hour()));	//23: Pc24Hr
+		append(sb, MSNG);				//24: Height?
+		append(sb, asdToCsv(w, MSNG));			//25: snowdepth
+		append(sb, vsToCsv(w));				//26: situation
+		append(sb, MSNG);				//27: ?
+		append(sb, MSNG);				//28: empty
+		delLastChar(sb);
 		return sb.toString();
 	}
 
@@ -565,33 +576,42 @@ public enum WeatherSensorFileEnum {
 	 * 		and no line terminator */
 	String getSurfAltRecs(WeatherSensorImpl w) {
 		StringBuilder sb = new StringBuilder();
-		String sid = w.getSiteId();
+		String rpu = w.getSiteId();
 		int senid = 0;
 		String dat = formatDate(w.getStamp());
 		// iterate through pavement sensor table
 		PavementSensorsTable pst = w.getPavementSensorsTable();
+		SubSurfaceSensorsTable ss_t = w.getSubsurfaceSensorsTable();
 		for (var row : pst) {
 			String pss = pssToN(row.surface_status.get());
-			String sft = essTempToCsv100(row.surface_temp);
-			String fzt = essTempToCsv100(row.freeze_point);
-			String swd = distanceTo10thMM(row.water_depth); // tenths mm
-			String sst = MISSING; // pvmt temp is not subsurf
-			String iwd = distanceTo10thMM(row.ice_or_water_depth);
-			sb.append(getSurfAltRec(sid, senid, dat, pss, sft, fzt, 
-				sst, swd, iwd));
+			String sft = essTempToCsv100(row.surface_temp, MSNG_32767);
+			String fzt = essTempToCsv100(row.freeze_point, MSNG_32767);
+			String cfa = MSNG_101;
+			String chp = MSNG_101;
+			String swd = distanceTo10thMM(row.water_depth, MSNG_32767); // tenths mm
+			String ice = MSNG_101;
+			// use subsurf temp from paired subsurf sensor
+			String sst = essTempToCsv100(ss_t.getRow(row.number).temp, MSNG);
+			String fri = intToCsv(w.getFriction(), MSNG_101);
+			String iwd = distanceTo10thMM(row.ice_or_water_depth, MSNG_65535);
+			sb.append(getSurfAltRec(rpu, senid, dat, pss, sft, fzt,
+				cfa, chp, swd, ice, sst, fri, iwd));
 			++senid;
 		}
 		// iterate through subsurface sensor table
-		SubSurfaceSensorsTable ss_t = w.getSubsurfaceSensorsTable();
 		for (var row : ss_t) {
-			String pss = MISSING;
-			String sft = MISSING;
-			String fzt = MISSING;
-			String swd = MISSING;
-			String sst = essTempToCsv100(row.temp);
-			String iwd = MISSING;
-			sb.append(getSurfAltRec(sid, senid, dat, pss, sft, fzt, 
-				sst, swd, iwd));
+			String pss = MSNG;
+			String sft = MSNG;
+			String fzt = MSNG_32767;
+			String cfa = MSNG_101;
+			String chp = MSNG_101;
+			String swd = MSNG_32767;
+			String ice = MSNG_101;
+			String sst = essTempToCsv100(row.temp, MSNG);
+			String fri = MSNG_101;
+			String iwd = MSNG_65535;
+			sb.append(getSurfAltRec(rpu, senid, dat, pss, sft,
+				fzt, cfa, chp, swd, ice, sst, fri, iwd));
 			++senid;
 		}
 		delLastChar(sb); //remove trailing line terminator
@@ -600,30 +620,29 @@ public enum WeatherSensorFileEnum {
 
 	/** Get a sensor record for an alternate SURF file type.
 	 * @return CSV line with no trailing comma and a trailing line term */
-	private String getSurfAltRec(String sid, int senid, String dat, 
-		String sfc, String sft, String fzt, String sst, String swd, 
-		String iwd)
+	private String getSurfAltRec(String rpu, int sid, String dat, 
+		String sfc, String sft, String fzt, String cfa, String chp, 
+		String swd, String ice, String sst, String fri, String iwd)
 	{
-		String ssenid = String.valueOf(senid);
 		StringBuilder sb = new StringBuilder();
-		append(sb, getSysId());	//sysid
-		append(sb, "TBD");	//Rpuid
-		append(sb, sid);	//Senid
-		append(sb, dat);	//DtTm
-		append(sb, sfc);	//sfcond
-		append(sb, sft);	//sftemp
-		append(sb, fzt);	//frztemp
-		append(sb, MISSING);	//chemfactor
-		append(sb, MISSING);	//chempct
-		append(sb, swd);	//depth .1mm
-		append(sb, MISSING);	//icepct
-		append(sb, sst);	//subsftemp
-		append(sb, MISSING);	//friction
-		append(sb, iwd);	//IceWaterThickness
-		append(sb, MISSING);	//waterlevel
-		append(sb, MISSING);	//empty
-		append(sb, MISSING);	//empty
-		delLastChar(sb);	//remove trailing comma
+		append(sb, getSysId());		// 1: Sysid
+		append(sb, rpu);		// 2: Rpuid
+		append(sb, sid);		// 3: Senid
+		append(sb, dat);		// 4: DtTm
+		append(sb, sfc);		// 5: sfcond
+		append(sb, sft);		// 6: sftemp
+		append(sb, fzt);		// 7: frztemp
+		append(sb, cfa);		// 8: chemfactor
+		append(sb, chp);		// 9: chempct
+		append(sb, swd);		//10: depth .1mm
+		append(sb, ice);		//11: icepct
+		append(sb, sst);		//12: subsftemp
+		append(sb, fri);		//13: friction
+		append(sb, iwd);		//14: IceWaterThickness
+		append(sb, MSNG);		//15: waterlevel, empty
+		append(sb, MSNG);		//16: empty
+		append(sb, MSNG);		//17: empty
+		delLastChar(sb);		//remove trailing comma
 		sb.append('\n');
 		return sb.toString();
 	}

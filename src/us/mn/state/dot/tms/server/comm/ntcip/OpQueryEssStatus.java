@@ -27,6 +27,9 @@ import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.TemperatureSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.WindSensorsTable;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceSensorError;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceType;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.CloudSituation;
 import us.mn.state.dot.tms.server.comm.snmp.ASN1Object;
 import us.mn.state.dot.tms.utils.JsonBuilder;
 
@@ -83,9 +86,13 @@ public class OpQueryEssStatus extends OpEss {
 	/** Phase to query cloud situation value */
 	final Pollable<ASN1Object> QueryCloudSituation = mess -> {
 		// Not supported by some vendors...
-		queryMany(mess, new EssConvertible[]{
-			ess_rec.rad_values.cloud_situation
-		});
+		var R = ess_rec.rad_values;
+		var err = queryMany(mess, new EssConvertible[]{
+			R.cloud_situation
+		}, true);
+		if (err != null)
+			R.cloud_situation.setValue(CloudSituation.clear);
+		log("   essCloudCoverSituation=" + R.cloud_situation);
 		return QueryRadiationV2;
 	};
 
@@ -109,9 +116,11 @@ public class OpQueryEssStatus extends OpEss {
 			throws IOException
 		{
 			// Note: some vendors do not support this object
-			queryMany(mess, new EssConvertible[]{
+			var err = queryMany(mess, new EssConvertible[]{
 				sr.moisture
-			});
+			}, true);
+			if (err != null)
+				sr.moisture.reset();
 			if (ss_table.isDone()){
 				log(EssConvertible.toLogString("ss_table", ss_table));
 				return QueryTotalSun;
@@ -123,12 +132,24 @@ public class OpQueryEssStatus extends OpEss {
 	/** Phase to query rows in sub-surface table */
 	final Pollable<ASN1Object> QuerySubSurfaceTable = mess -> {
 		var sr = ss_table.addRow();
-		queryMany(mess, new EssConvertible[]{
+		var err = queryMany(mess, new EssConvertible[]{
+			sr.location,
+			sr.sub_surface_type,
+			sr.depth,
 			sr.temp,
-			sr.sensor_error
+			sr.sensor_error,
 		}, true);
+		// High Sierra RWIS controller can generates err: essSubSurfaceSensorError;
+		// this applies to subsequent subsurf phases too
+		if (err != null){
+			sr.location.setValue(null);
+			sr.sub_surface_type.setValue(SubSurfaceType.unknown);
+			sr.depth.reset();
+			sr.temp.reset();
+			sr.sensor_error.setValue(SubSurfaceSensorError.noResponse);
+		}
 		log(EssConvertible.toLogString("SubSurfaceSensorError",sr.sensor_error));
-		// High Sierra RWIS controller can generates err: essSubSurfaceSensorError
+		
 		return new QuerySubSurfaceMoisture(sr);
 	};
 
@@ -136,7 +157,7 @@ public class OpQueryEssStatus extends OpEss {
 	final Pollable<ASN1Object> QuerySubSurface = mess -> {
 		queryMany(mess, new EssConvertible[]{
 			ss_table.num_sensors
-		});
+		}, true);
 		if (ss_table.isDone()){
 			log(EssConvertible.toLogString("ss_table", ss_table));
 			return QueryTotalSun;
@@ -180,10 +201,12 @@ public class OpQueryEssStatus extends OpEss {
 			var err = queryMany(mess, new EssConvertible[]{
 				pr.friction
 			});
+			if (err == null)
+				pr.friction.reset();
 			// Fallback to mobile friction (1st row only)
-			return (err != null && pr.number == 1)
-				? new QueryMobileFriction(pr)
-				: nextPavementRow();
+			else if (pr.number == 1)
+				return  new QueryMobileFriction(pr);
+			return nextPavementRow();
 		}
 	}
 
@@ -218,7 +241,7 @@ public class OpQueryEssStatus extends OpEss {
 				pr.conductivity,
 				pr.sensor_model_info,
 				pr.temp_depth
-			});
+			}, true);
 			// Fallback to V1 water depth
 			if (err != null)
 				return new QueryPavementRowV1(pr);
@@ -237,8 +260,7 @@ public class OpQueryEssStatus extends OpEss {
 			pr.freeze_point,
 			pr.sensor_error,
 			pr.salinity,
-			pr.black_ice_signal,
-			
+			pr.black_ice_signal
 		});
 		log(EssConvertible.toLogString("PavementSurfaceStatus", pr.surface_status));
 		log(EssConvertible.toLogString("PavementSensorError", pr.sensor_error));
@@ -258,8 +280,19 @@ public class OpQueryEssStatus extends OpEss {
 	final Pollable<ASN1Object> QueryPavement = mess -> {
 		queryMany(mess, new EssConvertible[]{
 			ps_table.num_sensors
-		});
+		}, true);
 		return nextPavementRow();
+	};
+
+	/** Phase to query adjacent jsnow depth. This is broken out from the 
+	 * precipitation phase because some RWIS incorrectly treat it 
+	 * as optional, e.g. the QTT LX-RPU Elite Model Version 1.26. */
+	final Pollable<ASN1Object> QueryAdjSnowDepth = mess -> {
+		var P = ess_rec.precip_values;
+		queryMany(mess, new EssConvertible[]{
+			P.snow_depth
+		}, true);
+		return QueryPavement;
 	};
 
 	/** Phase to query precipitation values */
@@ -267,10 +300,10 @@ public class OpQueryEssStatus extends OpEss {
 		// essWaterDepth is V1 NTCIP only and was replaced
 		// subsequently with the water level sensor table, but
 		// may be supported by RWIS for compatibility.
+		// See the note in NTCIP v2 D.7.
 		var P = ess_rec.precip_values;
 		queryMany(mess, new EssConvertible[]{
 			P.water_depth,
-			P.snow_depth,
 			P.relative_humidity,
 			P.precip_rate,
 			P.precip_1_hour,
@@ -279,9 +312,9 @@ public class OpQueryEssStatus extends OpEss {
 			P.precip_12_hours,
 			P.precip_24_hours,
 			P.precip_situation
-		});
+		}, true);
 		log(EssConvertible.toLogString("essPrecipSituation", P.precip_situation));
-		return QueryPavement;
+		return QueryAdjSnowDepth;
 	};
 
 	/** Phase to query all rows in temperature table */
@@ -289,7 +322,7 @@ public class OpQueryEssStatus extends OpEss {
 		var tr = ts_table.addRow();
 		var err = queryMany(mess, new EssConvertible[]{
 			tr.air_temp
-		});
+		}, true);
 		// Some controllers sometimes seem to randomly
 		// forget what essAirTemperature is
 		if (err != null)
@@ -309,7 +342,7 @@ public class OpQueryEssStatus extends OpEss {
 			ts_table.dew_point_temp,
 			ts_table.max_air_temp,
 			ts_table.min_air_temp
-		});
+		}, true);
 		if (ts_table.isDone()){
 			log(EssConvertible.toLogString("ts_table",ts_table));
 			return QueryPrecipitation;
@@ -341,7 +374,7 @@ public class OpQueryEssStatus extends OpEss {
 			tr.spot_direction,
 			tr.gust_speed,
 			tr.gust_direction
-		});
+		}, true);
 		// Some controllers sometimes seem to randomly
 		// forget what windSensorGustDirection is
 		return (err != null || ws_table.isDone())
@@ -379,7 +412,7 @@ public class OpQueryEssStatus extends OpEss {
 		queryMany(mess, new EssConvertible[]{
 			A.visibility,
 			A.visibility_situation
-		});
+		}, true);
 		log(EssConvertible.toLogString("essVisibilitySituation", A.visibility_situation));
 		return queryWindSensors();
 	};
@@ -392,7 +425,7 @@ public class OpQueryEssStatus extends OpEss {
 			// also query pressure height (which depends on reference height)
 			A.reference_elevation,
 			A.pressure_sensor_height		
-		});
+		}, true);
 		return QueryVisibility;
 	};
 
@@ -400,6 +433,7 @@ public class OpQueryEssStatus extends OpEss {
 	@Override
 	protected Pollable<ASN1Object> phaseTwo() {
 		log("phaseTwo: rwis_type=" + w_sensor.getType());
+		log("phaseTwo: ntcip_version=" + ntcip_ver);
 		return QueryPressure;
 	}	
 

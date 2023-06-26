@@ -51,7 +51,7 @@ public class EssInteger<C> extends EssConverter<C, ASN1Integer>{
 	@SuppressWarnings("unchecked")
 	public <T extends EssInteger<C>> T setMissing(Integer missing){
 		this.missing = missing;
-        this.raw.setInteger(missing == null ? min : missing);
+        reset();
 		return (T) this; // for chaining with inheritence
 	}
     /** Set the valid range for the raw integer */
@@ -78,6 +78,11 @@ public class EssInteger<C> extends EssConverter<C, ASN1Integer>{
 	/** Fetch the raw value */
 	public int getRawValue(){
 		return raw.getInteger();
+	}
+	/** Resets value to its "missing" value, making use of {@link #missing} and
+	 * {@link #setRawValue} */
+	public void reset(){
+		setRawValue(missing == null ? min : missing);
 	}
 
     /** Convert from the raw {@link #node}. The default implementation just

@@ -1,9 +1,10 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums;
 
 /** An EssEnumType is used as an interface for enums in MIB1204. It is assumed
- * that 0 = undefined at the least, which is used as the default value in 
- * {@link EssEnum}
- * 
+ * that 0 = undefined for default implementations, which is used also used as
+ * the default value in {@link EssEnum}. This can be manually overriden
+ * by calling {@link EssEnum#setMissing} if needed
+ *
  * @author Isaac Nygaard
  * @copyright 2023 Iteris Inc.
  * @license GPL-2.0

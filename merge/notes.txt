@@ -244,7 +244,28 @@ Merged notes
     - OpQueryEssStatus: not including some logging, but can add later if needed still
     - EssTable: I changed EssTemperature to 2 digits; but I think many places still
         fetch as an Integer, so will need to go back and verify they're right
-
+10008:
+    - MIB1204: already implemented by Doug
+    - WeatherSensorHelper: never merged, so no need to delete
+    - PresWx, WeatherSensorTheme: already implemented
+    - WeatherSensor: check
+    - OpQueryEssStatus:
+        - OpQuerySystem holds the QuerySettings currently
+        - This probably conflicts with Doug's error catching... should
+            we log on exception or not? I'm just switching to true for all the onces
+            that try-catch blocks were added to in this patch.
+        - iwd (ice or water depth) plus several others get reset on exception;
+            I'm forgoing that patch since looking at v47 final code it has since
+            changed a bit, and I don't want to go through the work of figuring
+            out what all those variable names used to be
+        - I am including the value resets for non-iwd phases though
+        - putting waterlevelsensor count in precipitation values currently
+        - QuerySettings error catching in OpQuerySystem now
+    - WeatherSensorImpl: automerge
+    - WeatherSensorFileEnum: done
+    - I added EssBoolean, InstrumentValues, and associated enums; I included some
+        extra metadata from NTCIP 1204 that seemed to fit the InstrumentValues
+        category. I am putting the query phase for it inside OpQueryEssSettings
 
 
 Skipped
@@ -308,7 +329,7 @@ TODO
 
 Weather Patches Cluster:
 ------------------------
-- big commits: 9985-89 (89 probalby conflicts with DMS a bit), 10022; I suspect 10022 is just renaming files so should be easy;
+10011, 10020, (10022-25), 10029-30, (10031-32), 10037
 
 
 TODO after all else

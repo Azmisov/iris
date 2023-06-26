@@ -3,11 +3,11 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 import us.mn.state.dot.tms.units.Speed;
 import us.mn.state.dot.tms.units.Speed.Units;
 
-/** Converts {@link MIB1204} raw types to a {@link Speed}. By default, it is configured for
- * 1/10th meters/second between [0,MAX_WORD), with max value indicating an
- * error/missing value; output value is in meters/second, with Strings rounded to
- * one fractional digit. Output conversion is lazy, in case you want to manually
- * edit/access the value prior.
+/** Converts {@link MIB1204} raw types to a {@link Speed}. By default, it is
+ * configured for 1/10th meters/second between [0,MAX_WORD), with max value
+ * indicating an error/missing value; output value is in meters/second, with
+ * Strings rounded to one fractional digit. Output conversion is lazy, in case
+ * you want to manually edit/access the value prior.
  *
  * @author Isaac Nygaard
  * @copyright 2023 Iteris, Inc

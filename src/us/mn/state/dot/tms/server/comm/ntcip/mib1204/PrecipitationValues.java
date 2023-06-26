@@ -3,7 +3,6 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
 import us.mn.state.dot.tms.utils.JsonBuilder;
-
 import static us.mn.state.dot.tms.units.Speed.Units.*;
 import static us.mn.state.dot.tms.units.Distance.Units.*;
 
@@ -17,12 +16,15 @@ import static us.mn.state.dot.tms.units.Distance.Units.*;
  * @license GPL-2.0
  */
 public class PrecipitationValues implements JsonBuilder.Buildable{
+	public final EssNumber num_level_sensors =
+		EssNumber.Count("num_level_sensors", waterLevelSensorTableNumSensors);
+
 	/** Water depth in cm */
 	public final EssDistance water_depth =
 		new EssDistance("water_depth", essWaterDepth)
 			.setUnits(1, CENTIMETERS);
 
-	/** Water depth in cm */
+	/** Adjacent snow depth in cm */
 	public final EssDistance snow_depth =
 		new EssDistance("snow_depth", essAdjacentSnowDepth)
 			.setUnits(1, CENTIMETERS)

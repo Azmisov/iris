@@ -2,6 +2,7 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import us.mn.state.dot.sched.TimeSteward;
 import us.mn.state.dot.tms.server.WeatherSensorImpl;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.EssType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
 import us.mn.state.dot.tms.utils.JsonBuilder;
 import us.mn.state.dot.sched.DebugLog;
@@ -17,6 +18,9 @@ import us.mn.state.dot.sched.DebugLog;
  * @license GPL-2.0
  */
 public class EssRec implements JsonBuilder.Buildable {
+
+	/** Station, device, or instrumentation values */
+	public final InstrumentValues instrument_values = new InstrumentValues();
 
 	/** Atmospheric values */
 	public final AtmosphericValues atmospheric_values = new AtmosphericValues();
@@ -85,11 +89,11 @@ public class EssRec implements JsonBuilder.Buildable {
 		ws.setAdjacentSnowDepthNotify(P.snow_depth.toInteger());
 		ws.setHumidityNotify(P.relative_humidity.toInteger());
 		ws.setPrecipRateNotify(P.precip_rate.toInteger());
-		ws.setPrecipOneHourNotify(P.precip_1_hour.toInteger());
-		ws.setPrecip3HourNotify(P.precip_3_hours.toInteger());
-		ws.setPrecip6HourNotify(P.precip_6_hours.toInteger());
-		ws.setPrecip12HourNotify(P.precip_12_hours.toInteger());
-		ws.setPrecip24HourNotify(P.precip_24_hours.toInteger());
+		ws.setPrecipOneHourNotify(P.precip_1_hour.toFloat());
+		ws.setPrecip3HourNotify(P.precip_3_hours.toFloat());
+		ws.setPrecip6HourNotify(P.precip_6_hours.toFloat());
+		ws.setPrecip12HourNotify(P.precip_12_hours.toFloat());
+		ws.setPrecip24HourNotify(P.precip_24_hours.toFloat());
 		PrecipSituation ps = P.getPrecipSituation();
 		ws.setPrecipSituationNotify((ps != null) ? ps.ordinal() : null);
 	}
@@ -160,6 +164,7 @@ public class EssRec implements JsonBuilder.Buildable {
 	/** Get JSON representation */
 	public void toJson(JsonBuilder jb) {
 		jb.object(new JsonBuilder.Buildable[]{
+			instrument_values,
 			atmospheric_values,
 			ws_table,
 			ts_table,

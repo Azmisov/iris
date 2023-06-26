@@ -37,10 +37,12 @@ import us.mn.state.dot.tms.utils.XmlBuilder;
 import static us.mn.state.dot.tms.server.Constants.MISSING_DATA;
 import us.mn.state.dot.tms.server.comm.DevicePoller;
 import us.mn.state.dot.tms.server.comm.WeatherPoller;
-import us.mn.state.dot.tms.server.comm.ntcip.mib1204.EssType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.PavementSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.SubSurfaceSensorsTable;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.VisibilitySituation;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.EssType;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
 
 /**
  * A weather sensor is a device for sampling weather data, such as 
@@ -136,6 +138,16 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		map.put("site_id", site_id);
 		map.put("alt_id", alt_id);
 		return map;
+	}
+
+	/** Log a message */
+	void logMsg(String msg) {
+		if (LOG.isOpen()) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("WeatherSensorImpl: ").append(getName()).
+				append(": ").append(msg);
+			LOG.log(sb.toString());
+		}
 	}
 
 	/** Get the database table name */
@@ -238,7 +250,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		String pid = parse(getNotes(), PALERT_SITEID_KEY, getSiteId());
 		pid = (pid != null ? pid : "");
 		if (pid.length() < 4 || pid.length() > 6) {
-			LOG.log("WeatherSensorImpl:" +
+			logMsg("WeatherSensorImpl:" +
 				" Ignored Pikalert site" + 
 				" id for weather sensor " + getName() + 
 				"(" + pid + "), width is not 4-6 chars.");
@@ -611,16 +623,16 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 	}
 
 	/** Precipitation accumulation 1h in mm (null for missing) */
-	private transient Integer precip_one_hour;
+	private transient Float precip_one_hour;
 
 	/** Get precipitation 1h in mm (null for missing) */
 	@Override
-	public Integer getPrecipOneHour() {
+	public Float getPrecipOneHour() {
 		return precip_one_hour;
 	}
 
 	/** Set precipitation 1h in mm (null for missing) */
-	public void setPrecipOneHourNotify(Integer pr) {
+	public void setPrecipOneHourNotify(Float pr) {
 		if (!objectEquals(pr, precip_one_hour)) {
 			precip_one_hour = pr;
 			notifyAttribute("precipOneHour");
@@ -628,16 +640,16 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 	}
 
 	/** Precipitation accumulation 3h in mm (null for missing) */
-	private transient Integer precip_3_hour;
+	private transient Float precip_3_hour;
 
 	/** Get precipitation 3h in mm (null for missing) */
 	@Override
-	public Integer getPrecip3Hour() {
+	public Float getPrecip3Hour() {
 		return precip_3_hour;
 	}
 
 	/** Set precipitation 3h in mm (null for missing) */
-	public void setPrecip3HourNotify(Integer pr) {
+	public void setPrecip3HourNotify(Float pr) {
 		if (!objectEquals(pr, precip_3_hour)) {
 			precip_3_hour = pr;
 			notifyAttribute("precip3Hour");
@@ -645,16 +657,16 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 	}
 
 	/** Precipitation accumulation 6h in mm (null for missing) */
-	private transient Integer precip_6_hour;
+	private transient Float precip_6_hour;
 
 	/** Get precipitation 6h in mm (null for missing) */
 	@Override
-	public Integer getPrecip6Hour() {
+	public Float getPrecip6Hour() {
 		return precip_6_hour;
 	}
 
 	/** Set precipitation 6h in mm (null for missing) */
-	public void setPrecip6HourNotify(Integer pr) {
+	public void setPrecip6HourNotify(Float pr) {
 		if (!objectEquals(pr, precip_6_hour)) {
 			precip_6_hour = pr;
 			notifyAttribute("precip6Hour");
@@ -662,16 +674,16 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 	}
 
 	/** Precipitation accumulation 12h in mm (null for missing) */
-	private transient Integer precip_12_hour;
+	private transient Float precip_12_hour;
 
 	/** Get precipitation 12h in mm (null for missing) */
 	@Override
-	public Integer getPrecip12Hour() {
+	public Float getPrecip12Hour() {
 		return precip_12_hour;
 	}
 
 	/** Set precipitation 12h in mm (null for missing) */
-	public void setPrecip12HourNotify(Integer pr) {
+	public void setPrecip12HourNotify(Float pr) {
 		if (!objectEquals(pr, precip_12_hour)) {
 			precip_12_hour = pr;
 			notifyAttribute("precip12Hour");
@@ -679,16 +691,16 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 	}
 
 	/** Precipitation accumulation 24h in mm (null for missing) */
-	private transient Integer precip_24_hour;
+	private transient Float precip_24_hour;
 
 	/** Get precipitation 24h in mm (null for missing) */
 	@Override
-	public Integer getPrecip24Hour() {
+	public Float getPrecip24Hour() {
 		return precip_24_hour;
 	}
 
 	/** Set precipitation 24h in mm (null for missing) */
-	public void setPrecip24HourNotify(Integer pr) {
+	public void setPrecip24HourNotify(Float pr) {
 		if (!objectEquals(pr, precip_24_hour)) {
 			precip_24_hour = pr;
 			notifyAttribute("precip24Hour");
@@ -729,6 +741,23 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		}
 	}
 
+
+	/** Cloud cover situation (null for missing) */
+	private transient Integer cloud_cover_situation;
+
+	/** Get cloud cover situation (null for missing) */
+	@Override
+	public Integer getCloudCoverSituation() {
+		return cloud_cover_situation;
+	}
+
+	/** Set visibility in meters (null for missing) */
+	public void setCloudCoverSituationNotify(Integer ccs) {
+		if (!objectEquals(ccs, cloud_cover_situation)) {
+			cloud_cover_situation = ccs;
+			notifyAttribute("CloudCoverSituation");
+		}
+	}
 
 	/** Atmospheric pressure in pascals (null for missing) */
 	private transient Integer pressure;
@@ -897,6 +926,23 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		}
 	}
 
+	/** Friction 0-100 (null for missing) */
+	private transient Integer friction;
+
+	/** Get friction (null for missing) */
+	@Override
+	public Integer getFriction() {
+		return friction;
+	}
+
+	/** Set friction (null for missing) */
+	public void setFrictionNotify(Integer fri) {
+		if (!objectEquals(fri, friction)) {
+			friction = fri;
+			notifyAttribute("friction");
+		}
+	}
+
 	/** Pressure sensor height in meters (null for missing) */
 	private transient Integer pressure_sensor_height;
 
@@ -1012,12 +1058,14 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 
 	/** Flush buffered sample data to disk */
 	public void flush(PeriodicSampleWriter writer) {
+		logMsg("flush buffered samples to disk");
 		writer.flush(cache, name);
 		writer.flush(pt_cache, name);
 	}
 
 	/** Purge all samples before a given stamp. */
 	public void purge(long before) {
+		logMsg("purge samples before " + new Date(before));
 		cache.purge(before);
 		pt_cache.purge(before);
 	}
@@ -1062,9 +1110,13 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		sb.append(" pvmt_temp_c=").append(getPvmtTemp());
 		sb.append(" surf_temp_c=").append(getSurfTemp());
 		sb.append(" surf_temp_qc_c=").append(getSurfTempQC());
-		sb.append(" pvmt_surf_status=").append(getPvmtSurfStatus());
+		sb.append(" pvmt_surf_status=").append(
+			SurfaceStatus.from(this));
 		sb.append(" surf_freeze_temp_c=").append(getSurfFreezeTemp());
 		sb.append(" subsurf_temp_c=").append(getSubSurfTemp());
+		sb.append(" cloud_cover_situation=").append(
+			getCloudCoverSituation());
+		sb.append(" friction").append(getFriction());
 		sb.append(")");
 		return sb.toString();
 	}
@@ -1124,7 +1176,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 			.attr("spot_wind_speed_kph", getSpotWindSpeed())
 			.attr("spot_wind_dir_degs", getSpotWindDir())
 			.attr("precip_rate_mmhr", getPrecipRate())
-			.attr("precip_situation", getPrecipSituation())
+			.attr("precip_situation", PrecipSituation.from(this))
 			.attr("precip_1h_mm", getPrecipOneHour())
 			.attr("precip_3h_mm", getPrecip3Hour())
 			.attr("precip_6h_mm", getPrecip3Hour())
@@ -1136,9 +1188,11 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 			.attr("atmos_pressure_sealevel_pa", getSeaLevelPressure())
 			.attr("pvmt_temp_c", getPvmtTemp())
 			.attr("surf_temp_c", getSurfTempQC())
-			.attr("pvmt_surf_status", getPvmtSurfStatus())
+			.attr("pvmt_surf_status", SurfaceStatus.from(this))
 			.attr("surf_freeze_temp_c", getSurfFreezeTemp())
 			.attr("subsurf_temp_c", getSubSurfTemp())
+			.attr("cloud_cover_situation", getCloudCoverSituation())
+			.attr("friction", getFriction())
 			.attr("n_pvmt_sensors", ps_table.size())
 			.attr("n_subsurf_sensors", ss_table.size())
 			.attr("time_stamp", getStampString());
