@@ -837,15 +837,15 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 
 	/** Get pavement surface status (null for missing) */
 	@Override
-	public Integer getPvmtSurfStatus() {
+	public Integer getSurfStatus() {
 		return pvmt_surf_status;
 	}
 
 	/** Set pavement surface status (null for missing) */
-	public void setPvmtSurfStatusNotify(Integer v) {
+	public void setSurfStatusNotify(Integer v) {
 		if (!objectEquals(v, pvmt_surf_status)) {
 			pvmt_surf_status = v;
-			notifyAttribute("pvmtSurfStatus");
+			notifyAttribute("surfStatus");
 		}
 	}
 

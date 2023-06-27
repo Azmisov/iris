@@ -204,7 +204,7 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
 				.attr("index", number)
 				.attr("isactive", isActive())
 				.attr("pvmt_sens_err", sensor_error)
-				.attr("pvmt_surf_status", surface_status)
+				.attr("surf_status", surface_status)
 				.attr("surf_temp_c", surface_temp)
 				.attr("pvmt_temp_c", pavement_temp)
 				.attr("surf_water_depth_mm", water_depth.get(v -> v.round(MILLIMETERS)))

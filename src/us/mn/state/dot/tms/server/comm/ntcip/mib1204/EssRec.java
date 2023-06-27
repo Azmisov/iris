@@ -105,7 +105,7 @@ public class EssRec implements JsonBuilder.Buildable {
 		// should come from the same sensor.
 		var valid_row = ps_table.getFirstValidSurfTempRow();
 		ws.setSurfTempNotify(valid_row.surface_temp.toInteger());
-		ws.setPvmtSurfStatusNotify(valid_row.surface_status.toInteger());
+		ws.setSurfStatusNotify(valid_row.surface_status.toInteger());
 		ws.setPvmtTempNotify(ps_table.getFirstValidPvmtTemp());
 		ws.setSurfFreezeTempNotify(ps_table.getFirstValidSurfFreezeTemp());
 		ws.setPavementSensorsTable(ps_table);
