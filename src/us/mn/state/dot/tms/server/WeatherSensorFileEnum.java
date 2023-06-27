@@ -188,10 +188,16 @@ public enum WeatherSensorFileEnum {
 	}
 
     /** Convert an NTCIP temperature to CSV temperature.
+	 * @arg is_active True if sensor is active else inactive. Inactive sensors
+	 * 	should report a missing temperature.
  	 * @arg v base temperature
  	 * @return Temperature as hundredths of a degree C or 
  	 * 	   the empty string for missing */
-	static private String essTempToCsv100(EssTemperature v, String missing) {
+	static private String essTempToCsv100(
+		boolean is_active, EssTemperature v, String missing
+	) {
+		if (!is_active)
+			return missing;
 		return v.get(
 			t -> String.valueOf(t.round(Temperature.Units.HUNDREDTH_CELSIUS)),
 			missing
@@ -480,11 +486,12 @@ public enum WeatherSensorFileEnum {
 
         // iterate through pavement sensor table
 		for (var row: ps_t){
+			boolean is_active = row.isActive();
 			String pss = pssToN(row.surface_status.get());
-			String sft = essTempToCsv100(row.surface_temp, MSNG);
-			String fzt = essTempToCsv100(row.freeze_point, MSNG);
+			String sft = essTempToCsv100(is_active, row.surface_temp, MSNG);
+			String fzt = essTempToCsv100(is_active, row.freeze_point, MSNG);
 			String sst = (PAIR_SENSORS ?
-				essTempToCsv100(ss_t.getRow(row.number).temp, MSNG) : MSNG);
+				essTempToCsv100(is_active, ss_t.getRow(row.number).temp, MSNG) : MSNG);
 			String swd = distanceTo10thMM(row.water_depth, MSNG); // .1 mm
 			sb.append(getSurfRec(sid, senid, dat, pss, sft, fzt, 
 				sst, swd));
@@ -497,7 +504,7 @@ public enum WeatherSensorFileEnum {
 			String pss = MSNG;
 			String sft = MSNG;
 			String fzt = MSNG;
-			String sst = essTempToCsv100(row.temp, MSNG);
+			String sst = essTempToCsv100(row.isActive(), row.temp, MSNG);
 			String swd = MSNG;
 			sb.append(getSurfRec(sid, senid, dat, pss, sft, fzt,
 				sst, swd));
@@ -615,15 +622,16 @@ public enum WeatherSensorFileEnum {
 		PavementSensorsTable pst = w.getPavementSensorsTable();
 		SubSurfaceSensorsTable ss_t = w.getSubSurfaceSensorsTable();
 		for (var row : pst) {
+			boolean is_active = row.isActive();
 			String pss = pssToN(row.surface_status.get());
-			String sft = essTempToCsv100(row.surface_temp, MSNG_32767);
-			String fzt = essTempToCsv100(row.freeze_point, MSNG_32767);
+			String sft = essTempToCsv100(is_active, row.surface_temp, MSNG_32767);
+			String fzt = essTempToCsv100(is_active, row.freeze_point, MSNG_32767);
 			String cfa = MSNG_101;
 			String chp = MSNG_101;
 			String swd = distanceTo10thMM(row.water_depth, MSNG_32767); // tenths mm
 			String ice = MSNG_101;
 			// use subsurf temp from paired subsurf sensor
-			String sst = essTempToCsv100(ss_t.getRow(row.number).temp, MSNG);
+			String sst = essTempToCsv100(is_active, ss_t.getRow(row.number).temp, MSNG);
 			String fri = intToCsv(w.getFriction(), MSNG_101);
 			String iwd = distanceTo10thMM(row.ice_or_water_depth, MSNG_65535);
 			sb.append(getSurfAltRec(rpu, senid, dat, pss, sft, fzt,
@@ -639,7 +647,7 @@ public enum WeatherSensorFileEnum {
 			String chp = MSNG_101;
 			String swd = MSNG_32767;
 			String ice = MSNG_101;
-			String sst = essTempToCsv100(row.temp, MSNG);
+			String sst = essTempToCsv100(row.isActive(), row.temp, MSNG);
 			String fri = MSNG_101;
 			String iwd = MSNG_65535;
 			sb.append(getSurfAltRec(rpu, senid, dat, pss, sft,
