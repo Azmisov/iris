@@ -1090,7 +1090,8 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		sb.append(" spotWindDir_degs=").append(getSpotWindDir());
 		sb.append(" spotWindSpeed_kph=").append(getSpotWindSpeed());
 		sb.append(" precip_rate_mmhr=").append(getPrecipRate());
-		sb.append(" precip_situation=").append(getPrecipSituation());
+		sb.append(" precip_situation=").append(
+			SString.camelToUpperSnake(PrecipSituation.from(this).toString()));
 		sb.append(" precip_1h_mm=").append(getPrecipOneHour());
 		sb.append(" precip_3h_mm=").append(getPrecip3Hour());
 		sb.append(" precip_6h_mm=").append(getPrecip6Hour());
@@ -1098,7 +1099,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		sb.append(" precip_24h_mm=").append(getPrecip24Hour());
 		sb.append(" visibility_m=").append(getVisibility());
 		sb.append(" visibility_situation=").append(
-			VisibilitySituation.from(this));
+			SString.camelToUpperSnake(VisibilitySituation.from(this).toString()));
 		sb.append(" water_depth_cm=").append(getWaterDepth());
 		sb.append(" adj_snow_depth_cm=").append(getAdjacentSnowDepth());
 		sb.append(" humidity_perc=").append(getHumidity());
@@ -1110,11 +1111,11 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		sb.append(" surf_temp_c=").append(getSurfTemp());
 		sb.append(" surf_temp_qc_c=").append(getSurfTempQC());
 		sb.append(" surface_status=").append(
-			SurfaceStatus.from(this));
+			SString.camelToUpperSnake(SurfaceStatus.from(this).toString()));
 		sb.append(" surf_freeze_temp_c=").append(getSurfFreezeTemp());
 		sb.append(" subsurf_temp_c=").append(getSubSurfTemp());
 		sb.append(" cloud_cover_situation=").append(
-			CloudSituation.from(this));
+			SString.camelToUpperSnake(CloudSituation.from(this).toString()));
 		sb.append(" friction").append(getFriction());
 		sb.append(")");
 		return sb.toString();

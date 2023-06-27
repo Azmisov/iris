@@ -343,6 +343,16 @@ public class SString {
 		return null;
 	}
 
+	/** Convert a string from camelcase to upper snake case
+	 * @param cc Camelcase string, e.g. highWind
+	 * @return Uppercase underscore separated words, e.g. HIGH_WIND */
+	static public String camelToUpperSnake(String cc) {
+		cc = SString.splitCamel(cc, "_");
+		if (cc != null)
+			cc = cc.toUpperCase();
+		return cc;
+	}
+
 	/** Remove CR, LF, tabs and excess whitespace
 	 * @param str String that may be null
 	 * @return Argument with CR, LF tabs and extra spaces removed */

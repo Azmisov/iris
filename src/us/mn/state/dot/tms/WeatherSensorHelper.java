@@ -19,6 +19,7 @@ package us.mn.state.dot.tms;
 import java.util.Iterator;
 import us.mn.state.dot.sched.TimeSteward;
 import us.mn.state.dot.tms.units.Pressure;
+import us.mn.state.dot.tms.utils.SString;
 
 /**
  * Helper class for weather sensors.

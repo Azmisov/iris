@@ -80,8 +80,31 @@ public enum WeatherSensorFileEnum {
 	static final String MSNG_32767 = "32767";
 	static final String MSNG_65535 = "65535";
 
+	/** Convert a string from camelcase to space separated words.
+	 * @param cc Camelcase string, e.g. highWind
+	 * @return This method matches output from iris <= v40, where
+	 * 	   single words are returned cap (e.g. Dry) and multi
+	 * 	   words as leading lower case, e.g. trace Moisture. */
+	static private String sw(String cc) {
+		String SEP = " ";
+		cc = cwords(cc, SEP) <= 1 ? capFirst(cc) : cc;
+		return SString.splitCamel(cc, SEP);
+	}
+
+	/** Count words in camelcase string */
+	static private int cwords(String cc, String sep) {
+		if (cc == null || sep == null)
+			return 0;
+		cc = cc.trim();
+		if (cc.isEmpty() || sep.isEmpty())
+			return 0;
+		cc = SString.splitCamel(cc, sep);
+		String[] words = cc.split(sep);
+		return words.length;
+	}
+
 	/** Capitalize first letter of string */
-	static private String cap(String cc) {
+	static private String capFirst(String cc) {
 		if (cc != null && cc.length() >= 1) {
 			return cc.substring(0, 1).toUpperCase() + 
 				cc.substring(1);
@@ -189,14 +212,6 @@ public enum WeatherSensorFileEnum {
 		if (status != null && EssEnumType.isValid(status))
 			return sw(status.toString());
 		return MSNG;
-	}
-
-	/** Convert a string from camelcase to space separated words.
-	 * @param cc Camelcase string, e.g. highWind
-	 * @return Uppercase string with underscore separated words, 
-	 * 	   e.g. High Wind */
-	static private String sw(String cc) {
-		return SString.splitCamel(cap(cc), " ");
 	}
 
 	/** Convert surface water depth to CSV string
@@ -438,7 +453,7 @@ public enum WeatherSensorFileEnum {
 		append(sb, w.getWindDir());		 //DirAvg
 		append(sb, w.getMaxWindGustDir());	 //DirMax
 		append(sb, prToCsv(w.getPressureQC()));	 //Pressure
-		append(sb, cap(WeatherSensorHelper.
+		append(sb, capFirst(WeatherSensorHelper.
 			getPrecipRateIntensity(w)));	 //PcIntens
 		append(sb, psToCsv(w));			 //PcType
 		append(sb, praToCsv(w));		 //PcRate
@@ -568,7 +583,7 @@ public enum WeatherSensorFileEnum {
 		append(sb, w.getMaxWindGustDir()); 		//12:10: DirMax
 		append(sb, missing65535(
 			prToCsv(w.getPressure())));		//13:11: Pres
-		append(sb, cap(WeatherSensorHelper.
+		append(sb, capFirst(WeatherSensorHelper.
 			getPrecipRateIntensity(w)));		//14:12: PcInten
 		append(sb, psToCsv(w));				//15:13: PcType
 		append(sb, praToCsv(w));			//16:14: PcRate

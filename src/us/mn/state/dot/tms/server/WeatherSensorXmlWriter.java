@@ -67,9 +67,9 @@ public class WeatherSensorXmlWriter extends XmlWriter {
 		w.write("<!ATTLIST weather_sensor " + 
 			"notes CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
-			"siteid CDATA #IMPLIED>\n");
+			"site_id CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
-			"altid CDATA #IMPLIED>\n");
+			"alt_id CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
 			"lon CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
@@ -126,6 +126,10 @@ public class WeatherSensorXmlWriter extends XmlWriter {
 			"subsurf_temp_c CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
 			"time_stamp CDATA #IMPLIED>\n");
+		w.write("<!ATTLIST weather_sensor " + 
+			"cloud_cover_situation CDATA #IMPLIED>\n");
+		w.write("<!ATTLIST weather_sensor " + 
+			"surf_ice_water_depth_tmm CDATA #IMPLIED>\n");
 		w.write("]>\n");
 	}
 

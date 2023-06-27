@@ -113,7 +113,8 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 				.attr("subsurf_depth",depth)
 				.attr("subsurf_temp_c",temp)
 				.attr("subsurf_moisture",moisture)
-				.attr("subsurf_sensor_error",sensor_error);
+				.attr("subsurf_sensor_error",
+					sensor_error.toString().toUpperCase());
 		}
 	}
 
