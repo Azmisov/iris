@@ -1,345 +1,452 @@
 Merged notes
 ===================
 9792:
-    - migrate-wydot_trac.sql added; probably should customize init_ctl to run that sql file?
+	- migrate-wydot_trac.sql added; probably should customize init_ctl to run that sql file?
 9832; dmsxml OpQueryMsg:
-    - the createSignMessageWithBitmap isn't using beacon, while it was changed
-        to use beacon in the other locations; may want to look into that
-        - probably not, as bitmap signs are relic from 1970's not used anymore; check if Doug's code uses it
-    - when message doesnt have text and not rendered bitmap, duration has changed
-        to duramins instead of null; I'm assuming that's to accomodate beacon +
-        empty message, so leaving it; but could have been introduced by accident
+	- the createSignMessageWithBitmap isn't using beacon, while it was changed
+		to use beacon in the other locations; may want to look into that
+		- probably not, as bitmap signs are relic from 1970's not used anymore; check if Doug's code uses it
+	- when message doesnt have text and not rendered bitmap, duration has changed
+		to duramins instead of null; I'm assuming that's to accomodate beacon +
+		empty message, so leaving it; but could have been introduced by accident
 9874: 
-    - Doug renamed to WordTableModel
+	- Doug renamed to WordTableModel
 9846, 9847:
-    - Conflicts with Doug's "Cleaned up code for building map segments." Segment constructor has
-        changed, but looks like upstream node is now "station node". New terminology appears to be:
-        - station node: previously "upstream"; the root node
-        - upstream node: previously "previous"; the upstream node of the segment
-        - pl,ul/loc,dl has become al,bl: corresponding to locations of upstream/downstream nodes of the segment
-    - I've reintroduced saving station/(previously "upstream") as a member. The toString method locations
-        aren't serialized the same... now they're Mercator coordinates instead. Would need to store
-        the old MapGeoLoc data again if we want plaintext names (now achieved by
-        GeoLocHelper.getLocation()->String). I've also changed tooDistance to "good" in toString.
-        Looks like just debugging toString info, so probably not important.
-    - SegmentLayerState has new ParkingSpace in left click handler; may want to switch that to
-        use station node too?
+	- Conflicts with Doug's "Cleaned up code for building map segments." Segment constructor has
+		changed, but looks like upstream node is now "station node". New terminology appears to be:
+		- station node: previously "upstream"; the root node
+		- upstream node: previously "previous"; the upstream node of the segment
+		- pl,ul/loc,dl has become al,bl: corresponding to locations of upstream/downstream nodes of the segment
+	- I've reintroduced saving station/(previously "upstream") as a member. The toString method locations
+		aren't serialized the same... now they're Mercator coordinates instead. Would need to store
+		the old MapGeoLoc data again if we want plaintext names (now achieved by
+		GeoLocHelper.getLocation()->String). I've also changed tooDistance to "good" in toString.
+		Looks like just debugging toString info, so probably not important.
+	- SegmentLayerState has new ParkingSpace in left click handler; may want to switch that to
+		use station node too?
 9829:
-    - Keeping Doug's implementation of textLabel (cross street + landmark), as it is nearly the same now;
-        just changed separator to " / "
-    - didn't see SegmentBuilder.getDetectors being used, so left as deleted in Doug's branch
+	- Keeping Doug's implementation of textLabel (cross street + landmark), as it is nearly the same now;
+		just changed separator to " / "
+	- didn't see SegmentBuilder.getDetectors being used, so left as deleted in Doug's branch
 9845:
-    - fixed in Doug's branch as well, commit "Removed abandoned column from r_node table."
-    - just adding the extra logging/comments
+	- fixed in Doug's branch as well, commit "Removed abandoned column from r_node table."
+	- just adding the extra logging/comments
 9983:
-    - quick message has become msg_pattern; keeping Doug's change there
+	- quick message has become msg_pattern; keeping Doug's change there
 9840:
-    Weather sensor stuff that might conflict in Doug branch:
-    client:
-        WeatherSensorTab, WeatherSensorProperties, WeatherSensorModel: no changes
-        WeatherSensorManager, WeatherSensorTheme: just minor cleanup, shouldn't be problematic
-    server:
-        WeatherSensorImpl: conflicts, but seem to be minor
-        WeatherSensorHelper: new file
-    - Doug "Cleaned up ESS (RWIS) code" changes folder structure:
-        Moved to tms/server/comm/ntcip/mib1204:
-            tms/PavementSensorError
-            tms/SubSurfaceSensorError
-            tms/server/comm/ntcip/EssRec
-            tms/server/comm/ntcip/PavementSensorsTable
-            tms/server/comm/ntcip/SubSurfaceSensorsTable
-            tms/server/comm/ntcip/TemperatureSensorsTable
-    - EssRec git timeline:
-        - Doug modified a lot of the temperature functionality it seems
-        - sensor data functionality been split out into multiple XXXValues classes, the one we're interestd
-            in is AtmosphericValues. It is tkaing the conversion/getters for air_pressure/visiblitity/visbilitySituation
-            and grouping them into that class. Additionally, it adds toJson method. The air_pressure var has been
-            renamed to atomspheric_pressure. The actual implementations have not changed.
-    - OpQueryEssStatus git timeline:
-        - "Moved QueryElevation phase to OpQueryEssSettings operation": the "Elevation" query has been combined
-            with the "Visiblitity" query. Only atomspheric pressure is kept; essReferenceHeight, essPressureHeight,
-            essWindSensorHeight are removed.
-        - "Added AtmosphericValues class": Elevation query modified again, this time mess.add/log take values from
-            a new atmospheric_values value. The storeXXX calls have been removed. Seems around the commit
-            "Cleaned up PavementSensorsTable." is when Doug starts reorganizing and removing storeXXX calls.
-        - So the storeXXX calls got wrapped into a single ess_rec.store() call in a FinalPhase; that happened
-            in commit "Added WindSensorValues class."
-        - Later, the final phase was eliminated, and instead ess_rec.store() is now called in cleanup method, 
-            and there, only if the operation was a success
-        - Storage is now using JSON format
-    So appears this patch can be applied without problems, but will need to refactor to fit the new code
-        - erh -> ref_height; prh -> pressure_height; these used to be present in OpQueryEssStatus but
-            got removed; so re-adding to OpQueryEssStatus them to the message query
-        - Doug added convertRefElevation and new HeightObject class which is similar idea to convertHeight;
-            those are in AtmosphericValues; keeping Doug's code
-        - May want to add the pressure at sea level values to AtmosphericValues.toJson?
+	Weather sensor stuff that might conflict in Doug branch:
+	client:
+		WeatherSensorTab, WeatherSensorProperties, WeatherSensorModel: no changes
+		WeatherSensorManager, WeatherSensorTheme: just minor cleanup, shouldn't be problematic
+	server:
+		WeatherSensorImpl: conflicts, but seem to be minor
+		WeatherSensorHelper: new file
+	- Doug "Cleaned up ESS (RWIS) code" changes folder structure:
+		Moved to tms/server/comm/ntcip/mib1204:
+			tms/PavementSensorError
+			tms/SubSurfaceSensorError
+			tms/server/comm/ntcip/EssRec
+			tms/server/comm/ntcip/PavementSensorsTable
+			tms/server/comm/ntcip/SubSurfaceSensorsTable
+			tms/server/comm/ntcip/TemperatureSensorsTable
+	- EssRec git timeline:
+		- Doug modified a lot of the temperature functionality it seems
+		- sensor data functionality been split out into multiple XXXValues classes, the one we're interestd
+			in is AtmosphericValues. It is tkaing the conversion/getters for air_pressure/visiblitity/visbilitySituation
+			and grouping them into that class. Additionally, it adds toJson method. The air_pressure var has been
+			renamed to atomspheric_pressure. The actual implementations have not changed.
+	- OpQueryEssStatus git timeline:
+		- "Moved QueryElevation phase to OpQueryEssSettings operation": the "Elevation" query has been combined
+			with the "Visiblitity" query. Only atomspheric pressure is kept; essReferenceHeight, essPressureHeight,
+			essWindSensorHeight are removed.
+		- "Added AtmosphericValues class": Elevation query modified again, this time mess.add/log take values from
+			a new atmospheric_values value. The storeXXX calls have been removed. Seems around the commit
+			"Cleaned up PavementSensorsTable." is when Doug starts reorganizing and removing storeXXX calls.
+		- So the storeXXX calls got wrapped into a single ess_rec.store() call in a FinalPhase; that happened
+			in commit "Added WindSensorValues class."
+		- Later, the final phase was eliminated, and instead ess_rec.store() is now called in cleanup method, 
+			and there, only if the operation was a success
+		- Storage is now using JSON format
+	So appears this patch can be applied without problems, but will need to refactor to fit the new code
+		- erh -> ref_height; prh -> pressure_height; these used to be present in OpQueryEssStatus but
+			got removed; so re-adding to OpQueryEssStatus them to the message query
+		- Doug added convertRefElevation and new HeightObject class which is similar idea to convertHeight;
+			those are in AtmosphericValues; keeping Doug's code
+		- May want to add the pressure at sea level values to AtmosphericValues.toJson?
 9837:
-    - QuerySubSurfaceTable: sensor type, location, and depth have been removed; moisture moved to
-        the next phase; may want to reintroduce them (actually, I think those were moved to 
-        OpQueryEssSettings now)
-    - Assuming the exception is triggered by querying sr.sensor_error, so not adding to the new
-        moisture phase
+	- QuerySubSurfaceTable: sensor type, location, and depth have been removed; moisture moved to
+		the next phase; may want to reintroduce them (actually, I think those were moved to 
+		OpQueryEssSettings now)
+	- Assuming the exception is triggered by querying sr.sensor_error, so not adding to the new
+		moisture phase
 9863:
-    - PavementSensorType: divergent implementations, keeping Doug's, but adding the ordinal conversion
-        TODO: can ASN1Enum be used instead?
-    - subsurf_temp is fetched, but never used; maybe a bug, leaving commented for now
-        e.g. should we save that value inside the storeSubSurface method?
-    - getPavementSensorError checks for none/undefined now, so not including hasPvmtSensErr -
-        added/reintroduced PavementSensorError/PavementSensorType/SurfaceStatus.fromOrdinal to allow the
-        logging (seems Doug removed it somewhere to simplify?); logging for PavementSensorType is
-        now in OpQueryEssSettings instead
-    - PavementSensorType not being queried anymore (should we reintroduce?) so not including the
-        logging for that one
-    - ControllerImpl version now is grouped with the setup JSON; so I've added some methods to extract
-        version from the JSON to allow for EssType detection
-    - OpQuerySystem was added in "Removed SNMP `sys_*` values from RWIS settings". All the system
-        settings were moved to there. The settings are not actually getting saved though, so can't
-        make use of them to extract High Sierra version string. OpQueryModules also writes to
-        setup (setSetupNotify call), and it includes a version key, so it is not safe to write
-        version directly, will need to use a different key. I suppose just "sys_desc" will work.
+	- PavementSensorType: divergent implementations, keeping Doug's, but adding the ordinal conversion
+		TODO: can ASN1Enum be used instead?
+	- subsurf_temp is fetched, but never used; maybe a bug, leaving commented for now
+		e.g. should we save that value inside the storeSubSurface method?
+	- getPavementSensorError checks for none/undefined now, so not including hasPvmtSensErr -
+		added/reintroduced PavementSensorError/PavementSensorType/SurfaceStatus.fromOrdinal to allow the
+		logging (seems Doug removed it somewhere to simplify?); logging for PavementSensorType is
+		now in OpQueryEssSettings instead
+	- PavementSensorType not being queried anymore (should we reintroduce?) so not including the
+		logging for that one
+	- ControllerImpl version now is grouped with the setup JSON; so I've added some methods to extract
+		version from the JSON to allow for EssType detection
+	- OpQuerySystem was added in "Removed SNMP `sys_*` values from RWIS settings". All the system
+		settings were moved to there. The settings are not actually getting saved though, so can't
+		make use of them to extract High Sierra version string. OpQueryModules also writes to
+		setup (setSetupNotify call), and it includes a version key, so it is not safe to write
+		version directly, will need to use a different key. I suppose just "sys_desc" will work.
 9891:
-    - Doug "Moved PrecipSituation to ntcip/mib1204/EssPrecipSituation" and 
-        "Changed WeatherSensor precipSituation attribute from Integer to String type." make these
-        changes mostly obsolete. Just adding the row to client. Adding generic formatEnum
+	- Doug "Moved PrecipSituation to ntcip/mib1204/EssPrecipSituation" and 
+		"Changed WeatherSensor precipSituation attribute from Integer to String type." make these
+		changes mostly obsolete. Just adding the row to client. Adding generic formatEnum
 9905:
-    - not going to remove temperature table from OpQueryEssSettings
-    - WeatherSensorImpl changed via Doug's "Changed WeatherSensor pvmtSurfStatus attribute from Integer to String type."
-      To simplify the code, the enums now get saved as pre-serialized strings to WeatherImpl. The problem with that is
-      you can't efficiently map to a different string representation, e.g. for CSV export or i18n. Ideally, you'd just
-      keep it the raw type, e.g. PvmtSurfaceStatus object or whatever. I'm not sure what the implications of that are
-      and why that wasn't done. I agree with Michael's implementation that if you need custom serialization and its
-      going to be stored in Java memory, might as well stick it directly on the enum. I see in later revisions he added
-      "from" method to convert from WeatherSensor to enum, which is what I would probably do too. I will switch back to
-      Integers, but just for whatever code affects Michael's, to try to minimize the amount of incompatibility.
-    - added toStringValid methods to SurfaceStatus/PrecipSituation, simplifies serialization in some places
+	- not going to remove temperature table from OpQueryEssSettings
+	- WeatherSensorImpl changed via Doug's "Changed WeatherSensor pvmtSurfStatus attribute from Integer to String type."
+	  To simplify the code, the enums now get saved as pre-serialized strings to WeatherImpl. The problem with that is
+	  you can't efficiently map to a different string representation, e.g. for CSV export or i18n. Ideally, you'd just
+	  keep it the raw type, e.g. PvmtSurfaceStatus object or whatever. I'm not sure what the implications of that are
+	  and why that wasn't done. I agree with Michael's implementation that if you need custom serialization and its
+	  going to be stored in Java memory, might as well stick it directly on the enum. I see in later revisions he added
+	  "from" method to convert from WeatherSensor to enum, which is what I would probably do too. I will switch back to
+	  Integers, but just for whatever code affects Michael's, to try to minimize the amount of incompatibility.
+	- added toStringValid methods to SurfaceStatus/PrecipSituation, simplifies serialization in some places
 9912:
-    - Doug's PavementSensorsTable has surface water depth already, just adding the logging
-    - MIB1204 changes already merged
-    - tweaks to make it fit with existing code better
+	- Doug's PavementSensorsTable has surface water depth already, just adding the logging
+	- MIB1204 changes already merged
+	- tweaks to make it fit with existing code better
 9931:
-    - I believe this code is wrong: no longer checks for == 255, checking null when can't be null.
-        It is also difficult to add this logging since it is no longer CSV specific. I will add
-        the enforcmenet+logging to PavementSensorsTable, but may want to revisit
-        (seems like code is revised in 9947 again)
+	- I believe this code is wrong: no longer checks for == 255, checking null when can't be null.
+		It is also difficult to add this logging since it is no longer CSV specific. I will add
+		the enforcmenet+logging to PavementSensorsTable, but may want to revisit
+		(seems like code is revised in 9947 again)
 9947:
-    - Doug implemented similar SurfaceBlackIceSignal/VisibilitySituation class
-    - I'll add the fromOrdinal methods as they're needed, as well as my toStringValid method
-    - swdToN units I think are messed up; e.g. 1mm*10 != .1mm; I'm going to leave the code
-        as is with x100 multiplier, but may want to double check later
-    - Doug/Michael both did a lot of refactoring on the table/values design. Starting to
-        see more drastic differences here. I like the idea of doing an abstract EssTable class,
-        since I do notice duplicate code. The various tables are:
-            AtmosphericValues, WindSensorsTable, TemperatureSensorsTable, PrecipitationValues,
-            PavementSensorsTable, SubSurfaceSensorsTable, RadiationValues
-    - MIB1204 already merged
-    - OpQueryEssStatus: all temp/pvmt rows are already getting queried; some newly added fields
-        already queried, so just adding logging there; adding pavement temp depth, sensor model
-    - ice_or_water_depth conversion seems wrong; e.g. new Distance(100 * id, MICROMETERS) with
-        id being in 1/10mm? Shouldn't we just do new Distance(10 * id, MILLIMETERS)
-    - So I've ended up refactoring the conversion from MIB1204 raw types (ASN1Integer) to
-        more concrete java objects like Speed/Distance. The class hierarchy is
-        EssConvertible -> EssConverter ->
-            EssInteger ->
-                EssNumber -> EssUnits ->
-                    EssAngle, EssDistance, EssInterval, EssPressure, EssSpeed, EssTemperature
-                EssEnum
-            EssString
-        It ends up being a lot cleaner, and now we have a unified interface for all
-        converted MIB1204 types. The old code was inconsistent on how it converted from raw
-        values to data to be stored. E.g. sometimes a string, other times a double, other times
-        a rounded double. Would prefer the WeatherSensorImpl.store methods and the Json serialization
-        to use the same units and data type. But can come back and synchronize them up better later.
-    - I pulled out all the EssEnum types into an "enums" folder. Added EssEnumType interface so
-        we can reference them all centrally; pulled out some repeated methods there. The only
-        tricky thing here is the isValid method. Seems it was inconsistent sometimes whether
-        an enum was turned to null, e.g. does "unknown" convert to null? With the isValid method,
-        we always convert to null under the same conditions. Since it was previously inconsistent,
-        can double check later whhen testing to see if we want to change isValid impl for that enum.
-    - I fixed a problem with the OppController.Phase. That affected a lot of files, but the change
-        is actually minor. It had unnecessary use of generics. I also pulled out the poll method into
-        an interface so we can use lambdas instead. Lambda can't be used when passing state, so
-        still need to use Phase for that.
-    - Added queryMany helpers to OpEss which makes OpQueryEssXXX classes much less verbose, at
-        expense of minor memory overhead. It makes use of the unified EssConvertible interface
-        - This catches all errors, which in the current impl was not happening. May need to
-            add a version of queryMany that doesn't catch any errors.
-    - Circular dependency between QueryWindTableV2 and QueryWindSensorsV2; looks like a bug to me
+	- Doug implemented similar SurfaceBlackIceSignal/VisibilitySituation class
+	- I'll add the fromOrdinal methods as they're needed, as well as my toStringValid method
+	- swdToN units I think are messed up; e.g. 1mm*10 != .1mm; I'm going to leave the code
+		as is with x100 multiplier, but may want to double check later
+	- Doug/Michael both did a lot of refactoring on the table/values design. Starting to
+		see more drastic differences here. I like the idea of doing an abstract EssTable class,
+		since I do notice duplicate code. The various tables are:
+			AtmosphericValues, WindSensorsTable, TemperatureSensorsTable, PrecipitationValues,
+			PavementSensorsTable, SubSurfaceSensorsTable, RadiationValues
+	- MIB1204 already merged
+	- OpQueryEssStatus: all temp/pvmt rows are already getting queried; some newly added fields
+		already queried, so just adding logging there; adding pavement temp depth, sensor model
+	- ice_or_water_depth conversion seems wrong; e.g. new Distance(100 * id, MICROMETERS) with
+		id being in 1/10mm? Shouldn't we just do new Distance(10 * id, MILLIMETERS)
+	- So I've ended up refactoring the conversion from MIB1204 raw types (ASN1Integer) to
+		more concrete java objects like Speed/Distance. The class hierarchy is
+		EssConvertible -> EssConverter ->
+			EssInteger ->
+				EssNumber -> EssUnits ->
+					EssAngle, EssDistance, EssInterval, EssPressure, EssSpeed, EssTemperature
+				EssEnum
+			EssString
+		It ends up being a lot cleaner, and now we have a unified interface for all
+		converted MIB1204 types. The old code was inconsistent on how it converted from raw
+		values to data to be stored. E.g. sometimes a string, other times a double, other times
+		a rounded double. Would prefer the WeatherSensorImpl.store methods and the Json serialization
+		to use the same units and data type. But can come back and synchronize them up better later.
+	- I pulled out all the EssEnum types into an "enums" folder. Added EssEnumType interface so
+		we can reference them all centrally; pulled out some repeated methods there. The only
+		tricky thing here is the isValid method. Seems it was inconsistent sometimes whether
+		an enum was turned to null, e.g. does "unknown" convert to null? With the isValid method,
+		we always convert to null under the same conditions. Since it was previously inconsistent,
+		can double check later whhen testing to see if we want to change isValid impl for that enum.
+	- I fixed a problem with the OppController.Phase. That affected a lot of files, but the change
+		is actually minor. It had unnecessary use of generics. I also pulled out the poll method into
+		an interface so we can use lambdas instead. Lambda can't be used when passing state, so
+		still need to use Phase for that.
+	- Added queryMany helpers to OpEss which makes OpQueryEssXXX classes much less verbose, at
+		expense of minor memory overhead. It makes use of the unified EssConvertible interface
+		- This catches all errors, which in the current impl was not happening. May need to
+			add a version of queryMany that doesn't catch any errors.
+	- Circular dependency between QueryWindTableV2 and QueryWindSensorsV2; looks like a bug to me
 
-    BlackIceSignal: done; not including desriptions; "other" is converted to null instead; different filename
-    pavementsensorerror,
-    PavementSurfaceStatus,
-    SubSurfaceSensorError:
-        done via EssEnumType
-    PrecipSituation.java: done
-    VisibilitySituation: done
-    WeatherSensor: done
-    WeatherSensorHelper: put from method on the enum instead
-    WeatherSensorTheme:
-        added toStringValid on enum to accomodate; I've pulled this out into EssEnumType,
-        which makes some of changes made in patch #9905 obsolete
-    MainServer: done
-    PresWx: added with minor changes
-    WeatherSensorImpl: done
-    WeatherSensorPikalertJob: done
-    WeatherSensorXmlJob: done
-    EssTable: much is obsolete with my EssConvertible refactor; I've created a 
-        new EssTable implementation that pulls out a lot of the shared table code
-    PavementSensorsTable: done, major refactoring
-    PikalertRoadState: done, minor renaming
-    SubsurfaceSensorsTable: done, major refactoring
-    TemperatureSensorsTable: done, major refactoring
-    MIB1204: done
-    SString: TODO
-    OpQueryEssStatus: done, lots of refactoring
-    WeathersensorCsvWriter: a lot of the code can be eliminated if we just
-        use the EssConverter types for storage. I'm thinking also maybe we could
-        store a JSON EssConverter structure in WeatherSensor, and that would
-        eliminate all the storeXXX values. I'm not going to implement those in
-        the interest of time, but we could come back.
+	BlackIceSignal: done; not including desriptions; "other" is converted to null instead; different filename
+	pavementsensorerror,
+	PavementSurfaceStatus,
+	SubSurfaceSensorError:
+		done via EssEnumType
+	PrecipSituation.java: done
+	VisibilitySituation: done
+	WeatherSensor: done
+	WeatherSensorHelper: put from method on the enum instead
+	WeatherSensorTheme:
+		added toStringValid on enum to accomodate; I've pulled this out into EssEnumType,
+		which makes some of changes made in patch #9905 obsolete
+	MainServer: done
+	PresWx: added with minor changes
+	WeatherSensorImpl: done
+	WeatherSensorPikalertJob: done
+	WeatherSensorXmlJob: done
+	EssTable: much is obsolete with my EssConvertible refactor; I've created a 
+		new EssTable implementation that pulls out a lot of the shared table code
+	PavementSensorsTable: done, major refactoring
+	PikalertRoadState: done, minor renaming
+	SubsurfaceSensorsTable: done, major refactoring
+	TemperatureSensorsTable: done, major refactoring
+	MIB1204: done
+	SString: TODO
+	OpQueryEssStatus: done, lots of refactoring
+	WeathersensorCsvWriter: a lot of the code can be eliminated if we just
+		use the EssConverter types for storage. I'm thinking also maybe we could
+		store a JSON EssConverter structure in WeatherSensor, and that would
+		eliminate all the storeXXX values. I'm not going to implement those in
+		the interest of time, but we could come back.
 
-        Maybe add toDouble/toInteger/toString(scale, units) to all the EssUnit
-        classes? Can make conversions a bit easier when we keep switching
-        between formats. Though preferably we'd just settle on a single
-        representation for the value.
-    EssRec: done, not including toString changes
+		Maybe add toDouble/toInteger/toString(scale, units) to all the EssUnit
+		classes? Can make conversions a bit easier when we keep switching
+		between formats. Though preferably we'd just settle on a single
+		representation for the value.
+	EssRec: done, not including toString changes
 - 9949: some changes obsolete; it seems a future version WeatherSensorImp.getSiteId has been
-    merged already. Come back to this if we don't see that future patch.
+	merged already. Come back to this if we don't see that future patch.
 - 9960: overwrites 9949 getSiteId, but still not including; come back if still
-    don't see the change later
+	don't see the change later
 9985:
-    - actually not too complicated, WeatherSensorFileEnum is mainly just a rename
-        of old WeathersensorCsvWriter
+	- actually not too complicated, WeatherSensorFileEnum is mainly just a rename
+		of old WeathersensorCsvWriter
 9986:
-    - EssRec changes done, mostly obsolete with EssConvertible; I'm not going to rigorously
-        go through and check the units are all exact; I'm pretty sure they're the same,
-        but we'll want to verify against v4 output to see if they are the same scales
-        (e.g. in UI, XML, CSV outputs)
+	- EssRec changes done, mostly obsolete with EssConvertible; I'm not going to rigorously
+		go through and check the units are all exact; I'm pretty sure they're the same,
+		but we'll want to verify against v4 output to see if they are the same scales
+		(e.g. in UI, XML, CSV outputs)
 9987:
-    - added XmlBuilder and test cases
-    - I really think we should unify the representations units/names here if possible;
-        I'm not sure how formal the XML output needs to be, so trying to keep as close
-        to original as possible, but will want to validate later that the output is
-        as expected. I'm imagining you can have a single OutputFormat class of sorts,
-        where you can tune whether the output is JSON, XML or debugging string. They all
-        seem to be identical formats almost, just different delimiter formatting.
+	- added XmlBuilder and test cases
+	- I really think we should unify the representations units/names here if possible;
+		I'm not sure how formal the XML output needs to be, so trying to keep as close
+		to original as possible, but will want to validate later that the output is
+		as expected. I'm imagining you can have a single OutputFormat class of sorts,
+		where you can tune whether the output is JSON, XML or debugging string. They all
+		seem to be identical formats almost, just different delimiter formatting.
 9806, 9807, 9809:
-    - renamed ModifyingMsg -> ModifyMsg in patch 9806 instead so not committing buggy code
-    - do we want to make this configurable somewhere, rather than hardcoded?
+	- renamed ModifyingMsg -> ModifyMsg in patch 9806 instead so not committing buggy code
+	- do we want to make this configurable somewhere, rather than hardcoded?
 9811, 9821:
-    - could make this configurable so could be used by MNDOT
+	- could make this configurable so could be used by MNDOT
 9865:
-    - not including logging in OpNtcip, since would need to make all log() methods
-        static for it to work; don't see any future patches that would fix that
-        bug, but I see v47 doesn't have it in the code, so maybe a patch that
-        was not included
+	- not including logging in OpNtcip, since would need to make all log() methods
+		static for it to work; don't see any future patches that would fix that
+		bug, but I see v47 doesn't have it in the code, so maybe a patch that
+		was not included
 9989:
-    - OpNtcip: done
-    - OpQueryEssSettings won't delete since seems to be used later; so not modifying NtcipPoller either
-    - PavementSensorsTable: done
-    - SubsurfaceSensorsTable: done
-    - SString/SStringTest: done
-    - just a note to think about using same names for json/string/xml representation;
-        can rename EssConverter.json_key to be just `name`
-    - EssRec: done
-    - OpQueryEssStatus: not including some logging, but can add later if needed still
-    - EssTable: I changed EssTemperature to 2 digits; but I think many places still
-        fetch as an Integer, so will need to go back and verify they're right
+	- OpNtcip: done
+	- OpQueryEssSettings won't delete since seems to be used later; so not modifying NtcipPoller either
+	- PavementSensorsTable: done
+	- SubsurfaceSensorsTable: done
+	- SString/SStringTest: done
+	- just a note to think about using same names for json/string/xml representation;
+		can rename EssConverter.json_key to be just `name`
+	- EssRec: done
+	- OpQueryEssStatus: not including some logging, but can add later if needed still
+	- EssTable: I changed EssTemperature to 2 digits; but I think many places still
+		fetch as an Integer, so will need to go back and verify they're right
 10008:
-    - MIB1204: already implemented by Doug
-    - WeatherSensorHelper: never merged, so no need to delete
-    - PresWx, WeatherSensorTheme: already implemented
-    - WeatherSensor: check
-    - OpQueryEssStatus:
-        - OpQuerySystem holds the QuerySettings currently
-        - This probably conflicts with Doug's error catching... should
-            we log on exception or not? I'm just switching to true for all the onces
-            that try-catch blocks were added to in this patch.
-        - iwd (ice or water depth) plus several others get reset on exception;
-            I'm forgoing that patch since looking at v47 final code it has since
-            changed a bit, and I don't want to go through the work of figuring
-            out what all those variable names used to be
-        - I am including the value resets for non-iwd phases though
-        - putting waterlevelsensor count in precipitation values currently
-        - QuerySettings error catching in OpQuerySystem now
-    - WeatherSensorImpl: automerge
-    - WeatherSensorFileEnum: done
-    - I added EssBoolean, InstrumentValues, and associated enums; I included some
-        extra metadata from NTCIP 1204 that seemed to fit the InstrumentValues
-        category. I am putting the query phase for it inside OpQueryEssSettings
+	- MIB1204: already implemented by Doug
+	- WeatherSensorHelper: never merged, so no need to delete
+	- PresWx, WeatherSensorTheme: already implemented
+	- WeatherSensor: check
+	- OpQueryEssStatus:
+		- OpQuerySystem holds the QuerySettings currently
+		- This probably conflicts with Doug's error catching... should
+			we log on exception or not? I'm just switching to true for all the onces
+			that try-catch blocks were added to in this patch.
+		- iwd (ice or water depth) plus several others get reset on exception;
+			I'm forgoing that patch since looking at v47 final code it has since
+			changed a bit, and I don't want to go through the work of figuring
+			out what all those variable names used to be
+		- I am including the value resets for non-iwd phases though
+		- putting waterlevelsensor count in precipitation values currently
+		- QuerySettings error catching in OpQuerySystem now
+	- WeatherSensorImpl: automerge
+	- WeatherSensorFileEnum: done
+	- I added EssBoolean, InstrumentValues, and associated enums; I included some
+		extra metadata from NTCIP 1204 that seemed to fit the InstrumentValues
+		category. I am putting the query phase for it inside OpQueryEssSettings
 10011:
-    - make this option non-hardcoded configuration?
+	- make this option non-hardcoded configuration?
+10020:
+	- Reverting Doug's change "Removed some dead code." and "Replaced CommLink `status` with `connected`"
+		so we can get ws.isConnected again
+10022:
+	edited:
+	x	WeatherSensorTheme
+	x	WeatherSensorFileEnum
+	x	WeatherSensorImpl
+	x	OpEss
+	x	OpQueryEssStatus
+	x	MIB1204
+	added:
+		tms/EssPrecipSituation.java
+			(duplicate of renamed file)
+		tms/EssSurfaceStatus.java
+			(duplicate of renamed file)
+		tms/EssVisibilitySituation.java
+			(duplicate of renamed file)
+	renamed:
+		// v47 previous filename ->
+		//	v47 new filename after 10022
+		//	current merge state with v5
+	x	tms/server/comm/ntcip/PikalertRoadState.java -> 
+			tms/server/comm/ntcip/mib1204/PikalertRoadState.java
+	>		tms/server/comm/ntcip/PikalertRoadState.java
+	x	tms/PavementSensorError.java ->
+			tms/server/comm/ntcip/mib1204/EssPavementSensorError.java
+			tms/server/comm/ntcip/mib1204/enums/PavementSensorError.java
+	x	tms/BlackIceSignal.java ->
+			tms/server/comm/ntcip/mib1204/EssSurfaceBlackIceSignal.java
+			tms/server/comm/ntcip/mib1204/enums/SurfaceBlackIceSignal.java
+	x	tms/PavementSensorType.java ->
+			tms/server/comm/ntcip/mib1204/EssPavementSensorType.java
+			tms/server/comm/ntcip/mib1204/enums/PavementSensorType.java
+	x	tms/PavementSurfaceStatus.java ->
+			tms/server/comm/ntcip/mib1204/EssSurfaceStatus.java
+			tms/server/comm/ntcip/mib1204/enums/SurfaceStatus.java
+	x	tms/server/comm/ntcip/TemperatureSensorsTable.java ->
+			tms/server/comm/ntcip/mib1204/TemperatureSensorsTable.java
+			same
+	x	tms/server/comm/ntcip/SubsurfaceSensorsTable.java -> 
+			tms/server/comm/ntcip/mib1204/SubSurfaceSensorsTable.java
+			same
+	x	tms/server/comm/ntcip/EssTable.java -> 
+			tms/server/comm/ntcip/mib1204/EssTable.java
+			same
+	x	tms/server/comm/ntcip/EssType.java ->
+			tms/server/comm/ntcip/mib1204/EssType.java
+			tms/server/comm/ntcip/mib1204/enums/EssType.java
+	x	tms/server/comm/ntcip/EssRec.java ->
+			tms/server/comm/ntcip/mib1204/EssRec.java
+			same
+	x	tms/server/comm/ntcip/PavementSensorsTable.java ->
+			tms/server/comm/ntcip/mib1204/PavementSensorsTable.java
+			same
+	x	tms/server/PresWx.java ->
+			tms/server/comm/ntcip/mib1204/PresWx.java
+	>		tms/server/PresWx.java
+	x	tms/VisibilitySituation.java ->
+			tms/server/comm/ntcip/mib1204/EssVisibilitySituation.java
+			tms/server/comm/ntcip/mib1204/enums/VisibilitySituation.java
+	x	tms/PrecipSituation.java ->
+			tms/server/comm/ntcip/mib1204/EssPrecipSituation.java
+			tms/server/comm/ntcip/mib1204/enums/PrecipSituation.java
+	x	tms/SubSurfaceSensorError.java ->
+			tms/server/comm/ntcip/mib1204/EssSubSurfaceSensorError.java
+			tms/server/comm/ntcip/mib1204/enums/SubSurfaceSensorError.java
+
+	Lots of renaming mostly, but there is misc changes inside each it seems; going to do a three-way
+	merge here to see if there are any significant changes, or if we can just stick with current
+	naming state.
+	After analyzing, keep current version without changes:
+		PavementSensorError
+		PavementSensorType
+		PrecipSituation
+		SubSurfaceSensorError
+		SurfaceBlackIceSignal
+		SurfaceStatus
+		VisibilitySituation
+		EssType
+		EssRec: ignoring some insignificant variable/method renaming
+		EssTable: never included anyways, as I implemented EssConvertible abstraction instead
+		TemperatureSensorsTable
+		SubsurfaceSensorsTable
+		PavementSensorsTable
+		PresWx
+		PikalertRoadState
+		(That's all the renamed files)
+		WeatherSensorTheme
+		WeatherSensorFileEnum
+		WeatherSensorImpl
+		MIB1204
+
+	- I did do some mass rename of Subsurface -> SubSurface
+	- Some misc changes in OpQuery that are legitimate changes
+	- Decided to move PresWx and PikalertRoadState
+	- The duplicate files I am not including; don't know why they're there
+10023:
+	Just renaming PvmtSurfStatus -> SurfStatus in various places
+		WeatherSensorImpl: done
+		WeatherSensor: done
+		WeatherSensorFileEnum: not needed
+		EssSurfaceStatus: done
+		EssRec: done
+		PavementSensorsTable: done
+10024:
+	- this reverts some of the renaming in 10023... could combine the patches
 
 Skipped
 ==================
 9852:
-    - adds additional DmsMessagePriority to allowed types; Doug has reworked the
-        priority system completely, now it is SignMsgPriority with differen enum
-        values; may want to double check if that's a problem
+	- adds additional DmsMessagePriority to allowed types; Doug has reworked the
+		priority system completely, now it is SignMsgPriority with differen enum
+		values; may want to double check if that's a problem
 9853:
-    - Doug introduced LineMultiNormalizer which appears to strip fonts by default now;
-        updated test case seems to validate that
+	- Doug introduced LineMultiNormalizer which appears to strip fonts by default now;
+		updated test case seems to validate that
 9785, 9791:
-    - updating hgignore... figure we can update gitignore as we go easily later on if needed
+	- updating hgignore... figure we can update gitignore as we go easily later on if needed
 9857, 9861, 9870, 9881, 9886, 9910, 9921, 9927, 9942, 9944, 9955, 9959, 9961, 9965, 9969, 9972, 9976, 9981, 9992, 9995, 10018, 10034, 10040, 10044, 10047, 10051, 10057, 10062
-    - updating .hgtags; can add via git tag later if needed
+	- updating .hgtags; can add via git tag later if needed
 9786:
-    - changes build via mercurial; not relevant to git
+	- changes build via mercurial; not relevant to git
 9893, 9937, 9894, 9896, 9938, 9962, 9973, 9982, 9996, 9997, 9998, 9999, 10000, 10001, 10002, 10010, 10012, 10014, 10015, 10054:
-    - webapp patches, which should go in an Iteris specific repo
+	- webapp patches, which should go in an Iteris specific repo
 10021:
-    - json.org jar already in existing ant build
+	- json.org jar already in existing ant build
 9855, 9879, 9918, 10013:
-    - these are for install_jars[_client].sh; would go into iris specific repo I think, or else
-        will be unnecessary if we switch to doing containerized install instead
+	- these are for install_jars[_client].sh; would go into iris specific repo I think, or else
+		will be unnecessary if we switch to doing containerized install instead
 9794, 9812, 9867, 9872, 9876, 10016, 10028:
-    - already merged
+	- already merged
 9838:
-    - Doug implemented same/very similar thing
+	- Doug implemented same/very similar thing
 9841:
-    - EscRec has been broken out into different classes; the non-integer types are exposed on those
-        classes, so doesn't seem like a good idea to change them all now to use integer. In any case,
-        the code, at least for EscRec when considered individually, appears simpler now with the
-        abstraction; so perhaps its purpose is served
+	- EscRec has been broken out into different classes; the non-integer types are exposed on those
+		classes, so doesn't seem like a good idea to change them all now to use integer. In any case,
+		the code, at least for EscRec when considered individually, appears simpler now with the
+		abstraction; so perhaps its purpose is served
 9924, 9933:
-    - obsolete with future patches
+	- obsolete with future patches
 9952, 9970:
-    - obsolete with EssConvertible changes
+	- obsolete with EssConvertible changes
 9956:
-    - seems a future patch has split out NTCIP versions into separate poll Phases
-        instead; so leaving as is, but moving some of the attrs I erroneously
-        put into V1 from patch 9947
-    - NtcipVer added to OpEss; will have to see in future patches whether
-        that is actually necessary now
+	- seems a future patch has split out NTCIP versions into separate poll Phases
+		instead; so leaving as is, but moving some of the attrs I erroneously
+		put into V1 from patch 9947
+	- NtcipVer added to OpEss; will have to see in future patches whether
+		that is actually necessary now (no, removed in patch 10022)
 9988:
-    - bug fix; code has changed so much, don't know if it applies anymore; will
-        want to just verify later that all the RWIS sensor info we want is getting
-        queried
+	- bug fix; code has changed so much, don't know if it applies anymore; will
+		want to just verify later that all the RWIS sensor info we want is getting
+		queried
 
 
 TODO
 ===================
 9900, 9923:
-    - seem simple to add, just want to understand what ExternMap stuff is for first
+	- seem simple to add, just want to understand what ExternMap stuff is for first
 9795, 10007:
-    - divergent DMS implementation
+	- divergent DMS implementation
 9796:
-    - depends on DMSHelper.getLandmark, patch 9795
+	- depends on DMSHelper.getLandmark, patch 9795
 10055:
-    - BeaconXmlWriter and BeaconXmlJob don't appear in git, while they have Douglas name on them;
-        need to figure out what is up with those
+	- BeaconXmlWriter and BeaconXmlJob don't appear in git, while they have Douglas name on them;
+		need to figure out what is up with those
 
 Weather Patches Cluster:
 ------------------------
-10011, 10020, (10022-25), 10029-30, (10031-32), 10037
+(10025), 10029-30, (10031-32), 10037
 
 
 TODO after all else
 ===================
 9914:
-    - adds json-simple to build... add later if we see dependency is still needed
+	- adds json-simple to build... add later if we see dependency is still needed
 9790, 9966, 10017, 9909, 9869, 10046, 9839, 10033, 9877, 9920, 10043, 9941 TODO/LAST
-    - just copied over i18n WY.properties
-    - I double checked messages_en.properties timeline to see if any of the property
-        names had changed since 2016:
-        - help.exception.lastline/wydot.trac.host are new; verify they are being used I guess
-        - dms.beacon.enabled changed to Flash Beacon; leaving as is, since was customized by WY anyways
+	- just copied over i18n WY.properties
+	- I double checked messages_en.properties timeline to see if any of the property
+		names had changed since 2016:
+		- help.exception.lastline/wydot.trac.host are new; verify they are being used I guess
+		- dms.beacon.enabled changed to Flash Beacon; leaving as is, since was customized by WY anyways

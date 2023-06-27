@@ -45,7 +45,7 @@ net.set_options("""
         "stabilization": {
             "enabled": true,
             "fit": true,
-            "iterations": 250,
+            "iterations": 500,
             "onlyDynamicEdges": false,
             "updateInterval": 1
         }
