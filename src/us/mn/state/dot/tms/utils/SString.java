@@ -325,15 +325,20 @@ public class SString {
 	}
 
 	/** Split a camel-case string into words.
-	 * @param s String in camel case, e.g. 'blaBlaBla' or null.
-	 * @return Space separated words, e.g. 'bla Bla Bla' or null */
-	static public String splitCamel(String s) {
-		String regex = "(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])";
+ 	 * @param s String in camel case, e.g. 'blaBlaBla' or null.
+ 	 * @param space String to insert between words.
+  	 * @return Space separated words, e.g. 'bla Bla Bla' or null */
+	static public String splitCamel(String s, String space) {
 		if (s != null) {
-			StringBuilder sb = new StringBuilder();
-			for (String w : s.split(regex))
-				sb.append(w).append(" ");
-			return sb.toString().trim();
+			String regex = "(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])";
+			String[] sa = s.split(regex);
+				StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < sa.length; ++i) {
+				sb.append(sa[i]);
+				if (i + 1 < sa.length)
+					sb.append(space);
+			}
+			return sb.toString();
 		}
 		return null;
 	}

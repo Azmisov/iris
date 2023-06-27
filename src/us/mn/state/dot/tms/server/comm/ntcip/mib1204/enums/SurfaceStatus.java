@@ -34,7 +34,7 @@ public enum SurfaceStatus implements EssEnumType {
 	/** Get the surface status as an enum */
 	static public SurfaceStatus from(WeatherSensor ws) {
 		return ws != null
-			? fromOrdinal(ws.getPvmtSurfStatus())
+			? fromOrdinal(ws.getSurfaceStatus())
 			: undefined;
 	}
 }

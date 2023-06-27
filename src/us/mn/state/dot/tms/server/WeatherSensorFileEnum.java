@@ -80,13 +80,13 @@ public enum WeatherSensorFileEnum {
 	static final String MSNG_32767 = "32767";
 	static final String MSNG_65535 = "65535";
 
-	/** Capitalize the specified string, e.g. "aBC" becomes "Abc" */
-	static private String cap(String str) {
-		if (str != null && str.length() >= 1) {
-			return str.substring(0, 1).toUpperCase() + 
-				str.substring(1).toLowerCase();
+	/** Capitalize first letter of string */
+	static private String cap(String cc) {
+		if (cc != null && cc.length() >= 1) {
+			return cc.substring(0, 1).toUpperCase() + 
+				cc.substring(1);
 		} else {
-			return MSNG;
+			return cc;
 		}
 	}
 
@@ -186,9 +186,17 @@ public enum WeatherSensorFileEnum {
 	 * @arg status - surface status
 	 * @return Pavement surface status description or empty if missing. */
 	static private String pssToN(SurfaceStatus status) {
-		if (EssEnumType.isValid(status))
-			return SString.splitCamel(status.toString());
+		if (status != null && EssEnumType.isValid(status))
+			return sw(status.toString());
 		return MSNG;
+	}
+
+	/** Convert a string from camelcase to space separated words.
+	 * @param cc Camelcase string, e.g. highWind
+	 * @return Uppercase string with underscore separated words, 
+	 * 	   e.g. High Wind */
+	static private String sw(String cc) {
+		return SString.splitCamel(cap(cc), " ");
 	}
 
 	/** Convert surface water depth to CSV string
@@ -268,7 +276,7 @@ public enum WeatherSensorFileEnum {
 	/** Get the precipitation situation */
 	static private String psToCsv(WeatherSensorImpl w) {
 		var ps = PrecipSituation.from(w);
-		return (ps != null ? ps.desc_csv : MSNG);
+		return (ps != null && ps.isValid() ? ps.desc_csv : MSNG);
 	}
 
 	/** Get the visibility situation as an integer or empty fo missing */
@@ -318,7 +326,7 @@ public enum WeatherSensorFileEnum {
 
 	/** Append a CSV value to a StringBuffer */
 	static private StringBuilder append(StringBuilder sb, PrecipSituation value){
-		if (value != null && value != PrecipSituation.undefined)
+		if (value != null && value.isValid())
 			sb.append(value);
 		sb.append(",");
 		return sb;

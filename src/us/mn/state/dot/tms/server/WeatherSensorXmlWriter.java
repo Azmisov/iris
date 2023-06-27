@@ -119,7 +119,7 @@ public class WeatherSensorXmlWriter extends XmlWriter {
 		w.write("<!ATTLIST weather_sensor " + 
 			"surf_temp_c CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
-			"pvmt_surf_status CDATA #IMPLIED>\n");
+			"surface_status CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
 			"surf_freeze_temp_c CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 

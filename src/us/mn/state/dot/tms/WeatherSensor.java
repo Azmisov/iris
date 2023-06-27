@@ -124,7 +124,7 @@ public interface WeatherSensor extends Device {
 	Integer getSurfTemp();
 
 	/** Get the pavement surface status (null for missing) */
-	Integer getPvmtSurfStatus();
+	Integer getSurfaceStatus();
 
 	/** Get the pavement surface freeze temperature (null for missing) */
 	Integer getSurfFreezeTemp();

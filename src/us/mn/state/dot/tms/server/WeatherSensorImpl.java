@@ -43,6 +43,7 @@ import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.VisibilitySituation;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.EssType;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.CloudSituation;
 
 /**
  * A weather sensor is a device for sampling weather data, such as 
@@ -755,7 +756,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 	public void setCloudCoverSituationNotify(Integer ccs) {
 		if (!objectEquals(ccs, cloud_cover_situation)) {
 			cloud_cover_situation = ccs;
-			notifyAttribute("CloudCoverSituation");
+			notifyAttribute("cloudCoverSituation");
 		}
 	}
 
@@ -832,20 +833,20 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		}
 	}
 
-	/** Pavement surface status (null for missing) */
-	private transient Integer pvmt_surf_status;
+	/** Surface status (null for missing) */
+	private transient Integer surface_status;
 
-	/** Get pavement surface status (null for missing) */
+	/** Get surface status (null for missing) */
 	@Override
-	public Integer getPvmtSurfStatus() {
-		return pvmt_surf_status;
+	public Integer getSurfaceStatus() {
+		return surface_status;
 	}
 
-	/** Set pavement surface status (null for missing) */
-	public void setPvmtSurfStatusNotify(Integer v) {
-		if (!objectEquals(v, pvmt_surf_status)) {
-			pvmt_surf_status = v;
-			notifyAttribute("pvmtSurfStatus");
+	/** Set surface status (null for missing) */
+	public void setSurfaceStatusNotify(Integer v) {
+		if (!objectEquals(v, surface_status)) {
+			surface_status = v;
+			notifyAttribute("surfaceStatus");
 		}
 	}
 
@@ -1108,12 +1109,12 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		sb.append(" pvmt_temp_c=").append(getPvmtTemp());
 		sb.append(" surf_temp_c=").append(getSurfTemp());
 		sb.append(" surf_temp_qc_c=").append(getSurfTempQC());
-		sb.append(" pvmt_surf_status=").append(
+		sb.append(" surface_status=").append(
 			SurfaceStatus.from(this));
 		sb.append(" surf_freeze_temp_c=").append(getSurfFreezeTemp());
 		sb.append(" subsurf_temp_c=").append(getSubSurfTemp());
 		sb.append(" cloud_cover_situation=").append(
-			getCloudCoverSituation());
+			CloudSituation.from(this));
 		sb.append(" friction").append(getFriction());
 		sb.append(")");
 		return sb.toString();

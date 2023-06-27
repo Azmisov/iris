@@ -2,7 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009 - 2011  AHMCT, University of California
  * Copyright (C) 2016-2017  Minnesota Department of Transportation
- * Copyright (C) 2017-2020  Iteris Inc.
+ * Copyright (C) 2017-2021  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -110,12 +110,12 @@ public class SStringTest extends TestCase {
 	}
 
 	public void testSplitCamel() {
-		assertTrue(splitCamel(null) == null);
-		assertTrue(splitCamel("").isEmpty());
-		assertTrue(splitCamel("x").equals("x"));
-		assertTrue(splitCamel("xx").equals("xx"));
-		assertTrue(splitCamel("xX").equals("x X"));
-		assertTrue(splitCamel("xxXx").equals("xx Xx"));
+		assertTrue(splitCamel(null, "") == null);
+		assertTrue(splitCamel("", "").isEmpty());
+		assertTrue(splitCamel("x", " ").equals("x"));
+		assertTrue(splitCamel("xx", " ").equals("xx"));
+		assertTrue(splitCamel("xX", "_").equals("x_X"));
+		assertTrue(splitCamel("xxXx", "_").equals("xx_Xx"));
 	}
 
 	public void testRounding() {

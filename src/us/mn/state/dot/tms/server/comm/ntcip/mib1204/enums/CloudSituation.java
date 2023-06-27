@@ -1,5 +1,7 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums;
 
+import us.mn.state.dot.tms.WeatherSensor;
+
 /**
  * Cloud situation as defined by essCloudSituation in NTCIP 1204
  *
@@ -19,5 +21,10 @@ public enum CloudSituation implements EssEnumType{
 
 	public static CloudSituation fromOrdinal(Integer i){
 		return EssEnumType.fromOrdinal(CloudSituation.class, i);
+	}
+	public static CloudSituation from(WeatherSensor ws){
+		return ws != null
+			? fromOrdinal(ws.getCloudCoverSituation())
+			: null;
 	}
 }
