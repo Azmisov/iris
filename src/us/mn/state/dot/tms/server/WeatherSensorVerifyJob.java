@@ -30,7 +30,7 @@ import us.mn.state.dot.tms.utils.Emailer;
 import us.mn.state.dot.tms.utils.SString;
 
 /**
- * Job to verify weather sensor site id's and pikalert ids don't have 
+ * Job to verify weather sensor site id's and alt ids don't have 
  * 1) empty ids, 2) non-numeric ids, 3) bad length ids, 4) duplicates.
  * Email is generated and sent every 24h identifyfing issues.
  * 
@@ -42,8 +42,8 @@ public class WeatherSensorVerifyJob extends Job {
 	/** Max and min id lengths */
 	static private final int SID_MIN_LEN = 6;
 	static private final int SID_MAX_LEN = 8;
-	static private final int PID_MIN_LEN = 4;
-	static private final int PID_MAX_LEN = 6;
+	static private final int AID_MIN_LEN = 4;
+	static private final int AID_MAX_LEN = 6;
 
 	/** Debug log */
 	static private final DebugLog LOG = new DebugLog("rwis_verify");
@@ -71,8 +71,8 @@ public class WeatherSensorVerifyJob extends Job {
 	/** Create an error message */
 	static private String createMsg(WeatherSensorImpl wsi, String msg) {
 		String sid = safe(wsi.getSiteId());
-		String pid = safe(wsi.getPikalertSiteId());
-		return (sid + " - " + pid + ":" + msg);
+		String aid = safe(wsi.getAltId());
+		return (sid + " - " + aid + ":" + msg);
 	}
 
 	/** Determine if a weather sensor is available */
@@ -83,8 +83,8 @@ public class WeatherSensorVerifyJob extends Job {
 	/** Site id hash of sid to sensor name */
 	private HashMap<String,String> sid_hash = new HashMap<String,String>();
 
-	/** Pikalert id hash of pid to sensor name */
-	private HashMap<String,String> pid_hash = new HashMap<String,String>();
+	/** Alt id hash to sensor name */
+	private HashMap<String,String> aid_hash = new HashMap<String,String>();
 
 	/** Message errors list */
 	private LinkedList<String> msg_list = new LinkedList<String>();
@@ -133,18 +133,18 @@ public class WeatherSensorVerifyJob extends Job {
 				" is a duplicate of " + sid_hash.get(sid));
 		}
 
-		// verify psiteid not duplicate
-		String pid = safe(wsi.getPikalertSiteId());
-		if (!pid_hash.containsKey(pid)) {
-			pid_hash.put(pid, wsi.getName());
+		// verify alt id not duplicate
+		String aid = safe(wsi.getAltId());
+		if (!aid_hash.containsKey(aid)) {
+			aid_hash.put(aid, wsi.getName());
 		} else {
 			valid = false;
-			addErrorMsg(wsi, " Pikalert id=" + pid + 
-				" is a duplicate of " + pid_hash.get(pid));
+			addErrorMsg(wsi, " alt_id=" + aid + 
+				" is a duplicate of " + aid_hash.get(aid));
 		}
 
 		log("Verify: " + wsi.getName() + " sid=" + sid + 
-			" pid=" + pid + " avail=" + isAvailable(wsi) +
+			" aid=" + aid + " avail=" + isAvailable(wsi) +
 			" valid=" + valid);
 	}
 
@@ -152,12 +152,12 @@ public class WeatherSensorVerifyJob extends Job {
 	private boolean isValidSyntax(WeatherSensorImpl wsi) {
 		boolean valid = true;
 		String sid = safe(wsi.getSiteId());
-		String pid = safe(wsi.getPikalertSiteId());
-		if (!SString.isNumeric(sid) || !SString.isNumeric(pid)) {
+		String aid = safe(wsi.getAltId());
+		if (!SString.isNumeric(sid) || !SString.isNumeric(aid)) {
 			valid = false;
 			addErrorMsg(wsi, 
-				"siteid=" + sid + " psiteid=" + pid +  
-				" site id and psiteid must be numeric");
+				"site_id=" + sid + " alt_id=" + aid +  
+				" site id and alt_id must be numeric");
 		}
 		if (sid.length() < SID_MIN_LEN || sid.length() > SID_MAX_LEN ){
 			valid = false;
@@ -166,12 +166,12 @@ public class WeatherSensorVerifyJob extends Job {
 				" bad site id length=" + sid.length() + 
 				" should be " + SID_MIN_LEN + "-"+SID_MAX_LEN);
 		} 
-		if (pid.length() < PID_MIN_LEN || pid.length() > PID_MAX_LEN ){
+		if (aid.length() < AID_MIN_LEN || aid.length() > AID_MAX_LEN ){
 			valid = false;
 			addErrorMsg(wsi, 
-				"psiteid=" + pid +  
-				" bad Pikalert id length=" + pid.length() + 
-				" should be " + PID_MIN_LEN + "-"+PID_MAX_LEN);
+				"alt_id=" + aid +  
+				" bad alt_id length=" + aid.length() + 
+				" should be " + AID_MIN_LEN + "-"+AID_MAX_LEN);
 		}
 		return valid;
 	}
@@ -217,7 +217,7 @@ public class WeatherSensorVerifyJob extends Job {
 	/** Clear containers */
 	private void clearContainers() {
 		sid_hash.clear();
-		pid_hash.clear();
+		aid_hash.clear();
 		msg_list.clear();
 	}
 }

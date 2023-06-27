@@ -1074,8 +1074,6 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 	public String toStringDebug() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(WeatherSensor: name=").append(name);
-		sb.append(" siteid=").append(getSiteId());
-		sb.append(" pikalertsiteid=").append(getSiteId());
 		sb.append(" time_stamp=").append(getStampString());
 		sb.append(" siteId=").append(getSiteId());
 		sb.append(" altId=").append(getAltId());
@@ -1129,8 +1127,8 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 			.attr("name", getName())
 			.attr("description",GeoLocHelper.getLocation(geo_loc))
 			.attr("notes", SString.stripCrLf(getNotes()))
-			.attr("siteid", getSiteId())
-			.attr("pikalertsiteid", getPikalertSiteId());
+			.attr("site_id", getSiteId())
+			.attr("alt_id", getAltId());
 		Position pos = GeoLocHelper.getWgs84Position(geo_loc);
 		var lon = (pos != null ? pos.getLongitude() : 0);
 		var lat = (pos != null ? pos.getLongitude() : 0);
@@ -1150,9 +1148,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 		xb.tag("weather_sensor")
 			.attr("name", getName())
 			.attr("description",GeoLocHelper.getLocation(geo_loc))
-			.attr("notes", SString.stripCrLf(getNotes()))
-			.attr("siteid", getSiteId())
-			.attr("pikalertsiteid", getPikalertSiteId());
+			.attr("notes", SString.stripCrLf(getNotes()));
 		Position pos = GeoLocHelper.getWgs84Position(geo_loc);
 		if (pos != null) {
 			xb.attr("lon", formatDouble(pos.getLongitude()))
