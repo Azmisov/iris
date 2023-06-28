@@ -191,7 +191,6 @@ public class PeriodicSampleCache {
 		assert ps.per_sec == getPeriod(ps.per_sec) : "Invalid period";
 		if (!exists(ps.start())) {
 			MainServer.log("dup start time");
-			return;
 		}
 		samples.add(ps);
 	}
