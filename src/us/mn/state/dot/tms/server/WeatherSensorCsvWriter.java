@@ -10,7 +10,7 @@ import us.mn.state.dot.tms.WeatherSensorHelper;
  * Write SSI ScanWeb CSV weather export files.
  *
  * @author Michael Darter
- * @copyright 2017-2020 Iteris Inc.
+ * @copyright 2017-2021 Iteris Inc.
  * @license GPL-2.0
  */
 public class WeatherSensorCsvWriter extends XmlWriter {
@@ -58,9 +58,12 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 			WeatherSensor ws = it.next();
 			if(ws instanceof WeatherSensorImpl) {
 				WeatherSensorImpl wsi = (WeatherSensorImpl)ws;
-				String line = f_type.getRecs(wsi);
-				if (!line.isEmpty())
-					writeLine(wr, line);
+				// Only write recs for enabled active rwis
+				if (wsi.getActiveEnabled()) {
+					String line = f_type.getRecs(wsi);
+					if (!line.isEmpty())
+						writeLine(wr, line);
+				}
 			}
 		}
 	}

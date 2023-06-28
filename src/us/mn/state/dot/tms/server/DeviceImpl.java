@@ -2,6 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2000-2021  Minnesota Department of Transportation
  * Copyright (C) 2015-2017  SRF Consulting Group
+ * Copyright (C) 2021  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +31,7 @@ import us.mn.state.dot.tms.server.comm.OpDevice;
  * cameras, ramp meters, dynamic message signs, etc.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 abstract public class DeviceImpl extends ControllerIoImpl implements Device {
 
@@ -174,6 +176,12 @@ abstract public class DeviceImpl extends ControllerIoImpl implements Device {
 	public boolean isActive() {
 		ControllerImpl c = controller;	// Avoid race
 		return (c != null) && c.isActive();
+	}
+
+	/** Determine if the device's comm link is enabled and 
+	 * controller is active */
+	public boolean getActiveEnabled() {
+		return ControllerHelper.isActive(controller);
 	}
 
 	/** Get the failure status */

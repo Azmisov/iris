@@ -2,7 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009  AHMCT, University of California Davis
  * Copyright (C) 2009-2020  Minnesota Department of Transportation
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2021  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,11 +38,16 @@ public class CommLinkHelper extends BaseHelper {
 	}
 
 	/** Get the polling enabled flag */
-	static public boolean getPollEnabled(CommLink cl) {
+	static public boolean getPollEnabledPretend(CommLink cl) {
 		// If the user doesn't have permission to read CommLink stuff,
 		// just pretend that polling is enabled
 		return (cl != null && cl.getPollEnabled())
 		    || !canRead(CommLink.SONAR_TYPE);
+	}
+
+	/** Get the polling enabled flag */
+	static public boolean getPollEnabled(CommLink cl) {
+		return (cl != null && cl.getPollEnabled());
 	}
 
 	/** Enable or disable all comm links with an active controller */
