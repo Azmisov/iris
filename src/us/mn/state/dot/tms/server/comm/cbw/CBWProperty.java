@@ -1,7 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2016-2022  Minnesota Department of Transportation
- * Copyright (C) 2021-2022  Iteris Inc.
+ * Copyright (C) 2021-2023  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -222,7 +222,7 @@ public class CBWProperty extends ControllerProperty {
 	}
 
 	/** Match a voltage input element */
-	private void matchVoltageIn(String line) {
+	private void matchVoltageIn(String line) throws ControllerException {
 		Matcher m = VOLTIN.matcher(line);
 		while (m.find()){
 			String sn = m.group(1);
@@ -232,7 +232,7 @@ public class CBWProperty extends ControllerProperty {
 				try {
 					volt_in = Double.parseDouble(sn);
 				} catch (NumberFormatException ex){
-					System.err.println("CBWProperty, invalid voltin value: "+sn);
+					throw new ControllerException("Invalid voltin="+sn);
 				}
 			}
 		}
@@ -256,21 +256,23 @@ public class CBWProperty extends ControllerProperty {
 					return pin;
 			}
 			catch (NumberFormatException e) { }
-			throw new ControllerException("INVALID PIN");
+			throw new ControllerException("Invalid pin="+value);
 		} else
 			return 1;
 	}
 
 	/** Parse a boolean value */
 	private boolean parseBool(String value) throws ControllerException {
-		try {
-			switch (Integer.parseInt(value)) {
-			case 0: return false;
-			case 1: return true;
-			default: break;
+		if (value != null){
+			try {
+				switch (Integer.parseInt(value)) {
+				case 0: return false;
+				case 1: return true;
+				default: break;
+				}
 			}
+			catch (NumberFormatException e) { }
 		}
-		catch (NumberFormatException e) { }
-		throw new ControllerException("INVALID BOOL");
+		throw new ControllerException("Invalid bool="+value);
 	}
 }
