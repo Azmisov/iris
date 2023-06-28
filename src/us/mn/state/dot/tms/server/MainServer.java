@@ -24,6 +24,7 @@ import java.net.Authenticator;
 import java.net.ProxySelector;
 import java.net.UnknownHostException;
 import java.util.Properties;
+import java.util.TimeZone;
 import us.mn.state.dot.sched.DebugLog;
 import us.mn.state.dot.sched.Scheduler;
 import us.mn.state.dot.sched.TimeSteward;
@@ -128,6 +129,7 @@ public class MainServer {
 	/** Initialize the server process */
 	static private void initialize() throws IOException {
 		redirectStdStreams();
+		sanityChecks();
 		DebugLog.init(new File(LOG_FILE_DIR), DevelCfg.get(
 			"log.start.msg", "IRIS @@VERSION@@ restarted"));
 		checkAssert();
@@ -154,6 +156,18 @@ public class MainServer {
 				+ TimeSteward.getDateInstance();
 			System.out.println(msg);
 			System.err.println(msg);
+		}
+	}
+
+	/** perform sanity and debug checks */
+	static public void sanityChecks() {
+		// Timezone checks
+		String tz = TimeZone.getDefault().getDisplayName();
+		boolean dst = TimeZone.getDefault().useDaylightTime();
+		System.err.println("time_zone=" + tz + " supports_dst=" + dst);
+		if (!dst) {
+			System.err.println("Warning: default time zone " +
+				tz + " does not support DST");
 		}
 	}
 
