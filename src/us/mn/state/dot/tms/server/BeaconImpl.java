@@ -15,6 +15,8 @@
  */
 package us.mn.state.dot.tms.server;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 import java.sql.ResultSet;
@@ -25,19 +27,20 @@ import us.mn.state.dot.tms.BeaconState;
 import us.mn.state.dot.tms.CameraPreset;
 import us.mn.state.dot.tms.ChangeVetoException;
 import us.mn.state.dot.tms.DeviceRequest;
-import us.mn.state.dot.tms.EventType;
 import us.mn.state.dot.tms.GeoLoc;
 import us.mn.state.dot.tms.ItemStyle;
 import us.mn.state.dot.tms.TMSException;
 import us.mn.state.dot.tms.server.comm.BeaconPoller;
 import us.mn.state.dot.tms.server.comm.DevicePoller;
 import us.mn.state.dot.tms.server.event.BeaconEvent;
+import us.mn.state.dot.tms.utils.XmlBuilder;
 
 /**
  * A Beacon is a light which flashes toward oncoming traffic.
  *
  * @author Douglas Lau
  * @author John L. Stanley - SRF Consulting
+ * @author Arin Kase, Isaac Nygaard
  */
 public class BeaconImpl extends DeviceImpl implements Beacon {
 
@@ -388,5 +391,18 @@ public class BeaconImpl extends DeviceImpl implements Beacon {
 		BeaconPoller p = getBeaconPoller();
 		if (p != null)
 			p.sendRequest(this, dr);
+	}
+
+	/** Write Beacon as an XML element */
+	public void writeXml(Writer w) throws IOException {
+		var xb = new XmlBuilder(w);
+		xb.tag("beacon")
+			.attr("name", getName())
+			.attr("state", BeaconState.fromOrdinal(state))
+			.attr("pin", getPin())
+			.attr("notes", getNotes())
+			.attr("message", getMessage())
+			.ancestor(0);
+		w.write('\n');
 	}
 }

@@ -254,6 +254,7 @@ public class MainServer {
 		FLUSH.addJob(new WeatherSensorXmlJob());
 		FLUSH.addJob(new WeatherSensorPikalertJob());
 		FLUSH.addJob(new WeatherSensorVerifyJob());
+		FLUSH.addJob(new BeaconXmlJob());
 		FLUSH.addJob(new EventPurgeJob());
 	}
 
