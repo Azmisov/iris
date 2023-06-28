@@ -1,0 +1,1 @@
+INSERT INTO iris.system_attribute (name, value) VALUES ('dms_auto_capitalize', 'false');
