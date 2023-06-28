@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2010-2021  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +27,7 @@ import static us.mn.state.dot.tms.server.Constants.MISSING_DATA;
  * A cache for periodic sample data.  
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class PeriodicSampleCache {
 
@@ -187,7 +189,10 @@ public class PeriodicSampleCache {
 	/** Add a sample */
 	private void addSample(PeriodicSample ps) {
 		assert ps.per_sec == getPeriod(ps.per_sec) : "Invalid period";
-		assert !exists(ps.start()) : "Duplicate start time";
+		if (!exists(ps.start())) {
+			MainServer.log("dup start time");
+			return;
+		}
 		samples.add(ps);
 	}
 

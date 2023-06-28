@@ -94,6 +94,15 @@ public class MainServer {
 		return district;
 	}
 
+	/** Server debug log */
+	static public final DebugLog SERVER_LOG = new DebugLog("server");
+
+	/** Log a message */
+	static public void log(String msg) {
+		if (SERVER_LOG.isOpen())
+			SERVER_LOG.log(msg);
+	}
+
 	/** Main server entry point */
 	static public void main(String[] args) {
 		try {

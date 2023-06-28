@@ -267,7 +267,8 @@ function dev(){
 		touch sonar sonar_tls sonar_task sonar_time sched alert device gps kadaptive samples flush \
 			profile sign_msg sql sys_attr toll poll_err modem axisptz canoga cbw clearguide \
 			dinrelay dmsxml dr500 e6_pkt e6 e6_err g4 inc_feed infinova manchester feed mndot170 \
-			gatendorv5 ndotbeacon ntcip2 ntcip mib1202 org815 pelcod snmp ss105 ss125 stc bottleneck
+			gatendorv5 ndotbeacon ntcip2 ntcip mib1202 org815 pelcod snmp ss105 ss125 stc bottleneck \
+			server
 		popd
 		# fix ownership
 		chown --reference=./dev/iris-server.properties ./dev/logs ./dev/logs/*
