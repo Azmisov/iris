@@ -49,14 +49,17 @@ public class CBWPoller extends ThreadedPoller<CBWProperty>
 	@Override
 	public void sendRequest(BeaconImpl b, DeviceRequest r) {
 		switch (r) {
+		// on startup and 4am
 		case SEND_SETTINGS:
 			addOp(new OpQuerySetup(b));
 			break;
+		// every poll period
 		case QUERY_STATUS:
 			addOp(new OpQueryBeaconState(b));
 			break;
 		default:
 			// Ignore other requests
+			log("ignored: beacon=" + b + " req=" + r);
 			break;
 		}
 	}

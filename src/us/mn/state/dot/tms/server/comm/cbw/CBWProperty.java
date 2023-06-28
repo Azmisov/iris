@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2016-2022  Minnesota Department of Transportation
+ * Copyright (C) 2021-2022  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +29,7 @@ import us.mn.state.dot.tms.utils.LineReader;
  * Control by web relay property.
  *
  * @author Douglas Lau
+ * @author Michael Darter, Isaac Nygaard
  */
 public class CBWProperty extends ControllerProperty {
 
@@ -51,6 +53,10 @@ public class CBWProperty extends ControllerProperty {
 	/** Regex to match serial number */
 	static private final Pattern SERIAL = Pattern.compile(
 		"<serialNumber>([0-9:A-Z_a-z]{2,32})</serialNumber>");
+
+	/** Regex to match voltage input */
+	static private final Pattern VOLTIN = Pattern.compile(
+		"<vin>([\\.\\-\\+0-9Ee]*)</vin>");
 
 	/** Path and query URI components */
 	private String path_query;
@@ -103,6 +109,14 @@ public class CBWProperty extends ControllerProperty {
 	/** Set input state */
 	private void setInput(int pin, boolean s) {
 		inputs[pin - 1] = s;
+	}
+
+	/** Voltage input */
+	private double volt_in;
+
+	/** Get parsed voltage input */
+	public double getVoltageIn(){
+		return volt_in;
 	}
 
 	/** Parsed serial number */
@@ -159,6 +173,7 @@ public class CBWProperty extends ControllerProperty {
 			found |= matchRelay(line);
 			found |= matchInput(line);
 			matchSerialNumber(line);
+			matchVoltageIn(line);
 			line = lr.readLine();
 		}
 		if (!found)
@@ -203,6 +218,23 @@ public class CBWProperty extends ControllerProperty {
 			String sn = m.group(1);
 			if (sn != null)
 				serialNumber = sn;
+		}
+	}
+
+	/** Match a voltage input element */
+	private void matchVoltageIn(String line) {
+		Matcher m = VOLTIN.matcher(line);
+		while (m.find()){
+			String sn = m.group(1);
+			if (sn == null)
+				volt_in = 0;
+			else{
+				try {
+					volt_in = Double.parseDouble(sn);
+				} catch (NumberFormatException ex){
+					System.err.println("CBWProperty, invalid voltin value: "+sn);
+				}
+			}
 		}
 	}
 
