@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2018  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +27,7 @@ import us.mn.state.dot.tms.client.widget.SmartDesktop;
  * SystemMenu is a menu for system configuration items.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class SystemMenu extends IMenu {
 
@@ -45,6 +47,7 @@ public class SystemMenu extends IMenu {
 		addItem(createMapExtentsItem());
 		addItem(createRoadItem());
 		addItem(createRoadAffixItem());
+		addItem(createFailoverItem());
 	}
 
 	/** Create a system attributes menu item action */
@@ -96,5 +99,16 @@ public class SystemMenu extends IMenu {
 				desktop.show(new RoadAffixForm(session));
 			}
 		    } : null;
+	}
+
+	/** Create the failover menu item */
+	protected IAction createFailoverItem() {
+		if(!FailoverForm.isPermitted(session))
+			return null;
+		return new IAction("failover.system.menu") {
+			protected void doActionPerformed(ActionEvent e) {
+				desktop.show(new FailoverForm(session));
+			}
+		};
 	}
 }
