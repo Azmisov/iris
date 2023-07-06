@@ -40,6 +40,9 @@ public class MeteringJob extends Job {
 	/** Station manager */
 	private final StationManager station_manager;
 
+	/** Vehicle manager */
+	private final VehicleManager vehicle_manager;
+
 	/** Job to be performed after data has been processed */
 	private final FlushXmlJob flush_job;
 
@@ -48,7 +51,8 @@ public class MeteringJob extends Job {
 		super(Calendar.SECOND, 30, Calendar.SECOND, OFFSET_SECS);
 		flush = f;
 		station_manager = new StationManager();
-		flush_job = new FlushXmlJob(station_manager);
+		vehicle_manager = new VehicleManager();
+		flush_job = new FlushXmlJob(station_manager, vehicle_manager);
 	}
 
 	/** Perform the metering job */

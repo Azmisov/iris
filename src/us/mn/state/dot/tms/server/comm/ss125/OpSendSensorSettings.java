@@ -77,6 +77,7 @@ public class OpSendSensorSettings extends OpSS125 {
 		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
+			log("-------SendSensorSetting.QueryVersion called");
 			VersionProperty vr = new VersionProperty();
 			mess.add(vr);
 			mess.queryProps();
@@ -92,6 +93,7 @@ public class OpSendSensorSettings extends OpSS125 {
 		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
+			log("-------SendSensorSetting.QueryGenConfig called");
 			mess.add(gen_config);
 			mess.queryProps();
 			controller.setSetupNotify("serial_num",
@@ -116,6 +118,7 @@ public class OpSendSensorSettings extends OpSS125 {
 		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
+			log("-------SendSensorSetting.StoreGenConfig called");
 			gen_config.setLocation(ControllerHelper.getLocation(
 				controller));
 			gen_config.setMetric(false);
@@ -133,6 +136,7 @@ public class OpSendSensorSettings extends OpSS125 {
 		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
+			log("-------SendSensorSetting.QueryDataConfig called");
 			mess.add(data_config);
 			mess.queryProps();
 			return shouldUpdateDataConfig()

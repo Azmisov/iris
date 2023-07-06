@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2022  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,12 +30,13 @@ import static us.mn.state.dot.tms.utils.URIUtil.TCP;
  * data communication protocol.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class SS125Poller extends ThreadedPoller<SS125Property>
 	implements SamplePoller
 {
 	/** SS 125 debug log */
-	static private final DebugLog SS125_LOG = new DebugLog("ss125");
+	static protected final DebugLog SS125_LOG = new DebugLog("ss125");
 
 	/** Communication protocol */
 	private final CommProtocol protocol;
@@ -42,6 +44,9 @@ public class SS125Poller extends ThreadedPoller<SS125Property>
 	/** Mapping of all query event data collectors on line */
 	private final HashMap<ControllerImpl, OpQueryEvents> collectors =
 		new HashMap<ControllerImpl, OpQueryEvents>();
+
+	/** Broadcast to all devices on subnet */
+	static public final boolean BROADCAST = true;
 
 	/** Create a new SS125 poller */
 	public SS125Poller(CommLink link, CommProtocol cp) {

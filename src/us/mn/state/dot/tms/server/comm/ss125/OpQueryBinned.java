@@ -57,6 +57,7 @@ public class OpQueryBinned extends OpSS125 {
 		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
+			log("-------OpQueryBinned.GetCurrentInterval.poll");
 			mess.add(binned_data);
 			mess.queryProps();
 			return (binned_data.isPreviousInterval())
@@ -72,6 +73,7 @@ public class OpQueryBinned extends OpSS125 {
 		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
+			log("-------OpQueryBinned.SendDateTime.poll");
 			long stamp = binned_data.getTime();
 			mess.logError("BAD TIMESTAMP: " + new Date(stamp));
 			if (!binned_data.isValidStamp())

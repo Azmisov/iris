@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2021-2022  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +17,7 @@ package us.mn.state.dot.tms.server.comm.ss125;
 
 import java.io.IOException;
 import java.util.Date;
+import us.mn.state.dot.sched.TimeSteward;
 import us.mn.state.dot.tms.EventType;
 import us.mn.state.dot.tms.server.ControllerImpl;
 import us.mn.state.dot.tms.server.comm.CommMessage;
@@ -25,13 +27,19 @@ import us.mn.state.dot.tms.server.comm.PriorityLevel;
  * Operation to get event data from a SS125 device
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class OpQueryEvents extends OpSS125 {
+
+	/** Time stamp when operation started */
+	private final long start_time;
 
 	/** Create a new "query events" operation */
 	public OpQueryEvents(ControllerImpl c) {
 		super(PriorityLevel.IDLE, c);
 		setSuccess(false);
+		start_time = TimeSteward.currentTimeMillis();
+		log("OpQueryEvents: start_time=" + new Date(start_time));
 	}
 
 	/** Handle a communication error */
@@ -50,28 +58,35 @@ public class OpQueryEvents extends OpSS125 {
 	/** Phase to get the active event */
 	private class GetActiveEvent extends Phase {
 
+		/* Number of vehicles detected */
+		private int num_vehs = 0;
+
 		/** Get the active event data */
 		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
-			ActiveEventProperty ev = new ActiveEventProperty();
+			log("-------OpQueryEvents.GetActiveEvent.poll");
+			ActiveEventProperty ev =
+				new ActiveEventProperty(controller.getName());
 			mess.add(ev);
 			mess.queryProps();
 			if (ev.isValidEvent()) {
-				if (ev.isValidStamp()) {
+				if (ev.isValidStamp(start_time)) {
 					ev.logVehicle(controller);
 					setSuccess(true);
+					++num_vehs;
 				} else {
 					controller.logGap();
 					setSuccess(false);
-					mess.logError("BAD TIMESTAMP: " +
-						new Date(ev.getTime()));
+					mess.logError("BAD TIMESTAMP: " + new Date(ev.getTime()));
 					return new SendDateTime();
 				}
 			}
-			return controller.hasActiveDetector()
-			      ? this
-			      : null;
+			if (controller.hasActiveDetector())
+				return this;
+			long elapsed = TimeSteward.currentTimeMillis() - start_time;
+			log("read %d vehicles in %ld ms.".formatted(num_vehs, elapsed));
+			return null;
 		}
 	}
 

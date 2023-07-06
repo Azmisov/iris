@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2006-2022  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,17 +18,23 @@ package us.mn.state.dot.tms.server;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.Calendar;
+import java.util.LinkedList;
+import java.util.ListIterator;
+import us.mn.state.dot.tms.utils.SString;
 import us.mn.state.dot.sched.Job;
 import us.mn.state.dot.sched.TimeSteward;
+import us.mn.state.dot.tms.CommProtocol;
+import us.mn.state.dot.tms.Detector;
 import us.mn.state.dot.tms.SystemAttrEnum;
-import static us.mn.state.dot.tms.server.Constants.MISSING_DATA;
 import static us.mn.state.dot.tms.server.MainServer.FLUSH;
 
 /**
  * The vehicle event log records vehicle detection events.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class VehicleEventLog {
 
@@ -83,29 +90,52 @@ public class VehicleEventLog {
 		);
 	}
 
-	/** Format a vehicle detection event */
-	static private String formatEvent(int duration, int headway, long stamp,
-		int speed, int length)
+	/** Format a vehicle detection event.
+	 * @param cp Ordinal value for CommProtocol.
+	 * @return CSV formatted string in CSV format:
+	 * 	src,duration,headway,time,speed,length,class\n */
+	static private String formatEvent(CommProtocol cp, long stamp,
+		int duration, int headway, float speed, float vlen, int vclass)
 	{
 		StringBuilder b = new StringBuilder();
+		// source
+		b.append(cp.ordinal());
+		b.append(',');
+		// duration
 		if (duration > 0)
 			b.append(duration);
 		else
 			b.append('?');
 		b.append(',');
+		// headway
 		if (headway > 0)
 			b.append(headway);
 		else
 			b.append('?');
 		b.append(',');
+		// time
 		if (stamp > 0)
 			b.append(TimeSteward.timeShortString(stamp));
 		b.append(',');
+		// speed
 		if (speed > 0)
-			b.append(speed);
+			b.append(SString.doubleToString(speed, 2));
+		else
+			b.append("?");
 		b.append(',');
-		if (length > 0)
-			b.append(length);
+		// length
+		if (vlen > 0)
+			b.append(SString.doubleToString(vlen, 2));
+		else
+			b.append("?");
+		b.append(',');
+		// vehicle class
+		if (vclass >= 0)
+			b.append(vclass);
+		else
+			b.append("?");
+		// terminate
+		b.append(',');		
 		while (b.charAt(b.length() - 1) == ',')
 			b.setLength(b.length() - 1);
 		b.append('\n');
@@ -133,6 +163,9 @@ public class VehicleEventLog {
 	/** Sum of all vehicle speeds (mph) in binning period */
 	private int bin_speed = 0;
 
+	/** Vehicle container flushed periodicaly to XML file */
+	public LinkedList<Vehicle> vehs_periodic = new LinkedList<Vehicle>();
+
 	/** Create a new vehicle event log */
 	public VehicleEventLog(String sid) {
 		sensor_id = sid;
@@ -140,9 +173,13 @@ public class VehicleEventLog {
 	}
 
 	/** Log a vehicle detection event */
-	public void logVehicle(final int duration, final int headway,
-		final long stamp, final int speed, final int length)
-	{
+	// public void logVehicle(final int duration, final int headway,
+	// 	final long stamp, final int speed, final int length)
+	// {
+	public void logVehicle(final Detector det, final CommProtocol cp, 
+		final int duration, final int headway, final long stamp,
+		final float speed, final float vlen, final int vclass, final float range
+	){
 		if (stamp >= bin_stamp) {
 			bin_vehicles++;
 			bin_duration += duration;
@@ -159,8 +196,8 @@ public class VehicleEventLog {
 			long st = shouldLogStamp(head, stamp, p_stamp)
 			        ? stamp
 			        : 0;
-			final String ev = formatEvent(duration, head, st, speed,
-				length);
+			final String ev = formatEvent(
+				cp, st, duration, headway, speed, vlen, vclass);
 			long stamp_ms = getStampMillis(stamp);
 			// Are we *inside* a gap and starting a new day?
 			if (gap > 0 && getDate(stamp_ms) != getDate(gap)) {
@@ -171,14 +208,17 @@ public class VehicleEventLog {
 			gap = 0;
 			FLUSH.addJob(new Job() {
 				public void perform() throws IOException {
-					appendEvent(stamp_ms, ev);
+					appendEventArchive(stamp_ms, ev);
+					appendEventXml(det, cp, stamp_ms, 
+						duration, headway, speed, 
+						vlen, vclass, range);
 				}
 			});
 		}
 	}
 
 	/** Append an event to the log */
-	private void appendEvent(long stamp, String line) throws IOException {
+	private void appendEventArchive(long stamp, String line) throws IOException {
 		File file = factory.createFile(sensor_id, "vlog", stamp);
 		if (file != null) {
 			FileWriter fw = new FileWriter(file, true);
@@ -199,7 +239,7 @@ public class VehicleEventLog {
 			gap = stamp_ms;
 			FLUSH.addJob(new Job() {
 				public void perform() throws IOException {
-					appendEvent(stamp_ms, "*\n");
+					appendEventArchive(stamp_ms, "*\n");
 				}
 			});
 		}
@@ -240,5 +280,32 @@ public class VehicleEventLog {
 			return new PeriodicSample(stamp, per_sec, s);
 		}
 		return null;
+	}
+
+	/** Append an event to the XML container */
+	private void appendEventXml(Detector det, CommProtocol cp, 
+		long stamp_ms, int duration, int headway, float speed,
+		float vlen, int vclass, float range)
+		throws IOException
+	{
+		Vehicle veh = new Vehicle(cp, stamp_ms, 
+			range, duration, speed, vclass, vlen, 
+			det.getName(), det.getLaneNumber());
+		vehs_periodic.add(veh);
+	}
+
+	/** Flush all vehicles to the XML file and clear container */
+	public void flushXml(Writer w) throws IOException {
+		writeXml(w);
+		vehs_periodic.clear();
+	}
+
+	/** Write vehicles samples as XML */
+	public void writeXml(Writer w) throws IOException {
+		ListIterator<Vehicle> it = vehs_periodic.listIterator();
+		while (it.hasNext()) {
+			Vehicle veh = it.next();
+			veh.writeXml(w);
+		}
 	}
 }

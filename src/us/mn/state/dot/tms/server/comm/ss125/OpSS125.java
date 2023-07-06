@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2016  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +23,7 @@ import us.mn.state.dot.tms.server.comm.PriorityLevel;
  * Operation for SS125 device
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 abstract public class OpSS125 extends OpController<SS125Property> {
 
@@ -29,4 +31,20 @@ abstract public class OpSS125 extends OpController<SS125Property> {
 	protected OpSS125(PriorityLevel p, ControllerImpl c) {
 		super(p, c);
 	}
+
+	/** Log a msg */
+	protected void log(String msg) {
+		if (SS125Poller.SS125_LOG.isOpen()) {
+			SS125Poller.SS125_LOG.log(controller.getName() + 
+				" " + msg);
+		}
+	}
+
+	/** Log a message */
+	protected void logError(String msg) {
+		if (SS125Poller.SS125_LOG.isOpen())
+			SS125Poller.SS125_LOG.log(controller.getName() + 
+				"! " + msg);
+	}
+
 }

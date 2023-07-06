@@ -23,6 +23,8 @@ import static us.mn.state.dot.tms.units.Interval.Units.MILLISECONDS;
 import us.mn.state.dot.tms.units.Speed;
 import static us.mn.state.dot.tms.units.Speed.Units.MPH;
 
+import us.mn.state.dot.tms.CommProtocol;
+
 /**
  * Canoga vehicle detection event
  *
@@ -151,17 +153,19 @@ public class DetectionEvent {
 
 	/** Log the current event in the detection log */
 	public void logEvent(long stamp, DetectorImpl det, DetectionEvent prev,
-		int speed)
+		float speed)
 	{
 		int missed = calculateMissed(prev);
 		if (isHeadwayValid(prev) && missed <= MAX_MISSED_VEHICLES) {
 			for (int i = 0; i < missed; i++)
-				det.logVehicle(0, 0, 0, 0, 0);
+				det.logVehicle(CommProtocol.CANOGA, 0, 
+					0, 0, 0, -1, -1, -1);
 		} else {
 			// There is a gap in vehicle event log
 			det.logGap(stamp);
 		}
-		det.logVehicle(duration, 0, stamp, speed, 0);
+		det.logVehicle(CommProtocol.CANOGA, duration,
+			0, stamp, speed, -1, -1, -1);
 	}
 
 	/** Test if headway from previous event is valid */
