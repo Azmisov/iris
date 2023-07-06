@@ -313,8 +313,12 @@ abstract public class SS125Property extends ControllerProperty {
 			throw new ParsingException("DEST ID");
 		if (parse8(rhead, OFF_SOURCE_SUB_ID) != dest_sub_id)
 			throw new ParsingException("SRC SUB ID");
-		if (parse16(rhead, OFF_SOURCE_ID) != drop)
-			throw new ParsingException("SRC ID");
+		if(parse16(rhead, OFF_SOURCE_ID) != drop) {
+			// WYDOT specific change due to their comm config
+			logError("warning mismatch: off_source_id=" + 
+				parse16(rhead, OFF_SOURCE_ID) + " drop=" + drop);
+			//throw new ParsingException("SRC ID");
+		}
 		seq_num++;
 		if (parse8(rhead, OFF_SEQUENCE) != seq_num)
 			throw new ParsingException("SEQUENCE");
