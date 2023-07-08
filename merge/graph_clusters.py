@@ -6,7 +6,7 @@ from analyze_patches import Patch, __dir__
 from pyvis.network import Network
 
 # patch ids or short filenames to highlight
-highlight = set(["DmsActionModel.java"])
+highlight = set([10055])
 
 # patches/files/short files to exclude from the graph; e.g. those that have been merged already
 excluded = set()

@@ -202,10 +202,10 @@ Merged notes
 		between formats. Though preferably we'd just settle on a single
 		representation for the value.
 	EssRec: done, not including toString changes
-- 9949: some changes obsolete; it seems a future version WeatherSensorImp.getSiteId has been
+9949: some changes obsolete; it seems a future version WeatherSensorImp.getSiteId has been
 	merged already. Come back to this if we don't see that future patch.
-- 9960: overwrites 9949 getSiteId, but still not including; come back if still
-	don't see the change later
+9960: overwrites 9949 getSiteId, but still not including; come back if still
+	don't see the change later (found it later: patch 10025)
 9985:
 	- actually not too complicated, WeatherSensorFileEnum is mainly just a rename
 		of old WeathersensorCsvWriter
@@ -375,6 +375,120 @@ Merged notes
 		PavementSensorsTable: done
 10024:
 	- this reverts some of the renaming in 10023... could combine the patches
+10025:
+	messages_en.properties, messages_en_US_WY.properties: already merged earlier
+	tms-template.sql: Doug also added these fields (maybe from prev merge)
+	weather_sensor_ids.sql: I'm assuming this is a migrate script for the
+		tms-template change; I assume Doug already added one, so excluding; can
+		add the file later if needed
+	WeatherSensor, WeatherSensorModel, WeatherSensorProperties: already merged
+	WeatherSensorFileEnum, WeatherSensorVerifyJob: done
+	WeatherSensorImpl: answer to patch 9960; minor changes here
+10031:
+	- CloudCoverSituation: So digging deeper, I am not sure if this is actually correct.
+		Michael uses swarmsOfInsects version, which is same as VisibilitySituation. The spec
+		lists both as enum values, so not sure which is the correct. The MIB1204 attribute
+		also differs: essCloudCoverSituation vs essCloudSituation. I will leave as is until/if
+		Michael confirms that v47 is retrieving proper cloud situation values w/ live sensors.
+		- Michael says the data isn't being used, so I'm leaving as is
+	- Many changes unnecessary since its tweaking enum naming
+	- Some renaming that appears to revert 10024 again; could combine
+10032:
+	- I put camelToUpperSnake inside SString instead of scattered about
+9868:
+	- Session#canUpdate -> canWrite
+	- is checking password attribute the write approach?
+10048:
+	- Messenger: Ipaws changeset introduced HTTPS already, which was subsequently
+		merged into HttpFileMessenger because there were no differences between the two files.
+		I think I will use Michael's version, since it is more robust/handles more cases.
+		Will be equivalent if using root certificates I believe.
+10049:
+	- CBWPoller: Doug added op phase for SEND_SETTINGS, I will leave it there
+	- CBWProperty: I rewrote the voltage detector to match Doug's style
+9956:
+	- seems a future patch has split out NTCIP versions into separate poll Phases
+		instead; so leaving as is, but moving some of the attrs I erroneously
+		put into V1 from patch 9947
+	- NtcipVer added to OpEss; will have to see in future patches whether
+		that is actually necessary now (no, removed in patch 10022)
+9988:
+	- bug fix; code has changed so much, don't know if it applies anymore; will
+		want to just verify later that all the RWIS sensor info we want is getting
+		queried
+10045:
+	- CBWProperty: Doug just modified the regex slightly which is what I would have done
+	- OpQueryBeaconState.formatMaintStatus has been moved around a bit; I believe
+		it is an enum now. Anyways, CBWProperty.getInput is where that pin
+		check occurs now, and it is doing > 0
+10052+10055:
+	- merging patches since 10052 would commit errors; Doug's name is listed as
+		author in 10055, but the files don't appear in v5; don't know what that
+		is about, but doesn't seem like it will conflict with anything, so including
+9797:
+	- MsgLineCBox appears to be the new MsgComboBox
+9819:
+	Patch overview:
+	x	messages_en, SystemAttrEnum:
+			- add SS125_PER_VEH_DATA_ENABLE attribute
+	x	DetectorImpl:
+			- adds vehicle length/class and detector range to logVehicle
+			- adds XMl output
+	x	FlushXmlJob,
+	x	MeteringJob,
+	x	VehicleManager:
+			- adds writing of vehicle samples to Xml job
+	x	Vehicle:
+			- new class which is a container for al the vehicle sample data
+			- no actual functionality besides XML/logging output
+	x	VehicleEventLog
+			- adds vehicle length+class to the events
+			- speed is formatted as float now
+			- add XML sampling format (appendEventXml); old appendEvent is now
+				qualified as appendEventArchive; Vehicle objects are saved
+				in a list to be flushed periodically as XML
+	x	canoga/DetectionEvent:
+			- adds vehicle length/class/range to logVehicle
+	x	ss125/DetectionEvent,
+	x	EventProperty,
+	x	OpQueryEvents,
+	x	SS125Poller:
+			- adds vehicle detection for SS125 protocol
+			- uses the SS125_PER_VEH_DATA_ENABLE to enable SS125 querying
+	x	OpQuerySamples,
+	x	OpSS125,
+	x	OpSendSensorSettings:
+			- adds logging
+	x	SS125Property
+			- adds ability to do SS125 broadcast
+			- lots of additional logging
+	x	SS125PropertyTest
+			- slightly changed test cases
+	Patch conflicts/notes:
+		- length has been exposed as int already, but not class; will add both as floats
+		- calendar stamp -> long instead; vehicle event log always logs stamp now
+		- canoga vehicle logging has different defaults:
+			- headway is calculated in event log instead
+			- length = zero; switching that to -1 with Michael's
+			- for missed vehicles: stamp = 0; leaving as is
+		- SS125Property, sid != mid check was removed in "ss125: Fixed parsing errors for vehicle events."
+			so I will not reintroduce that
+		- SS125PropertyTest: already merged
+		- OpQuerySamples is now OpQueryBinned
+		- SS125Poller has a number of changes; from commit history:
+			- ss125: Only query samples when polling period matches binning interval.
+			- ss125: Renamed OpQuerySamples -> OpQueryBinned
+			- SS125: Added vlog protocol for vehicle logging.
+			- Don't save binned data when logging vehicle events.
+			Instead of a system attribute flag, Doug added just another device type SS_125_VLOG.
+			So I will keep those changes; e.g. not adding SystemAttrEnum change from Michael.
+			I'll assume Doug's changes over the years in terms of when/if to sample are correct
+			and will keep those as well. Validation on subid has been removed, but I'll leave
+			the abstract method in there so we can get validation on EventsProperty
+		- SS125 VLOG implement differences:
+			EventProperty + DetectionEvent -> ActiveEventProperty; Doug does not separate them
+			Lots of changes actually, so not worth enumerating all; I tried to do sensible
+			choices for merge, inserting Michael's logic if missing in Doug's
 
 Skipped
 ==================
@@ -398,7 +512,7 @@ Skipped
 9855, 9879, 9918, 10013:
 	- these are for install_jars[_client].sh; would go into iris specific repo I think, or else
 		will be unnecessary if we switch to doing containerized install instead
-9794, 9812, 9867, 9872, 9876, 10016, 10028:
+9794, 9812, 9818, 9867, 9872, 9876, 10016, 10028, 10029:
 	- already merged
 9838:
 	- Doug implemented same/very similar thing
@@ -411,17 +525,6 @@ Skipped
 	- obsolete with future patches
 9952, 9970:
 	- obsolete with EssConvertible changes
-9956:
-	- seems a future patch has split out NTCIP versions into separate poll Phases
-		instead; so leaving as is, but moving some of the attrs I erroneously
-		put into V1 from patch 9947
-	- NtcipVer added to OpEss; will have to see in future patches whether
-		that is actually necessary now (no, removed in patch 10022)
-9988:
-	- bug fix; code has changed so much, don't know if it applies anymore; will
-		want to just verify later that all the RWIS sensor info we want is getting
-		queried
-
 
 TODO
 ===================
@@ -431,13 +534,19 @@ TODO
 	- divergent DMS implementation
 9796:
 	- depends on DMSHelper.getLandmark, patch 9795
-10055:
-	- BeaconXmlWriter and BeaconXmlJob don't appear in git, while they have Douglas name on them;
-		need to figure out what is up with those
 
-Weather Patches Cluster:
-------------------------
-(10025), 10029-30, (10031-32), 10037
+Wavetronix cluster:
+-------------------
+9887, 9888, 9895, 9897, 9902, 9903, 9906, 9915, 9916, 9917, 9919, 9929, 9930, 10035
+
+DMS Cluster
+------------
+probably no conflict:
+	9802, 9810, 9815, 9842, 9977, 9819
+probably conflict:
+	9816
+
+9795
 
 
 TODO after all else
@@ -450,3 +559,6 @@ TODO after all else
 		names had changed since 2016:
 		- help.exception.lastline/wydot.trac.host are new; verify they are being used I guess
 		- dms.beacon.enabled changed to Flash Beacon; leaving as is, since was customized by WY anyways
+9850:
+	modifies messages_en... I thought I ported that over already? need to go
+	through and see if needed still?
