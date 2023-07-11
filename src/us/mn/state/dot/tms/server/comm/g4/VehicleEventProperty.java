@@ -21,6 +21,7 @@ import java.util.Date;
 import us.mn.state.dot.sched.TimeSteward;
 import us.mn.state.dot.tms.units.Distance;
 import us.mn.state.dot.tms.units.Speed;
+import us.mn.state.dot.tms.CommProtocol;
 import us.mn.state.dot.tms.server.ControllerImpl;
 import us.mn.state.dot.tms.server.DetectorImpl;
 import us.mn.state.dot.tms.server.comm.ParsingException;
@@ -176,8 +177,8 @@ public class VehicleEventProperty extends G4Property {
 	public void logVehicle(ControllerImpl controller) {
 		DetectorImpl det = controller.getDetectorAtPin(zone + 1);
 		if (det != null) {
-			det.logVehicle(duration, 0, stamp, getSpeedMph(),
-				getLengthFt());
+			det.logVehicle(CommProtocol.RTMS_G4_VLOG, duration, 0, stamp,
+				getSpeedMph(), getLengthFt(), -1, -1);
 		}
 	}
 }
