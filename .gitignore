@@ -1,14 +1,15 @@
 lib/iris-build.properties
 lib/iris-client.properties
 build/
-iris-server*
-iris-client*
+# iris-server*
+# iris-client*
 *.rej
 *.orig
 *.swp
 devel/
 devel*.cfg
+patches*
 
 # For Eclipse/development output
 bin/eclipse/
-dev/
+./dev/
