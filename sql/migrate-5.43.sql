@@ -55,13 +55,27 @@ CREATE VIEW hashtag_view AS
     FROM iris.hashtag;
 GRANT SELECT ON hashtag_view TO PUBLIC;
 
+-- Remove duplicate rows that would arise from sanitizing hashtags
+delete from iris.dms_hashtag t1 where exists
+ (
+	select dms, hashtag from
+		(select dms, hashtag, row_number() over(
+			partition by dms, regexp_replace(hashtag, '[^#a-zA-Z0-9]', '', 'g')
+		) row_num from iris.dms_hashtag) t
+	where row_num > 1 and dms = t1.dms and hashtag = t1.hashtag
+);
+
 -- Remove invalid characters from hashtags
-UPDATE iris.msg_line
-    SET restrict_hashtag = translate(restrict_hashtag, '-_', '');
+UPDATE iris.dms_hashtag
+    SET hashtag = regexp_replace(hashtag, '[^#a-zA-Z0-9]', '', 'g');
+UPDATE iris.msg_pattern
+    SET compose_hashtag = regexp_replace(compose_hashtag, '[^#a-zA-Z0-9]', '', 'g');
 UPDATE iris.dms_action
-    SET dms_hashtag = translate(dms_hashtag, '-_', '');
+    SET dms_hashtag = regexp_replace(dms_hashtag, '[^#a-zA-Z0-9]', '', 'g');
+UPDATE iris.msg_line
+    SET restrict_hashtag = regexp_replace(restrict_hashtag, '[^#a-zA-Z0-9]', '', 'g');
 UPDATE cap.alert_info
-    SET all_hashtag = translate(all_hashtag, '-_', '');
+    SET all_hashtag = regexp_replace(all_hashtag, '[^#a-zA-Z0-9]', '', 'g');
 
 -- Add hashtag check constraints
 ALTER TABLE iris.dms_hashtag ADD
