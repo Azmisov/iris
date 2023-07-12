@@ -231,26 +231,27 @@ function dev(){
 		fi
 
 		echo "Copying templates"
-		cp -Rp ./etc/dev ./
+		mkdir ./dev
+		chown --reference=./etc/dev/ ./dev
+		cp -p ./etc/dev/iris-server.properties ./etc/dev/dev.cfg ./dev
 
 		# so we don't have to always stop iris service on restart during development
 		echo "Disabling any installed iris service"
 		systemctl stop iris.service
 		systemctl disable iris.service
 
-		echo "Copying keystores"
+		echo "Copying server keystores"
 		k_cert=/etc/iris/iris-sonar-public.cert
 		k_server=/etc/iris/iris-server.keystore
-		k_client=/etc/iris/iris-client.keystore
 		# should match ownership of ./dev folder
-		cp -f --preserve=mode,timestamps $k_cert $k_server $k_client ./dev/
+		cp -f --preserve=mode,timestamps $k_cert $k_server ./dev/
 		chown --reference=./dev/iris-server.properties ./dev/*.keystore ./dev/*.cert
 
 		echo "Copying passwords"
-		keystore_pass=`sed -n 's/.*keystore\.password=\(.*\)/\1/p' /etc/iris/iris-server.properties`
+		skeystore_pass=`sed -n 's/.*keystore\.password=\(.*\)/\1/p' /etc/iris/iris-server.properties`
 		db_pass=`sed -n 's/.*db\.password=\(.*\)/\1/p' /etc/iris/iris-server.properties`
 		sprops=./dev/iris-server.properties
-		sed -i "s/.*keystore\.password=.*/keystore.password=$keystore_pass/" $sprops
+		sed -i "s/.*keystore\.password=.*/keystore.password=$skeystore_pass/" $sprops
 		sed -i "s/.*db\.password=.*/db.password=$db_pass/" $sprops
 
 		# even with db.version commented, it still seems to refuse to start if version isn't same
@@ -272,6 +273,40 @@ function dev(){
 		popd
 		# fix ownership
 		chown --reference=./dev/iris-server.properties ./dev/logs ./dev/logs/*
+
+		# Setup client
+		if test -d "./iris-client/"; then
+			echo "Copying client files"
+			mkdir ./dev/client
+			cp /etc/iris/iris-client.keystore ./etc/dev/iris-client.properties ./dev/client/
+			touch ./dev/client/session_ids
+			ln -sf ../../iris-client/images ./dev/client/images
+			ln -sf ../../iris-client/lib ./dev/client/lib
+			ln -sf ../../etc/client/index.html ./dev/client/index.html
+			cp ./iris-client/iris-client.jnlp ./iris-client/mail.jnlp ./dev/client
+
+			echo "Copying host IP address"
+			# TODO: try `hostname -d` first and see if there's a response
+			host_ip=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
+			sed -i ''s,@@WEBSTART.HOST@@,$host_ip,'' \
+				./dev/client/iris-client.jnlp \
+				./dev/client/mail.jnlp \
+				./dev/client/iris-client.properties
+			
+			echo "Copying client password"
+			ckeystore_pass=`sed -n 's/.*keystore\.password=\(.*\)/\1/p' /etc/iris/iris-client.properties`
+			sed -i "s/.*keystore\.password=.*/keystore.password=$ckeystore_pass/" ./dev/client/iris-client.properties
+			
+			# fix ownership
+			chown -h --reference=./dev/iris-server.properties ./dev/client ./dev/client/*
+			chmod 0644 ./dev/client/session_ids
+
+			# publish client files
+			echo "Creating public html links"
+			ln -sfn `realpath ./dev/client` /var/www/html/iris-client-dev
+		else
+			echo "No iris-client directory found. Run 'ant client' first to enable client dev setup." 
+		fi
 
 		echo -e "\033[0;32mSetup complete!\033[0m"
 	else

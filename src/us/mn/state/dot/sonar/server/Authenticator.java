@@ -98,7 +98,7 @@ public class Authenticator {
 		try {
 			if (!authenticate(user, pwd))
 				processor.failLogin(c, name, false);
-			if (!checkDomain(c, user))
+			else if (!checkDomain(c, user))
 				processor.failLogin(c, name, true);
 			else
 				processor.finishLogin(c, user);

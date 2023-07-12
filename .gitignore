@@ -9,7 +9,8 @@ build/
 devel/
 devel*.cfg
 patches*
+/iris-client
 
 # For Eclipse/development output
 bin/eclipse/
-./dev/
+/dev/

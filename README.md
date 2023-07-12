@@ -11,7 +11,7 @@ The easiest thing will be to first do a [normal install](https://mnit-rtmc.githu
 This will ensure dependencies are installed, database setup, users created, etc. Then, run the following:
 
 ```console
-root@server:~$ ./bin/iris_ctl dev
+root@server:~$ sudo ./bin/iris_ctl dev
 ```
 
 This creates a `./dev` folder to hold the development runtime configuration and logs. It copies the
@@ -27,7 +27,7 @@ configuration inside the `./dev/` folder. Main server logs will use stdout/stder
 The class and source paths should be autodetected from the Java Project. Install the recommended
 Java extension pack for VSCode and open `iris.code-workspace`. In the `Java Projects` view, you'll
 see it doing an initial analysis of the code. You may need to manually change the JDK runtime
-setting and restart VSCode. You'll also may need to install `openjdk-source` and `openjdk-javadoc`
+setting and restart VSCode. You may also need to install `openjdk-source` and `openjdk-javadoc`
 to get intellisense working.
 
 If you're using a different IDE, or the Java Project is not working properly, you may set the source
