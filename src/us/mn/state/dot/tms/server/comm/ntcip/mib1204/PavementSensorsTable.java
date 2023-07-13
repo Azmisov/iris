@@ -94,22 +94,22 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
 			location =
 				new EssString("location", essPavementSensorLocation, row);
 			pavement_type =
-				new EssEnum<PavementType>("pavement_type", essPavementType, row);
+				EssEnum.make(PavementType.class, "pavement_type", essPavementType, row);
 			height =
 				new EssDistance("height", essPavementElevation, row);
 			exposure =
 				new EssNumber("exposure", essPavementExposure, row)
 					.setRange(0, 101);
 			sensor_type =
-				new EssEnum<PavementSensorType>("pavement_sensor_type", essPavementSensorType, row);
+				EssEnum.make(PavementSensorType.class, "pavement_sensor_type", essPavementSensorType, row);
 			surface_status =
-				new EssEnum<SurfaceStatus>("surface_status", essSurfaceStatus, row);
+				EssEnum.make(SurfaceStatus.class, "surface_status", essSurfaceStatus, row);
 			surface_temp =
 				new EssTemperature("surface_temp", essSurfaceTemperature, row);
 			pavement_temp =
 				new EssTemperature("pavement_temp", essPavementTemperature, row);
 			sensor_error = 
-				new EssEnum<PavementSensorError>("pavement_sensor_error", essPavementSensorError, row);
+				EssEnum.make(PavementSensorError.class, "pavement_sensor_error", essPavementSensorError, row);
 			water_depth =
 				new EssDistance("water_depth", essSurfaceWaterDepth, row)
 					.setUnits(1, MILLIMETERS)
@@ -126,7 +126,7 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
 			freeze_point =
 				new EssTemperature("freeze_point", essSurfaceFreezePoint, row);
 			black_ice_signal =
-				new EssEnum<SurfaceBlackIceSignal>("surface_black_ice_signal", essSurfaceBlackIceSignal, row);
+				EssEnum.make(SurfaceBlackIceSignal.class, "surface_black_ice_signal", essSurfaceBlackIceSignal, row);
 			friction =
 				EssNumber.Percent("friction", pavementSensorFrictionCoefficient, row);
 			conductivity =

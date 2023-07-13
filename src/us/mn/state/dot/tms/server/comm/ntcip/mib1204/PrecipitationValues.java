@@ -68,7 +68,7 @@ public class PrecipitationValues implements JsonBuilder.Buildable{
 
 	/** Precipitation situation */
 	public final EssEnum<PrecipSituation> precip_situation =
-		new EssEnum<PrecipSituation>("precip_situation", essPrecipSituation);
+		EssEnum.make(PrecipSituation.class, "precip_situation", essPrecipSituation);
 
 	/** Get the water depth in cm, else null if missing/invalid */
 	public Integer getWaterDepth() {

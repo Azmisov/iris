@@ -31,7 +31,7 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 	/** Wind situation.
 	 * Note: this object not supported by all vendors */
 	public final EssEnum<WindSituation> situation =
-		new EssEnum<WindSituation>("situation", essWindSituation);
+		EssEnum.make(WindSituation.class, "situation", essWindSituation);
 
 	/** Two minute average wind speed in m/s (deprecated in V2) */
 	public final EssSpeed avg_speed =
@@ -86,7 +86,7 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 				new EssAngle("gust_direction", windSensorGustDirection, row);
 			// Note: this object not supported by all vendors
 			situation =
-				new EssEnum<WindSituation>("situation", windSensorSituation, row);
+				EssEnum.make(WindSituation.class, "situation", windSensorSituation, row);
 		}
 
 		/** Get JSON representation */

@@ -55,7 +55,7 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 			location =
 				new EssString("location", essSubSurfaceSensorLocation, row);
 			sub_surface_type =
-				new EssEnum<SubSurfaceType>("sub_surface_type", essSubSurfaceType, row);
+				EssEnum.make(SubSurfaceType.class, "sub_surface_type", essSubSurfaceType, row);
 			depth = 
 				new EssDistance("depth", essSubSurfaceSensorDepth, row)
 					.setUnits(1, CENTIMETERS)
@@ -65,7 +65,7 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 			moisture =
 				EssNumber.Percent("moisture", essSubSurfaceMoisture, row);
 			sensor_error =
-				new EssEnum<SubSurfaceSensorError>("sensor_error", essSubSurfaceSensorError, row);
+				EssEnum.make(SubSurfaceSensorError.class, "sensor_error", essSubSurfaceSensorError, row);
 		}
 
 		/** Is this sensor active? */

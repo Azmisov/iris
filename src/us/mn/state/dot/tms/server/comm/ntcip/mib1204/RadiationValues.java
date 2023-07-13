@@ -33,7 +33,7 @@ public class RadiationValues implements JsonBuilder.Buildable{
 
 	/** Cloud situation */
 	public final EssEnum<CloudSituation> cloud_situation =
-		new EssEnum<CloudSituation>("cloud_situation", essCloudSituation);
+		EssEnum.make(CloudSituation.class, "cloud_situation", essCloudSituation);
 
 	/** Instantaneous terrestrial radiation (watts / m^2) */
 	public final EssNumber instantaneous_terrestrial =

@@ -19,12 +19,12 @@ public class InstrumentValues implements JsonBuilder.Buildable{
 
 	/** How data is collected at this station */
 	public final EssEnum<StationType> data_collection = 
-		new EssEnum<StationType>("data_collection", essTypeofStation)
+		EssEnum.make(StationType.class, "data_collection", essTypeofStation)
 			.setMissing(StationType.missingValue.ordinal());
 
 	/** What the mobility of the station is */
 	public final EssEnum<StationMobility> mobility = 
-		new EssEnum<StationMobility>("mobility", essNtcipCategory);
+		EssEnum.make(StationMobility.class, "mobility", essNtcipCategory);
 
 	/** Whether any door is open */
 	public final EssBoolean door_open =
