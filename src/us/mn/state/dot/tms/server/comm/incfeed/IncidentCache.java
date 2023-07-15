@@ -169,7 +169,7 @@ public class IncidentCache {
 			if (loc == null){
 				road = RoadImpl.createNotify("Unknown");
 				dir = (short) Direction.UNKNOWN.ordinal();
-				im = LaneImpact.FREE_FLOWING.toString();
+				im = pi.getImpactCode();
 			}
 			else{
 				road = loc.getRoadway();

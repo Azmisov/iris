@@ -31,7 +31,7 @@ public class IncFeedPoller extends ThreadedPoller<IncFeedProperty>
 	implements FeedPoller
 {
 	/** Incident feed debug log */
-	static private final DebugLog INC_LOG = new DebugLog("inc_feed");
+	static protected final DebugLog INC_LOG = new DebugLog("inc_feed");
 
 	/** Incident cache */
 	private final IncidentCache cache;
