@@ -263,8 +263,8 @@ function dev(){
 		# debug logs only get written if the file exists first; DebugLog.init is
 		# called when server starts with the root logging directory; search for
 		# DevelLog in source code to see what log filenames are being used
-		mkdir ./dev/logs
-		pushd ./dev/logs
+		mkdir -p ./dev/logs/log
+		pushd ./dev/logs/log
 		touch sonar sonar_tls sonar_task sonar_time sched alert device gps kadaptive samples flush \
 			profile sign_msg sql sys_attr toll poll_err modem axisptz canoga cbw clearguide \
 			dinrelay dmsxml dr500 e6_pkt e6 e6_err g4 inc_feed infinova manchester feed mndot170 \
@@ -272,7 +272,7 @@ function dev(){
 			server
 		popd
 		# fix ownership
-		chown --reference=./dev/iris-server.properties ./dev/logs ./dev/logs/*
+		chown -R --reference=./dev/iris-server.properties ./dev/logs
 
 		# Setup client
 		if test -d "./iris-client/"; then
@@ -299,7 +299,7 @@ function dev(){
 			
 			# fix ownership
 			chown -h --reference=./dev/iris-server.properties ./dev/client ./dev/client/*
-			chmod 0644 ./dev/client/session_ids
+			chmod 0644 ./dev/client/session_ids ./dev/client/iris-client.keystore
 
 			# publish client files
 			echo "Creating public html links"

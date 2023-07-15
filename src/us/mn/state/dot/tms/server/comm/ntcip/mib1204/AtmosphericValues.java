@@ -50,7 +50,7 @@ public class AtmosphericValues implements JsonBuilder.Buildable{
 
 	/** Visibility situation enum */
 	public final EssEnum<VisibilitySituation> visibility_situation =
-		new EssEnum<VisibilitySituation>("visibility_situation", essVisibilitySituation);
+		EssEnum.make(VisibilitySituation.class, "visibility_situation", essVisibilitySituation);
 
 	/** Get reference elevation in meters above mean sea level */
 	public Integer getReferenceElevation() {

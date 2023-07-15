@@ -1,7 +1,6 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
 import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.EssEnumType;
-import java.lang.reflect.ParameterizedType;
 import us.mn.state.dot.tms.utils.JsonBuilder;
 
 /** Converts {@link MIB1204} raw types to a generic enum type. The enum
@@ -17,31 +16,42 @@ public class EssEnum<T extends Enum<T> & EssEnumType> extends EssInteger<T>{
 	public final Class<T> enumClass;
 	public final T[] enumValues;
 	
-	public EssEnum(String k, MIB1204 n, int r){
+	public EssEnum(Class<T> clazz, String k, MIB1204 n, int r){
 		super(k, n, r);
-		enumClass = reflectClass();
+		enumClass = clazz;
 		enumValues = reflectValues();
 		setRange(0, enumValues.length);
 	}
-	public EssEnum(String k, MIB1204 n){
+	public EssEnum(Class<T> clazz, String k, MIB1204 n){
 		super(k, n);
-		enumClass = reflectClass();
+		enumClass = clazz;
 		enumValues = reflectValues();
 		setRange(0, enumValues.length);
 	}
 	/** Reflection on the generic enumeration type */
-	@SuppressWarnings("unchecked")
-	private Class<T> reflectClass(){
-		// https://stackoverflow.com/questions/3437897;
-		// only works here because we have superclass EssConverter<T>
-		var type = (ParameterizedType) getClass().getGenericSuperclass();
-		return (Class<T>) type.getActualTypeArguments()[0];
-	}
 	private T[] reflectValues(){
 		// https://stackoverflow.com/questions/10121988
 		// extends Enum enforced, so guranteed non-null values
 		return enumClass.getEnumConstants();
 	}
+
+	/** Factory method for creating a typed variant of EssEnum. It is not
+	 * possible to get the type parameter on a *generic* subclass, only a
+	 * raw subclass. See https://stackoverflow.com/questions/3437897. The next
+	 * best thing is a factory method, in my opinion, as you only need to
+	 * specify the class twice.
+	 */
+	static <K extends Enum<K> & EssEnumType> EssEnum<K> make(
+		Class<K> clazz, String k, MIB1204 n, int r
+	){
+		return new EssEnum<K>(clazz, k, n, r);
+	}
+	/** Same as {@link #make} */
+	static <K extends Enum<K> & EssEnumType> EssEnum<K> make(
+		Class<K> clazz, String k, MIB1204 n
+	){
+		return new EssEnum<K>(clazz, k, n);
+	} 
 
 	@Override
 	public T convert(){
