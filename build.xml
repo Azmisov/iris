@@ -17,7 +17,7 @@
 	<!-- Base directory configuration -->
 	<property name="src.dir" value="src"/>
 	<property name="etc.dir" value="etc"/>
-	<property name="images.dir" value="images"/>
+	<property name="images.dir" value="src/images"/>
 	<property name="bin.dir" value="bin"/>
 	<property name="lib.dir" value="lib"/>
 	<property name="i18n.dir" value="etc/i18n"/>
