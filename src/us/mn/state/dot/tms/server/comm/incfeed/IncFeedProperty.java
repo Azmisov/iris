@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2016-2018  Minnesota Department of Transportation
+ * Copyright (C) 2018-2021  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +31,7 @@ import us.mn.state.dot.tms.utils.LineReader;
  * Incident feed property.
  *
  * @author Douglas Lau
- * @author Kevin Wood, Isaac Nygaard
+ * @author Kevin Wood, Michael Darter, Isaac Nygaard
  */
 public class IncFeedProperty extends ControllerProperty {
 
@@ -129,16 +130,16 @@ public class IncFeedProperty extends ControllerProperty {
 	/** Parse the specified JSON object into an incident string, for which
 	 * further parsing can be performed by ParsedIncident class. */
 	private ParsedIncident parse(JSONObject elem) {
-	    String iid = elem.get("incidentId").toString();
-		String ity = elem.get("irisType").toString();
-		// String det = elem.get("problemOtherText").toString();
-		String lat = elem.get("latitude").toString();
-		String lon = elem.get("longitude").toString();
+		String iid = safeGet(elem, "incidentId");
+		String ity = safeGet(elem, "irisType");
+		// String det = safeGet(elem, "problemOtherText");
+		String lat = safeGet(elem, "latitude");
+		String lon = safeGet(elem, "longitude");
 		String cam = ""; // triggers cam lookup
-		String imp = elem.get("impact").toString();
-		String not = elem.get("problemOtherText").toString();
+		String imp = safeGet(elem, "impact");
+		String not = safeGet(elem, "problemOtherText");
 		StringBuilder sb = new StringBuilder();
-	    sb.append(iid).append(",");
+		sb.append(iid).append(",");
 		sb.append(parseIrisType(ity)).append(",");
 		sb.append(","); // det currently ignored
 		sb.append(lat).append(",");
@@ -149,6 +150,17 @@ public class IncFeedProperty extends ControllerProperty {
 		inc.notes = not;
 		log("Parsed incident = " + inc);
 		return inc;
+	}
+
+	/** Safe get
+ 	 * @return Specified value or empty string, never null */
+	static private String safeGet(JSONObject elem, String key) {
+		if (elem == null)
+			return "";
+		if (key == null || key.isEmpty())
+			return "";
+		Object val = elem.get(key);
+		return (val != null ? val.toString() : "");
 	}
 
 	/** Parse incident type */
