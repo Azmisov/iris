@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2022  Minnesota Department of Transportation
+ * Copyright (C) 2018  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +18,6 @@ package us.mn.state.dot.tms.client.incident;
 import us.mn.state.dot.tms.Camera;
 import us.mn.state.dot.tms.Incident;
 import us.mn.state.dot.tms.IncidentDetail;
-import us.mn.state.dot.tms.LaneCode;
 import us.mn.state.dot.tms.Road;
 import us.mn.state.dot.tms.geo.Position;
 
@@ -25,6 +25,7 @@ import us.mn.state.dot.tms.geo.Position;
  * Client-side incident for use before an incident has been logged.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class ClientIncident implements Incident {
 
@@ -44,6 +45,7 @@ public class ClientIncident implements Incident {
 		lat = lt;
 		lon = ln;
 		impact = i;
+		notes = "";
 	}
 
 	/** Get the SONAR object name */
@@ -187,5 +189,20 @@ public class ClientIncident implements Incident {
 	/** Get Position in WGS84 */
 	public Position getWgs84Position() {
 		return new Position(lat, lon);
+	}
+
+	/** Notes */
+	private String notes;
+
+	/** Get notes */
+	@Override
+	public String getNotes() {
+		return notes;
+	}
+
+	/** Set notes */
+	@Override
+	public void setNotes(String n) {
+		notes = n;
 	}
 }

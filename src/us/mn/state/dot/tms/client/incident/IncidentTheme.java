@@ -170,6 +170,7 @@ public class IncidentTheme extends ProxyTheme<Incident> {
 		Camera ca = IncidentHelper.getCamera(proxy);
 		tt.addLine(I18N.get("camera"), 
 			(ca != null ? ca.toString() : ""));
+		tt.addLine(I18N.get("incident.notes"), proxy.getNotes());
 		tt.addLine(I18N.get("incident.time"), getTime(proxy));
 		return tt.get();
 	}

@@ -164,19 +164,21 @@ public class IncidentCache {
 		}
 		// Notification needed
 		if (nid != null){
-			Road road; short dir; String im;
+			Road road; short dir; String im; String no;
 			// free incident
 			if (loc == null){
 				road = RoadImpl.createNotify("Unknown");
 				dir = (short) Direction.UNKNOWN.ordinal();
 				im = pi.getImpactCode();
+				no = pi.notes;
 			}
 			else{
 				road = loc.getRoadway();
 				dir = loc.getRoadDir();
 				im = LaneImpact.fromLanes(n_lanes);
+				no = "";
 			}
-			createIncidentNotify(nid, oid, pi, road, dir, im);
+			createIncidentNotify(nid, oid, pi, road, dir, im, no);
 		}		
 	}
 
@@ -196,12 +198,12 @@ public class IncidentCache {
 	 * @param dir Roadway direction
 	 * @param im String indicating the lane impact */
 	private boolean createIncidentNotify(String n, String orig,
-		ParsedIncident pi, Road road, short dir, String im)
+		ParsedIncident pi, Road road, short dir, String im, String no)
 	{
 		IncidentImpl inc = new IncidentImpl(n, orig,
 			pi.inc_type.id, new Date(), pi.detail,
 			LaneCode.MAINLINE.lcode, road, dir,
-			pi.lat, pi.lon, pi.lookupCamera(), im, false, false);
+			pi.lat, pi.lon, pi.lookupCamera(), im, false, false, no);
 		try {
 			inc.notifyCreate();
 			return true;

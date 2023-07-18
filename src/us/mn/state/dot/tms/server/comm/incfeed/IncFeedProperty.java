@@ -130,23 +130,30 @@ public class IncFeedProperty extends ControllerProperty {
 	 * further parsing can be performed by ParsedIncident class. */
 	private ParsedIncident parse(JSONObject elem) {
 	    String iid = elem.get("incidentId").toString();
-		String ity = elem.get("irisType").toString().toUpperCase();
+		String ity = elem.get("irisType").toString();
 		// String det = elem.get("problemOtherText").toString();
 		String lat = elem.get("latitude").toString();
 		String lon = elem.get("longitude").toString();
 		String cam = ""; // triggers cam lookup
 		String imp = elem.get("impact").toString();
+		String not = elem.get("problemOtherText").toString();
 		StringBuilder sb = new StringBuilder();
 	    sb.append(iid).append(",");
-		sb.append(ity).append(",");
+		sb.append(parseIrisType(ity)).append(",");
 		sb.append(","); // det currently ignored
 		sb.append(lat).append(",");
 		sb.append(lon).append(",");
 		sb.append(cam).append(",");
 		ParsedIncident inc =
 			new ParsedIncident(sb.toString(), convertImpact(imp));
+		inc.notes = not;
 		log("Parsed incident = " + inc);
 		return inc;
+	}
+
+	/** Parse incident type */
+	static private String parseIrisType(String ity) {
+		return (ity != null ? ity.toUpperCase() : "");
 	}
 
 	/** Convert to a valid impact code */

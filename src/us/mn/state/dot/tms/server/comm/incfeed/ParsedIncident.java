@@ -109,6 +109,9 @@ public class ParsedIncident {
 	 * precedence over this (e.g. in IncidentCache) */
 	public final LaneImpact impact;
 
+	/** Note */
+	public String notes = "";
+
 	/** Create a new parsed incident */
 	public ParsedIncident(String line, LaneImpact imp) {
 		this.line = line;
