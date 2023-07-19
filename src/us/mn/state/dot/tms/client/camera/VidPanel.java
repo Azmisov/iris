@@ -19,6 +19,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -253,7 +254,7 @@ public class VidPanel extends JPanel implements FocusListener {
 
 		addTopLabel(" ");
 		if (videoStillEnabled()) {
-			imageHolder = new JLabel(readStillImage(camera));
+			imageHolder = new JLabel(readStillImage(videoDimension, camera));
 			add(imageHolder, BorderLayout.CENTER);
 		}
 		add(videoHolder, BorderLayout.CENTER);
@@ -596,9 +597,10 @@ public class VidPanel extends JPanel implements FocusListener {
 	}
 
 	/** Read the remote image
+	 * @param sz Dimension of JPanel in which image will be displayed
 	 * @param cam Camera to read still image for
 	 * @return Still image or null on error */
-	static private ImageIcon readStillImage(Camera cam) {
+	static private ImageIcon readStillImage(Dimension sz, Camera cam) {
 		if (cam == null)
 			return null;
 		String uri = getCommLinkUri(cam);
@@ -615,8 +617,16 @@ public class VidPanel extends JPanel implements FocusListener {
 			System.out.println("readStillImage: ...read " + uri);
 			System.out.println("readStillImage: x=" + 
 				img.getWidth() + " y=" + img.getHeight() + 
-				" type=" + img.getType() + " img=" + img.toString());
-			return new ImageIcon(img);
+				" type=" + img.getType() + " img=" +
+				img.toString());
+			if (sz != null) {
+				System.err.println("readStillImage: scaling image to: " + sz.getWidth() + " by " + sz.getHeight());
+				Image img2 = img.getScaledInstance((int)sz.getWidth(), (int)sz.getHeight(), Image.SCALE_DEFAULT);
+				return new ImageIcon(img2);
+			} else {
+				System.err.println("readStillImage: not scaling image");
+				return new ImageIcon(img);
+			}
 		} catch (Exception ex) {
 			System.out.println("readStillImage: ex=" + ex);
 			return null;
@@ -630,7 +640,8 @@ public class VidPanel extends JPanel implements FocusListener {
 		System.out.println("----------------still image timer: camera=" + 
 			(camera == null ? "null" : camera.getName()) + " time=" + 
 			TimeSteward.currentDateTimeString(true) );
-		ImageIcon simage = readStillImage(camera);
+		Dimension sz = imageHolder.getSize(null);
+		ImageIcon simage = readStillImage(sz, camera);
 		imageHolder.setIcon(simage);
 		System.out.println("updateStillImage: updated imageHolder");
 	}
