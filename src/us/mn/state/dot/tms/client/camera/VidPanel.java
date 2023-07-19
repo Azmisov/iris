@@ -56,8 +56,6 @@ import us.mn.state.dot.tms.Camera;
 import us.mn.state.dot.tms.SystemAttrEnum;
 import us.mn.state.dot.tms.client.Session;
 import us.mn.state.dot.tms.client.camera.VideoRequest.Size;
-import us.mn.state.dot.tms.CommLink;
-import us.mn.state.dot.tms.Controller;
 
 /** JPanel that shows video.
  *
@@ -596,6 +594,19 @@ public class VidPanel extends JPanel implements FocusListener {
 		return ret;
 	}
 
+	/** Resize image */
+	static private Image resizeImage(Dimension sz, Image img) {
+		if (sz == null || img == null)
+			return img;
+		System.err.println("resizeImage: resizing to: " +
+			sz.getWidth() + "/" + sz.getHeight());
+		Image img2 = img.getScaledInstance(
+			(int)sz.getWidth(), 
+			(int)sz.getHeight(), 
+			Image.SCALE_DEFAULT);
+		return img2;
+	}
+
 	/** Read the remote image
 	 * @param sz Dimension of JPanel in which image will be displayed
 	 * @param cam Camera to read still image for
@@ -603,30 +614,20 @@ public class VidPanel extends JPanel implements FocusListener {
 	static private ImageIcon readStillImage(Dimension sz, Camera cam) {
 		if (cam == null)
 			return null;
-		String uri = getCommLinkUri(cam);
-		if (uri == null)
+		String addr = cam.getEncAddress();
+		Integer port = cam.getEncPort();
+		if (addr == null || port == null)
 			return null;
+		String uri = addr+":"+port;
 		try {
-			// read from local file
-			//ImageIcon image = new ImageIcon("/still.jpg");
-			//JLabel label = new JLabel("", image, JLabel.CENTER);
-			//String cluri = "https://video.dot.state.mn.us/video/image/metro/C3501";
-			//URL url = new URL(uri);
 			System.out.println("readStillImage: reading...");
-			BufferedImage img = ImageIO.read(new URL(uri));
+			BufferedImage img = ImageIO.read(new URL(uri.trim()));
 			System.out.println("readStillImage: ...read " + uri);
 			System.out.println("readStillImage: x=" + 
 				img.getWidth() + " y=" + img.getHeight() + 
-				" type=" + img.getType() + " img=" +
+				" type=" + img.getType() + " img=" + 
 				img.toString());
-			if (sz != null) {
-				System.err.println("readStillImage: scaling image to: " + sz.getWidth() + " by " + sz.getHeight());
-				Image img2 = img.getScaledInstance((int)sz.getWidth(), (int)sz.getHeight(), Image.SCALE_DEFAULT);
-				return new ImageIcon(img2);
-			} else {
-				System.err.println("readStillImage: not scaling image");
-				return new ImageIcon(img);
-			}
+			return new ImageIcon(resizeImage(sz, img));
 		} catch (Exception ex) {
 			System.out.println("readStillImage: ex=" + ex);
 			return null;
@@ -637,35 +638,18 @@ public class VidPanel extends JPanel implements FocusListener {
 	public void updateStillImage() {
 		if (!videoStillEnabled())
 			return;
-		System.out.println("----------------still image timer: camera=" + 
-			(camera == null ? "null" : camera.getName()) + " time=" + 
+		System.out.println("----------still image timer: camera=" + 
+			(camera == null ? "null" : camera.getName()) + " t=" + 
 			TimeSteward.currentDateTimeString(true) );
 		Dimension sz = imageHolder.getSize(null);
-		ImageIcon simage = readStillImage(sz, camera);
-		imageHolder.setIcon(simage);
-		System.out.println("updateStillImage: updated imageHolder");
+		ImageIcon newimg = readStillImage(sz, camera);
+		if (newimg != null)
+			imageHolder.setIcon(newimg);
 	}
 
 	/** Video still functionality enabled? */
 	static private boolean videoStillEnabled() {
 		return SystemAttrEnum.VIDEO_STILL_ENABLE.getBoolean();
-	}
-
-	/** Get comm link URI */
-	static private String getCommLinkUri(Camera cam){
-		if (cam != null) {
-			System.out.println("StreamPanel.getCommLinkUri: cam=" + cam.getName());
-			Controller ctrl = cam.getController();
-			System.out.println("StreamPanel.getCommLinkUri: ctrl=" + ctrl);
-			if (ctrl != null) {
-				CommLink cl = ctrl.getCommLink();
-				if (cl != null)
-					System.out.println("StreamPanel.getCommLinkUri: cl=" + cl + " uri=" + cl.getUri());
-				if (cl != null && cl.getPollEnabled())
-					return cl.getUri();
-			}
-		}
-		return null;
 	}
 
 	/** Create a mouse PTZ */
