@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2019-2020  SRF Consulting Group
+ * Copyright (C) 2018  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,14 +25,18 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.net.URL;
+import javax.imageio.ImageIO;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -45,10 +50,13 @@ import javax.swing.event.ChangeListener;
 
 import us.mn.state.dot.sched.Job;
 import us.mn.state.dot.sched.Scheduler;
+import us.mn.state.dot.sched.TimeSteward;
 import us.mn.state.dot.tms.Camera;
 import us.mn.state.dot.tms.SystemAttrEnum;
 import us.mn.state.dot.tms.client.Session;
 import us.mn.state.dot.tms.client.camera.VideoRequest.Size;
+import us.mn.state.dot.tms.CommLink;
+import us.mn.state.dot.tms.Controller;
 
 /** JPanel that shows video.
  *
@@ -60,6 +68,7 @@ import us.mn.state.dot.tms.client.camera.VideoRequest.Size;
  *   Manages MousePTZ link for panel.
  *
  * @author John L. Stanley - SRF Consulting
+ * @author Michael Darter
  */
 @SuppressWarnings("serial")
 public class VidPanel extends JPanel implements FocusListener {
@@ -91,6 +100,9 @@ public class VidPanel extends JPanel implements FocusListener {
 
 	/** Label that holds the video component */
 	private final JPanel videoHolder;
+
+	/** Still image read from URL */
+	private JLabel imageHolder = new JLabel();
 
 	/** streaming control values */
 	private boolean autostart = true;
@@ -240,6 +252,10 @@ public class VidPanel extends JPanel implements FocusListener {
 		videoHolder.add(placeholderComponent, BorderLayout.CENTER);
 
 		addTopLabel(" ");
+		if (videoStillEnabled()) {
+			imageHolder = new JLabel(readStillImage(camera));
+			add(imageHolder, BorderLayout.CENTER);
+		}
 		add(videoHolder, BorderLayout.CENTER);
 		addBottomLabel(" ");
 
@@ -575,7 +591,70 @@ public class VidPanel extends JPanel implements FocusListener {
 			}
 		}
 		startStatusMonitor();
+		updateStillImage();
 		return ret;
+	}
+
+	/** Read the remote image
+	 * @param cam Camera to read still image for
+	 * @return Still image or null on error */
+	static private ImageIcon readStillImage(Camera cam) {
+		if (cam == null)
+			return null;
+		String uri = getCommLinkUri(cam);
+		if (uri == null)
+			return null;
+		try {
+			// read from local file
+			//ImageIcon image = new ImageIcon("/still.jpg");
+			//JLabel label = new JLabel("", image, JLabel.CENTER);
+			//String cluri = "https://video.dot.state.mn.us/video/image/metro/C3501";
+			//URL url = new URL(uri);
+			System.out.println("readStillImage: reading...");
+			BufferedImage img = ImageIO.read(new URL(uri));
+			System.out.println("readStillImage: ...read " + uri);
+			System.out.println("readStillImage: x=" + 
+				img.getWidth() + " y=" + img.getHeight() + 
+				" type=" + img.getType() + " img=" + img.toString());
+			return new ImageIcon(img);
+		} catch (Exception ex) {
+			System.out.println("readStillImage: ex=" + ex);
+			return null;
+		}
+	}
+
+	/** Update still camera image */
+	public void updateStillImage() {
+		if (!videoStillEnabled())
+			return;
+		System.out.println("----------------still image timer: camera=" + 
+			(camera == null ? "null" : camera.getName()) + " time=" + 
+			TimeSteward.currentDateTimeString(true) );
+		ImageIcon simage = readStillImage(camera);
+		imageHolder.setIcon(simage);
+		System.out.println("updateStillImage: updated imageHolder");
+	}
+
+	/** Video still functionality enabled? */
+	static private boolean videoStillEnabled() {
+		return SystemAttrEnum.VIDEO_STILL_ENABLE.getBoolean();
+	}
+
+	/** Get comm link URI */
+	static private String getCommLinkUri(Camera cam){
+		if (cam != null) {
+			System.out.println("StreamPanel.getCommLinkUri: cam=" + cam.getName());
+			Controller ctrl = cam.getController();
+			System.out.println("StreamPanel.getCommLinkUri: ctrl=" + ctrl);
+			if (ctrl != null) {
+				CommLink cl = ctrl.getCommLink();
+				if (cl != null)
+					System.out.println("StreamPanel.getCommLinkUri: cl=" + cl + " uri=" + cl.getUri());
+				if (cl != null && cl.getPollEnabled())
+					return cl.getUri();
+			}
+		}
+		return null;
 	}
 
 	/** Create a mouse PTZ */
