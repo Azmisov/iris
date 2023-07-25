@@ -18,12 +18,15 @@ import java.awt.event.ActionEvent;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.GroupLayout.Group;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import us.mn.state.dot.sonar.client.TypeCache;
 import us.mn.state.dot.tms.CommConfig;
 import us.mn.state.dot.tms.CommLink;
 import us.mn.state.dot.tms.Controller;
+import us.mn.state.dot.tms.client.ITextField;
 import us.mn.state.dot.tms.client.Session;
 import us.mn.state.dot.tms.client.proxy.ProxyTablePanel;
 import us.mn.state.dot.tms.client.proxy.ProxyView;
@@ -32,6 +35,7 @@ import us.mn.state.dot.tms.client.widget.AbstractForm;
 import us.mn.state.dot.tms.client.widget.IAction;
 import us.mn.state.dot.tms.client.widget.ILabel;
 import static us.mn.state.dot.tms.client.widget.Widgets.UI;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import us.mn.state.dot.tms.utils.I18N;
 
 /**
@@ -74,6 +78,13 @@ public class CommLinkForm extends AbstractForm {
 
 	/** Comm link table panel */
 	private final ProxyTablePanel<CommLink> link_pnl;
+	/** Comm link table filter input */
+	private final ITextField link_search =
+		new ITextField("Search Comm Links (RegExp)", 8);
+	/** Comm link table filter reset */
+	private final JButton link_search_clear = new JButton("Reset");
+	/** Comm link table model */
+	private final CommLinkModel link_mdl;
 
 	/** Comm config panel */
 	private final CommConfigPanel config_pnl;
@@ -105,14 +116,14 @@ public class CommLinkForm extends AbstractForm {
 		session = s;
 		comm_links = s.getSonarState().getConCache().getCommLinks();
 		watcher = new ProxyWatcher<CommLink>(comm_links, view, false);
-		CommLinkModel mdl = new CommLinkModel(s);
-		mdl.addTableModelListener(new TableModelListener() {
+		link_mdl = new CommLinkModel(s);
+		link_mdl.addTableModelListener(new TableModelListener() {
 			public void tableChanged(TableModelEvent e) {
 				if (e.getType() == TableModelEvent.UPDATE)
 					updateCommConfig();
 			}
 		});
-		link_pnl = new ProxyTablePanel<CommLink>(mdl) {
+		link_pnl = new ProxyTablePanel<CommLink>(link_mdl) {
 			protected void selectProxy() {
 				selectCommLink();
 				super.selectProxy();
@@ -131,6 +142,12 @@ public class CommLinkForm extends AbstractForm {
 		config_pnl.initialize();
 		controller_pnl.initialize();
 		clear_btn.setAction(clear_act);
+		link_search.addChangeListener((cur, prev) -> {
+			link_mdl.setSearchString(cur);
+		});
+		link_search_clear.addActionListener(evt -> {
+			link_search.setText("");
+		});
 		layoutPanel();
 	}
 
@@ -157,16 +174,28 @@ public class CommLinkForm extends AbstractForm {
 
 	/** Create the horizontal group */
 	private GroupLayout.Group createHorizontalGroup(GroupLayout gl) {
+		// link filter
+		var lf = gl.createSequentialGroup();
+		lf.addComponent(link_search);
+		lf.addComponent(link_search_clear);
+		lf.addPreferredGap(RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
+		// link filter | link table
+		var lg = gl.createParallelGroup(Alignment.LEADING);
+		lg.addGroup(lf);
+		lg.addComponent(link_pnl);
+		// (link filter | link table) / link metadata sidebar
 		GroupLayout.SequentialGroup g0 = gl.createSequentialGroup();
-		g0.addComponent(link_pnl);
+		g0.addGroup(lg);
 		g0.addGap(UI.hgap);
 		g0.addComponent(config_pnl);
+		// controller header
 		GroupLayout.SequentialGroup g1 = gl.createSequentialGroup();
 		g1.addComponent(clear_btn);
 		g1.addGap(UI.hgap);
 		g1.addComponent(link_lbl);
 		g1.addGap(UI.hgap);
 		g1.addComponent(connected_lbl);
+		// link components... / controller header / controller table
 		GroupLayout.ParallelGroup hg = gl.createParallelGroup();
 		hg.addGroup(g0);
 		hg.addGroup(g1);
@@ -176,16 +205,25 @@ public class CommLinkForm extends AbstractForm {
 
 	/** Create the vertical group */
 	private GroupLayout.Group createVerticalGroup(GroupLayout gl) {
-		GroupLayout.ParallelGroup g0 = gl.createBaselineGroup(false,
-			false);
-		g0.addComponent(link_pnl);
+		// link filter
+		var lf = gl.createBaselineGroup(false, false);
+		lf.addComponent(link_search);
+		lf.addComponent(link_search_clear);
+		// link filter | link table
+		var lg = gl.createSequentialGroup();
+		lg.addGroup(lf);
+		lg.addComponent(link_pnl);
+		// (link filter | link table) / link metadata sidebar
+		var g0 = gl.createBaselineGroup(false, false);
+		g0.addGroup(lg);
 		g0.addComponent(config_pnl);
-		GroupLayout.ParallelGroup g1 = gl.createBaselineGroup(false,
-			false);
+		// controller header
+		var g1 = gl.createBaselineGroup(false,false);
 		g1.addComponent(clear_btn);
 		g1.addComponent(link_lbl);
 		g1.addComponent(connected_lbl);
-		GroupLayout.SequentialGroup vg = gl.createSequentialGroup();
+		// link components... / controller header / controller table
+		var vg = gl.createSequentialGroup();
 		vg.addGroup(g0);
 		vg.addGroup(g1);
 		vg.addComponent(controller_pnl);

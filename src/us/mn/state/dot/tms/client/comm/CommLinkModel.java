@@ -22,15 +22,18 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JTable;
+import javax.swing.RowFilter;
+import javax.swing.RowSorter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableRowSorter;
+
 import us.mn.state.dot.tms.CommConfig;
 import us.mn.state.dot.tms.CommLink;
 import us.mn.state.dot.tms.client.Session;
 import us.mn.state.dot.tms.client.proxy.ProxyColumn;
 import us.mn.state.dot.tms.client.proxy.ProxyDescriptor;
-import us.mn.state.dot.tms.client.proxy.ProxyListModel;
 import us.mn.state.dot.tms.client.proxy.ProxyTableModel;
 import us.mn.state.dot.tms.client.widget.IComboBoxModel;
 
@@ -168,6 +171,25 @@ public class CommLinkModel extends ProxyTableModel<CommLink> {
 			}
 		});
 		return cols;
+	}
+
+	/// Controls for filtering the table via a search string
+
+	private TableRowSorter<ProxyTableModel<CommLink>> sorter;
+
+	@Override
+	public RowSorter<ProxyTableModel<CommLink>> createSorter() {
+		sorter = new TableRowSorter<ProxyTableModel<CommLink>>(this);
+		sorter.setSortsOnUpdates(true);
+		sorter.setRowFilter(null);
+		return sorter;
+	}
+
+	public void setSearchString(String search){
+		RowFilter<ProxyTableModel<CommLink>, Integer> fltr = null;
+		if (!search.isEmpty())
+			fltr = RowFilter.regexFilter("(?i)"+search);
+		sorter.setRowFilter(fltr);
 	}
 
 	/** Comm config proxy list model */
