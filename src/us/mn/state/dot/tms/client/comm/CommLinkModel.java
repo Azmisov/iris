@@ -187,6 +187,7 @@ public class CommLinkModel extends ProxyTableModel<CommLink> {
 
 	public void setSearchString(String search){
 		RowFilter<ProxyTableModel<CommLink>, Integer> fltr = null;
+		// case insensitive
 		if (!search.isEmpty())
 			fltr = RowFilter.regexFilter("(?i)"+search);
 		sorter.setRowFilter(fltr);

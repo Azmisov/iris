@@ -20,7 +20,6 @@ import java.util.Comparator;
 import javax.swing.RowSorter;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
-import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import us.mn.state.dot.sonar.SonarObject;
 import us.mn.state.dot.tms.client.Session;

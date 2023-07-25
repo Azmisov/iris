@@ -19,7 +19,6 @@ import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.GroupLayout.Group;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import us.mn.state.dot.sonar.client.TypeCache;
@@ -86,6 +85,9 @@ public class CommLinkForm extends AbstractForm {
 	/** Comm link table model */
 	private final CommLinkModel link_mdl;
 
+	/** Disable all comm links button */
+	private final JButton disable_btn = new JButton("Disable All");
+
 	/** Comm config panel */
 	private final CommConfigPanel config_pnl;
 
@@ -133,6 +135,16 @@ public class CommLinkForm extends AbstractForm {
 		controller_pnl = new ControllerPanel(s);
 	}
 
+	/** Enable/disable mass action buttons */
+	private void updateMassActionEnabled(){
+		// just check first row for permissions; assume all others match
+		boolean enable =
+			link_pnl.filteredRowCount() > 0 &&
+			link_mdl.canWrite(link_pnl.getFilteredRow(0), "pollEnabled");
+
+		disable_btn.setEnabled(enable);
+	}
+
 	/** Initializze the widgets in the form */
 	@Override
 	protected void initialize() {
@@ -142,12 +154,25 @@ public class CommLinkForm extends AbstractForm {
 		config_pnl.initialize();
 		controller_pnl.initialize();
 		clear_btn.setAction(clear_act);
+		// comm link filtering
 		link_search.addChangeListener((cur, prev) -> {
 			link_mdl.setSearchString(cur);
+			updateMassActionEnabled();
 		});
 		link_search_clear.addActionListener(evt -> {
 			link_search.setText("");
+			updateMassActionEnabled();
 		});
+		// comm link mass action buttons
+		link_mdl.getSession().addEditModeListener(() -> {
+			updateMassActionEnabled();
+		});
+		disable_btn.addActionListener(evt -> {
+			link_pnl.iterateFilteredRows(link -> {
+				link.setPollEnabled(false);
+			});
+		});
+		updateMassActionEnabled();
 		layoutPanel();
 	}
 
@@ -179,6 +204,7 @@ public class CommLinkForm extends AbstractForm {
 		lf.addComponent(link_search);
 		lf.addComponent(link_search_clear);
 		lf.addPreferredGap(RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE);
+		lf.addComponent(disable_btn);
 		// link filter | link table
 		var lg = gl.createParallelGroup(Alignment.LEADING);
 		lg.addGroup(lf);
@@ -209,6 +235,7 @@ public class CommLinkForm extends AbstractForm {
 		var lf = gl.createBaselineGroup(false, false);
 		lf.addComponent(link_search);
 		lf.addComponent(link_search_clear);
+		lf.addComponent(disable_btn);
 		// link filter | link table
 		var lg = gl.createSequentialGroup();
 		lg.addGroup(lf);
