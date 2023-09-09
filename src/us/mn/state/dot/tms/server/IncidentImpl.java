@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2022  Minnesota Department of Transportation
+ * Copyright (C) 2018  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,6 +42,7 @@ import static us.mn.state.dot.tms.server.XmlWriter.createAttribute;
  * An incident is an event (crash, stall, etc.) which has an effect on traffic.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class IncidentImpl extends BaseObjectImpl implements Incident {
 
@@ -58,8 +60,9 @@ public class IncidentImpl extends BaseObjectImpl implements Incident {
 		namespace.registerType(SONAR_TYPE, IncidentImpl.class);
 		store.query("SELECT name, replaces, event_desc_id, " +
 			"event_date, detail, lane_code, road, dir, lat, " +
-			"lon, camera, impact, cleared, confirmed FROM event." +
-			SONAR_TYPE + " WHERE cleared = 'f';",new ResultFactory()
+			"lon, camera, impact, cleared, confirmed, notes " +
+			"FROM event." + SONAR_TYPE +
+			" WHERE cleared = 'f';",new ResultFactory()
 		{
 			public void create(ResultSet row) throws Exception {
 				namespace.addObject(new IncidentImpl(namespace,
@@ -76,7 +79,8 @@ public class IncidentImpl extends BaseObjectImpl implements Incident {
 					row.getString(11),	// camera
 					row.getString(12),	// impact
 					row.getBoolean(13),	// cleared
-					row.getBoolean(14)	// confirmed
+					row.getBoolean(14),	// confirmed
+					row.getString(15)	// notes
 				));
 			}
 		});
@@ -100,6 +104,7 @@ public class IncidentImpl extends BaseObjectImpl implements Incident {
 		map.put("impact", impact);
 		map.put("cleared", cleared);
 		map.put("confirmed", confirmed);
+		map.put("notes", notes);
 		return map;
 	}
 
@@ -123,17 +128,17 @@ public class IncidentImpl extends BaseObjectImpl implements Incident {
 	/** Create an incident */
 	protected IncidentImpl(Namespace ns, String n, String rpl, int et,
 		Date ed, String dtl, String lc, String r, short d, double lt,
-		double ln, String cam, String im, boolean clr, boolean cnf)
+		double ln, String cam, String im, boolean clr, boolean cnf, String no)
 	{
 		this(n, rpl, et, ed, (IncidentDetail)ns.lookupObject(
 		     IncidentDetail.SONAR_TYPE, dtl), lc, lookupRoad(r), d, lt,
-		     ln, lookupCamera(cam), im, clr, cnf);
+		     ln, lookupCamera(cam), im, clr, cnf, no);
 	}
 
 	/** Create an incident */
 	public IncidentImpl(String n, String rpl, int et, Date ed,
 		IncidentDetail dtl, String lc, Road r, short d, double lt,
-		double ln, Camera cam, String im, boolean clr, boolean cnf)
+		double ln, Camera cam, String im, boolean clr, boolean cnf, String no)
 	{
 		super(n);
 		replaces = rpl;
@@ -149,6 +154,7 @@ public class IncidentImpl extends BaseObjectImpl implements Incident {
 		impact = im;
 		cleared = clr;
 		confirmed = cnf;
+		notes = no;
 	}
 
 	/** Destroy an object */
@@ -368,6 +374,7 @@ public class IncidentImpl extends BaseObjectImpl implements Incident {
 		w.write(createAttribute("impact", impact));
 		w.write(createAttribute("cleared", cleared));
 		w.write(createAttribute("confirmed", confirmed));
+		w.write(createAttribute("notes", notes));
 		w.write("/>\n");
 	}
 
@@ -392,5 +399,41 @@ public class IncidentImpl extends BaseObjectImpl implements Incident {
 	/** Get Position in WGS84 */
 	private Position getWgs84Position() {
 		return new Position(lat, lon);
+	}
+
+	/** Incident notes, which are never null */
+	private String notes = "";
+
+	/** Get notes */
+	@Override
+	public String getNotes() {
+		return notes;
+	}
+
+	/** Set notes */
+	@Override
+	public void setNotes(String n) {
+		notes = n;
+	}
+
+	/** Set notes */
+	public void doSetNotes(String n) throws TMSException {
+		if (!n.equals(notes)) {
+			store.update(this, "notes", n);
+			setNotes(n);
+		}
+	}
+
+	/** Set notes and notify clients */
+	public void setNotesNotify(String n) {
+		try {
+			if (!n.equals(notes)) {
+				doSetNotes(n);
+				notifyAttribute("notes");
+			}
+		}
+		catch (TMSException e) {
+			e.printStackTrace();
+		}
 	}
 }

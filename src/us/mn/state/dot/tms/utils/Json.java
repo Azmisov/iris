@@ -15,7 +15,7 @@
 package us.mn.state.dot.tms.utils;
 
 /**
- * JSON writer.
+ * JSON writer. Prefer {@link JSONBuilder} instead
  *
  * @author Douglas Lau
  */

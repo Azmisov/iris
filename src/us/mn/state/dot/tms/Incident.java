@@ -86,4 +86,10 @@ public interface Incident extends SonarObject {
 
 	/** Get the confirmed status */
 	boolean getConfirmed();
+
+	/** Get notes */
+	String getNotes();
+
+	/** Set notes */
+	void setNotes(String n);
 }

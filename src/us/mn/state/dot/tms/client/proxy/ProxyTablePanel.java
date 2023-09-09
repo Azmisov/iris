@@ -18,6 +18,8 @@ package us.mn.state.dot.tms.client.proxy;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.function.Consumer;
+
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -353,5 +355,23 @@ public class ProxyTablePanel<T extends SonarObject> extends JPanel {
 	/** Check if a proxy can be removed */
 	public boolean canRemove(T proxy) {
 		return model.canRemove(proxy);
+	}
+
+	/** Iterate rows in the table, but only those that are filtered
+	 * @param lambda callback to receive filtered rows
+	 */
+	public void iterateFilteredRows(Consumer<T> lambda){
+		int frows = filteredRowCount();
+		for (int frow = 0; frow < frows; frow++)
+			lambda.accept(getFilteredRow(frow));
+	}
+	/** Count of filtered rows */
+	public int filteredRowCount(){
+		return table.getRowCount();
+	}
+	/** Filtered row to proxy */
+	public T getFilteredRow(int frow){
+		int row = table.convertRowIndexToModel(frow);
+		return model.getRowProxy(row);
 	}
 }

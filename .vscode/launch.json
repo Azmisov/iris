@@ -9,14 +9,14 @@
             "name": "Test",
             "request": "launch",
             "mainClass": "isaac.Test",
-            "projectName": "iris_680b11c0"
+            "projectName": "iris_380d1994"
         },
         {
             "type": "java",
             "name": "MainServer",
             "request": "launch",
             "mainClass": "us.mn.state.dot.tms.server.MainServer",
-            "projectName": "iris_680b11c0",
+            "projectName": "iris_380d1994",
             "vmArgs": [
                 "-enableassertions",
                 "-server",
@@ -32,7 +32,16 @@
             "name": "MainClient",
             "request": "launch",
             "mainClass": "us.mn.state.dot.tms.client.MainClient",
-            "projectName": "iris_680b11c0"
+            "projectName": "iris_380d1994",
+            "vmArgs": [
+                "-enableassertions",
+                "-Xmx1024M"
+            ],
+            "args": [
+                "./dev/client/iris-client.properties"
+            ],
+            "cwd": "${workspaceFolder}",
+            "shortenCommandLine": "none"
         }
     ]
 }

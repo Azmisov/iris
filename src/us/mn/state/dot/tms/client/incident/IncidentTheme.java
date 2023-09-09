@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2016  Minnesota Department of Transportation
+ * Copyright (C) 2018  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,17 +16,27 @@
 package us.mn.state.dot.tms.client.incident;
 
 import java.awt.Color;
+import java.util.Date;
+import us.mn.state.dot.tms.Camera;
+import us.mn.state.dot.tms.EventType;
 import us.mn.state.dot.tms.Incident;
+import us.mn.state.dot.tms.IncidentDetail;
+import us.mn.state.dot.tms.IncidentHelper;
+import us.mn.state.dot.tms.IncSeverity;
 import us.mn.state.dot.tms.ItemStyle;
+import us.mn.state.dot.tms.Road;
 import us.mn.state.dot.tms.client.map.MapObject;
 import us.mn.state.dot.tms.client.map.Outline;
 import us.mn.state.dot.tms.client.map.Style;
 import us.mn.state.dot.tms.client.proxy.ProxyTheme;
+import us.mn.state.dot.tms.client.ToolTipBuilder;
+import us.mn.state.dot.tms.utils.I18N;
 
 /**
  * Theme for incident objects on the map.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class IncidentTheme extends ProxyTheme<Incident> {
 
@@ -93,6 +104,27 @@ public class IncidentTheme extends ProxyTheme<Incident> {
 	static private final Style UN_HAZARD = unconfirmed(ItemStyle.HAZARD,
 		HAZARD_COLOR);
 
+	/** Get time as string */
+	static public String getTime(Incident proxy) {
+		if (proxy != null) {
+			long time = proxy.getEventDate();
+			if (time > 0)
+				return new Date(time).toString();
+		}
+		return "";
+	}
+
+	/** Get event type 
+	 * @return Event type or null if none */
+	static public EventType getEventType(Incident proxy) {
+		if (proxy != null) {
+			int et = proxy.getEventType();
+			return EventType.fromId(et);
+		}
+		return null;
+	}
+
+
 	/** Create a new incident theme */
 	public IncidentTheme(IncidentManager man) {
 		super(man, new IncidentMarker());
@@ -112,6 +144,35 @@ public class IncidentTheme extends ProxyTheme<Incident> {
 		addStyle(UN_STALL);
 		addStyle(UN_ROADWORK);
 		addStyle(UN_HAZARD);
+	}
+
+	/** Get tooltip text for the given map object.
+	 * @return Tool tip text or null */
+	@Override
+	public String getTip(MapObject o) {
+		final Incident proxy = manager.findProxy(o);
+		if (proxy == null)
+			return null;
+		ToolTipBuilder tt = new ToolTipBuilder();
+		tt.addLine(I18N.get("incident") + " " + proxy.getName());
+		IncSeverity ic = IncidentHelper.getSeverity(proxy);
+		tt.addLine(I18N.get("incident.severity"),
+			(ic != null ? ic.toString() : ""));
+		EventType et = getEventType(proxy);
+		tt.addLine(I18N.get("incident.type.short"),
+			(et != null ? et.toString() : ""));
+		IncidentDetail id = proxy.getDetail();
+		tt.addLine(I18N.get("incident.detail"), 
+			(id != null ? id.toString() : ""));
+		Road ro = proxy.getRoad();
+		tt.addLine(I18N.get("location.road"), 
+			(ro != null ? ro.toString() : ""));
+		Camera ca = IncidentHelper.getCamera(proxy);
+		tt.addLine(I18N.get("camera"), 
+			(ca != null ? ca.toString() : ""));
+		tt.addLine(I18N.get("incident.notes"), proxy.getNotes());
+		tt.addLine(I18N.get("incident.time"), getTime(proxy));
+		return tt.get();
 	}
 
 	/** Get an appropriate style for the given map object */
