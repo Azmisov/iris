@@ -104,8 +104,13 @@ public class EssRec implements JsonBuilder.Buildable {
 		// the surface status and first valid surf temp
 		// should come from the same sensor.
 		var valid_row = ps_table.getFirstValidSurfTempRow();
-		ws.setSurfTempNotify(valid_row.surface_temp.toInteger());
-		ws.setSurfaceStatusNotify(valid_row.surface_status.toInteger());
+		Integer surf_temp = null, surf_status = null;
+		if (valid_row != null){
+			surf_temp = valid_row.surface_temp.toInteger();
+			surf_status = valid_row.surface_status.toInteger();
+		}
+		ws.setSurfTempNotify(surf_temp);
+		ws.setSurfaceStatusNotify(surf_status);
 		ws.setPvmtTempNotify(ps_table.getFirstValidPvmtTemp());
 		ws.setSurfFreezeTempNotify(ps_table.getFirstValidSurfFreezeTemp());
 		ws.setPavementSensorsTable(ps_table);
@@ -173,5 +178,6 @@ public class EssRec implements JsonBuilder.Buildable {
 			ss_table,
 			rad_values
 		});
+		System.out.println("JSON: "+jb.toString());
 	}
 }

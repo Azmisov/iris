@@ -4,7 +4,7 @@ import us.mn.state.dot.tms.server.comm.snmp.ASN1Integer;
 
 /** Implementation of {@link EssConverter} for {@link ASN1Integer}. It lets
  * you specify a permitted range for the raw value, as well as missing value.
- * By default these are [0,MAX_WORD), with the max doubling as the missing value.
+ * By default these are [0,MAX_WORD], with the max doubling as the missing value.
  * The raw type is initialized to the missing value. Subclasses can utilize
  * the {@link #ranged} method in conversion, supplying a lambda for additional
  * transformations.
@@ -21,7 +21,7 @@ public class EssInteger<C> extends EssConverter<C, ASN1Integer>{
 
 	/** Minimum allowed value (inclusive) */
 	protected int min = 0;
-	/** Maximum allowed value (exclusive) */
+	/** Maximum allowed value (inclusive) */
 	protected int max = MAX_WORD;
 	/** Constant indicating a missing/error value. If null, it indicates no
 	 * missing/error value is applicable for this type, and {@link #min} will be
@@ -107,8 +107,9 @@ public class EssInteger<C> extends EssConverter<C, ASN1Integer>{
 		int i = raw.getInteger();
 		// TODO: throw a range error here instead? then downstream logger
 		// could attach sensor metadata
-		if (i < min || i >= max)
-			System.err.print("%s out-of-range: %d".formatted(raw.getName(), i));
+		if (i < min || i > max)
+			System.err.print("%s out-of-range [%d, %d]: %d\n"
+				.formatted(raw.getName(), min, max, i));
 		else if (i != missing)
 			return lambda.operation(i);
 		return null;

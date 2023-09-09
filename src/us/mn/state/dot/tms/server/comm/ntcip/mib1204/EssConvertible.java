@@ -39,8 +39,6 @@ public interface EssConvertible extends JsonBuilder.Buildable {
 	}
 	/** Write multiple values into logging format */
 	public static String toLogString(EssConvertible[] vals, Integer row){
-		if (row == null)
-			return toLogString(vals);
 		StringBuilder sb = new StringBuilder();
 		for (var val : vals)
 			sb.append(val.toLogString(row));

@@ -26,8 +26,10 @@ public class WeatherSensorCsvWriter extends XmlWriter {
 	static private void writeLine(Writer wr, String line) 
  		throws IOException
  	{
- 		if (line != null)
- 			wr.write(line + "\n");
+ 		if (line != null){
+ 			wr.write(line);
+			wr.write("\n");
+		}
  	}
 
 	/** File type to generate */

@@ -94,14 +94,17 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 		}
 		/** Get JSON representation */
 		public void toJson(JsonBuilder jb){
-			jb.extend(new EssConvertible[]{
-				location,
-				sub_surface_type,
-				depth,
-				temp,
-				moisture,
-				sensor_error
-			}).pair("active", isActive());
+			jb.beginObject()
+				.extend(new EssConvertible[]{
+					location,
+					sub_surface_type,
+					depth,
+					temp,
+					moisture,
+					sensor_error
+				})
+				.pair("active", isActive())
+				.endObject();
 		}
 		/** Get Xml representation */
 		public void toXml(XmlBuilder xb) throws IOException{
@@ -150,8 +153,10 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 
 	/** Get JSON representation */
 	public void toJson(JsonBuilder jb){
-		jb.key("sub_surface_sensor");
-		super.toJson(jb);
+		if (!isEmpty()){
+			jb.key("sub_surface_sensor");
+			super.toJson(jb);
+		}
 	}
 	/** Get XML representation */
 	public void toXml(XmlBuilder xb) throws IOException{

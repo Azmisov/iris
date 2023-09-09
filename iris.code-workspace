@@ -5,6 +5,23 @@
         }
     ],
     "settings": {
-        "java.debug.settings.onBuildFailureProceed": true
+        "java.debug.settings.onBuildFailureProceed": true,
+        "java.project.sourcePaths": [
+            "src",
+            "etc/i18n"
+        ],
+        "java.project.referencedLibraries": [
+            "lib/**/*.jar",
+            "/usr/share/java/postgresql-jdbc.jar"
+        ],
+        "java.project.outputPath": "build/classes",
+        "java.server.launchMode": "Standard",
+        "java.dependency.packagePresentation": "hierarchical",
+        "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx4G -Xms100m -Xlog:disable",
+        "editor.rulers": [
+            80,
+            100,
+            120
+        ]
     }
 }

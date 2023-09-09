@@ -104,11 +104,13 @@ public class TemperatureSensorsTable extends EssTable<TemperatureSensorsTable.Ro
 			jb.key("temperature_sensor");
 			super.toJson(jb);
 		}
-		jb.extend(new EssConvertible[]{
-			wet_bulb_temp,
-			dew_point_temp,
-			max_air_temp,
-			min_air_temp
-		});
+		else{
+			jb.extend(new EssConvertible[]{
+				wet_bulb_temp,
+				dew_point_temp,
+				max_air_temp,
+				min_air_temp
+			});
+		}
 	}
 }

@@ -295,8 +295,10 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
 
 	/** Get JSON representation */
 	public void toJson(JsonBuilder jb){
-		jb.key("pavement_sensor");
-		super.toJson(jb);
+		if (!isEmpty()){
+			jb.key("pavement_sensor");
+			super.toJson(jb);
+		}
 	}
 	/** Get XML representation */
 	public void toXml(XmlBuilder xb) throws IOException{
