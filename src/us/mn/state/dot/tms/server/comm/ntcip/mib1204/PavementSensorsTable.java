@@ -202,12 +202,12 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
 		/** Get XML representation */
 		public void toXml(XmlBuilder xb) throws IOException{
 			xb.tag("pvmt_sensor")
-				.attr("index", number)
-				.attr("isactive", isActive())
+				.attr("row", number)
+				.attr("is_active", isActive())
 				.attr("pvmt_sens_err",
-					SString.camelToUpperSnake(sensor_error.toString()))
+					sensor_error.get(v -> v.toStringUpperSnake()))
 				.attr("surf_status",
-					SString.camelToUpperSnake(surface_status.toString()))
+					surface_status.get(v -> v.toStringUpperSnake()))
 				.attr("surf_temp_c", surface_temp)
 				.attr("pvmt_temp_c", pavement_temp)
 				.attr("surf_water_depth_mm",
@@ -216,7 +216,7 @@ public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
 				.attr("ice_water_depth_mm",
 					ice_or_water_depth.get(v -> v.round(MILLIMETERS)))
 				.attr("surf_black_ice_signal",
-					SString.camelToUpperSnake(black_ice_signal.toString()));
+					black_ice_signal.get(v -> v.toStringUpperSnake()));
 		}
 	}
 

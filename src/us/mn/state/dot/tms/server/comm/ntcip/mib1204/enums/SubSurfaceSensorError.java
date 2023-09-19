@@ -17,10 +17,8 @@ public enum SubSurfaceSensorError implements EssEnumType {
 	cutCable,     // 4
 	shortCircuit; // 5
 
-	/** In this case valid indicates there is a valid error detected */
-	public boolean isValid(){
-		return this != none && EssEnumType.super.isValid();
-	}
+	// isValid method not excluding `none` currently for v47 backcompat
+
 	public static SubSurfaceSensorError fromOrdinal(Integer i){
 		return EssEnumType.fromOrdinal(SubSurfaceSensorError.class, i);
 	}

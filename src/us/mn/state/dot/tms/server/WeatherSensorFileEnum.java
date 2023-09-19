@@ -196,7 +196,7 @@ public enum WeatherSensorFileEnum {
 	static private String essTempToCsv100(
 		boolean is_active, EssTemperature v, String missing
 	) {
-		if (!is_active)
+		if (!is_active || v == null)
 			return missing;
 		return v.get(
 			t -> String.valueOf(t.round(Temperature.Units.HUNDREDTH_CELSIUS)),

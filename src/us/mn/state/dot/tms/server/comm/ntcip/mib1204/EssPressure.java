@@ -4,10 +4,10 @@ import us.mn.state.dot.tms.units.Pressure;
 import us.mn.state.dot.tms.units.Pressure.Units;
 
 /** Converts {@link MIB1204} raw types to a {@link Pressure}. By default, it is
- * configured for microbars between [0,MAX_WORD), with max value indicating an
- * error/missing value; output value is in pacals, with zero fractional digits
- * for String conversion. Output conversion is lazy, in case you want to
- * manually edit/access the value prior.
+ * configured for 1/10th millibar between [0,MAX_WORD), with max value
+ * indicating an error/missing value; output value is in pascals, with zero
+ * fractional digits for String conversion. Output conversion is lazy, in case
+ * you want to manually edit/access the value prior.
  *
  * @author Isaac Nygaard
  * @copyright 2023 Iteris, Inc
@@ -24,8 +24,8 @@ public class EssPressure extends EssUnits<Pressure, Units>{
 	}
     /** Default configuration */
     private void init(){
-        setUnits(1, Units.MICROBARS);
-		setDigits(0);
+        setUnits(0.1, Units.MILLIBARS);
+		setOutput(1, Units.PASCALS, 0);
     }
 
 	@Override

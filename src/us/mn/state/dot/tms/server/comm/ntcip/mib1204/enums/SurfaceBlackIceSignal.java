@@ -16,11 +16,8 @@ public enum SurfaceBlackIceSignal implements EssEnumType {
 	blackIce,      // 3
 	detectorError; // 4
 
-	/** Signals of type `other` are also considered invalid here */
-	public boolean isValid(){
-		// TODO: include other? excluding for back-compat currently
-		return this != other && EssEnumType.super.isValid();
-	}
+	// for `isValid` including `other` for v47 backcompat
+	
 	public static SurfaceBlackIceSignal fromOrdinal(Integer i){
 		return EssEnumType.fromOrdinal(SurfaceBlackIceSignal.class, i);
 	}

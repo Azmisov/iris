@@ -380,8 +380,9 @@ public class OpQueryEssStatus extends OpEss {
 		}, true);
 		// Some controllers sometimes seem to randomly
 		// forget what windSensorGustDirection is
+		// For compatibility with older v47, falling back to v1 values
 		return (err != null || ws_table.isDone())
-			? QueryTemperatureSensors
+			? QueryWindSensorV1 //QueryTemperatureSensors
 			: this.QueryWindSensorsV2;
 	};
 
@@ -393,8 +394,9 @@ public class OpQueryEssStatus extends OpEss {
 		// Note: this object was introduced in V2
 		if (err != null)
 			return QueryWindSensorV1;
+		// For compatibility with older v47, falling back to v1 values
 		return ws_table.isDone()
-			? QueryTemperatureSensors
+			? QueryWindSensorV1 //QueryTemperatureSensors
 			: QueryWindTableV2;
 	};
 

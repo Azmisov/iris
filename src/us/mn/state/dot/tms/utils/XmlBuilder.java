@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 
 /** Wrapper around StringBuilder or other Appendable for building XMl documents
  * directly as a string. Currently just supports basic XML tags and text with
- * preset prolog; no CDATA, comments, document type, processing instructions, or
+ * prolog; no CDATA, comments, document type, processing instructions, or
  * namespaces. Can easily add these as they become necessary.
  *
  * Usage:
@@ -33,6 +33,9 @@ import java.util.regex.Pattern;
  *      .tag("childB");
  * }
  * </pre>
+ * 
+ * Writing the XML prolog is optional, in case you are generating sub-documents.
+ * Disabling strict mode can also be useful for sub-documents.
  *
  * @author Isaac Nygaard
  * @copyright 2023 Iteris Inc.
@@ -40,8 +43,6 @@ import java.util.regex.Pattern;
  */
 public class XmlBuilder{
 	// Making these non-static so they could be customized per XmlBuilder
-	/** XML prolog; if modifying, you'll need to call {@link #clear} to have it take affect */
-	public String PROLOG = "<?xml version='1.0' encoding='UTF-8'?>";
 	/** Line whitespace for pretty printing */
 	public String LINE = "\n";
 	/** Indentation whitespace for pretty printing */
@@ -55,6 +56,8 @@ public class XmlBuilder{
 	private boolean await_child;
 	/** True if we can add attributes to the active element */
 	private boolean attrs;
+	/** True if XML has been generated; used to control whether prolog writes */
+	private boolean data_written;
 	/** Whether to include pretty printing whitespace */
 	public boolean pretty_print = false;
 	/** Whether to operate in strict mode. This operates in a safer mode:
@@ -150,15 +153,32 @@ public class XmlBuilder{
 		stack.clear();
 		attrs = false;
 		await_child = true;
-		sb.append(PROLOG);
+		data_written = false;
 		return this;
+	}
+
+	public XmlBuilder prolog(String version, String encoding) throws IOException{
+		if (data_written)
+			error("Prolog must be the first data");
+		sb.append("<?xml version='")
+			.append(version)
+			.append("' encoding='")
+			.append(encoding)
+			.append("'?>");
+		data_written = true;
+		return this;
+	}
+	/** Same as {@link #prolog(String, String)}, but with defaults 1.0 and UTF-8 */
+	public XmlBuilder prolog() throws IOException{
+		return prolog("1.0", "UTF-8");
 	}
 
 	/** Insert whitespace for pretty printing */
 	private void whitespace() throws IOException{
 		if (!pretty_print)
 			return;
-		sb.append(LINE);
+		if (data_written)
+			sb.append(LINE);
 		for (int i=0; i<stack.size(); ++i)
 			sb.append(INDENT);
 	}
@@ -222,6 +242,7 @@ public class XmlBuilder{
 			end_open_tag();
 		close_tag();
 		start_open_tag(name);
+		data_written = true; 
 		return this;
 	}
 	/** Navigate inside the contents of the {@link #active} element
@@ -288,19 +309,27 @@ public class XmlBuilder{
 	public XmlBuilder ancestor(int levels) throws IOException{
 		return ancestor(levels, false);
 	}
-	/** Add an attribute to the {@link #active} element. A null value will be
-	 * taken to be an empty attribute value. The value is escaped, replacing
-	 * special characters with entities as needed. Since XML is built greedily,
-	 * you cannot add attributes once child contents have been inserted.
+	/** Add an attribute to the {@link #active} element. The value is escaped,
+	 * replacing special characters with entities as needed. Since XML is built
+	 * greedily, you cannot add attributes once child contents have been
+	 * inserted.
+	 * @param skip_null whether the attribute is excluded if the value is null,
+	 *  or the string representation of it is null; if false, null values are
+	 *  interpreted as empty attributes (empty string)
 	 */
-	public <T> XmlBuilder attr(String key, T value) throws IOException{
+	public <T> XmlBuilder attr(String key, T value, boolean skip_null)
+		throws IOException
+	{
 		if (key == null || !valid_name.matcher(key).matches())
 			error("Invalid XML attribute name: "+key);
 		if (!attrs)
 			error("No active element to add attributes to");
+		// determine string representation
+		String s = value == null ? null : String.valueOf(value);
+		if (skip_null && s == null)
+			return this;
 		sb.append(' ').append(key).append("=\'");
-		if (value != null){
-			String s = String.valueOf(value);
+		if (s != null){
 			s = s.replace("&", "&amp;")
 				.replace("<", "&lt;")
 				.replace("\'", "&apos;");
@@ -308,10 +337,19 @@ public class XmlBuilder{
 			if (strict)
 				s = s.replace(">", "&gt;")
 					.replace("\"", "&quot;");
+			if (s.isEmpty()){
+				//System.err.println("XML ATTRIBUTE IS EMPTY: "+key);
+			}
 			sb.append(s);
 		}
 		sb.append('\'');
 		return this;
+	}
+	/** Same as {@link #attr} with `skip_null` defaulting to true;
+	 * this matches the behavior of the legacy {@link XmlWriter#getAttribute}
+	 */
+	public <T> XmlBuilder attr(String key, T value) throws IOException{
+		return attr(key, value, true);
 	}
 	/** Append text/character data to {@link #active} element; does not insert
 	 * CDATA delimiters. If text is empty or null, nothing will be inserted */

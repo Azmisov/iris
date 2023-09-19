@@ -18,7 +18,7 @@ import static us.mn.state.dot.tms.units.Speed.Units.*;
 public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 	/** Number of sensors in table (V2+) */
 	public final EssNumber num_sensors =
-		EssNumber.Count("num_sensors", windSensorTableNumSensors);
+		EssNumber.Count("num_wind_sensors", windSensorTableNumSensors);
 
 	public WindSensorsTable(){
 		setSensorCount(num_sensors);
@@ -149,6 +149,7 @@ public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
 		if (!isEmpty())
 			super.toJson(jb);
 		else {
+			// emulate sensor table w/ V1 properties
 			jb.beginList()
 				.object(new EssConvertible[]{
 					height,

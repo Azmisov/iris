@@ -73,10 +73,10 @@ public final class Temperature {
 		return t;
 	}
 
-        /** Get system units */
-        static private boolean useSi() {
-                return SystemAttrEnum.CLIENT_UNITS_SI.getBoolean();
-        }
+	/** Get system units */
+	static private boolean useSi() {
+		return SystemAttrEnum.CLIENT_UNITS_SI.getBoolean();
+	}
 
 	/** Temperature value */
 	public final double value;

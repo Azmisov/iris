@@ -11,7 +11,8 @@ DROP VIEW iris.dms;
 DROP FUNCTION iris.dms_insert;
 DROP FUNCTION iris.dms_update;
 
-ALTER TABLE iris._dms ALTER COLUMN notes TYPE VARCHAR(128);
+-- v47 increasing to 255 since max is 160 currently
+ALTER TABLE iris._dms ALTER COLUMN notes TYPE VARCHAR(255);
 ALTER TABLE iris._dms ADD COLUMN status JSONB;
 ALTER TABLE iris._dms ADD COLUMN stuck_pixels JSONB;
 

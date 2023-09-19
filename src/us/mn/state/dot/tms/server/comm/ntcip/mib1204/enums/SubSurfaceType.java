@@ -24,9 +24,8 @@ public enum SubSurfaceType implements EssEnumType {
 	variousAggregates, // 11
 	air;               // 12
 
-	public boolean isValid(){
-		return this != unknown && EssEnumType.super.isValid();
-	}
+	// isValid including `unknown` for v47 backcompat
+	
 	public static SubSurfaceType fromOrdinal(Integer i){
 		return EssEnumType.fromOrdinal(SubSurfaceType.class, i);
 	}

@@ -59,7 +59,7 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 			depth = 
 				new EssDistance("depth", essSubSurfaceSensorDepth, row)
 					.setUnits(1, CENTIMETERS)
-					.setOutput(1, METERS, 2);
+					.setDigits(2);
 			temp =
 				new EssTemperature("temp", essSubSurfaceTemperature, row);
 			moisture =
@@ -109,15 +109,16 @@ public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
 		/** Get Xml representation */
 		public void toXml(XmlBuilder xb) throws IOException{
 			xb.tag("subsurf_sensor")
-				.attr("index", number)
-				.attr("isactive",isActive())
+				.attr("row", number)
+				.attr("is_active",isActive())
 				.attr("location",location)
-				.attr("subsurf_type",sub_surface_type)
+				.attr("subsurf_type",
+					sub_surface_type.toInteger())
 				.attr("subsurf_depth",depth)
 				.attr("subsurf_temp_c",temp)
 				.attr("subsurf_moisture",moisture)
 				.attr("subsurf_sensor_error",
-					sensor_error.toString().toUpperCase());
+					sensor_error.get(v -> v.toStringUpperSnake()));
 		}
 	}
 

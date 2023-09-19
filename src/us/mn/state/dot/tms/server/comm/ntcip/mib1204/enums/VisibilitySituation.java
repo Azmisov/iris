@@ -25,9 +25,8 @@ public enum VisibilitySituation implements EssEnumType {
 	sunGlare,          // 11
 	swarmOfInsects;    // 12
 
-	public boolean isValid(){
-		return this != unknown && EssEnumType.super.isValid();
-	}
+	// for `isValid` including `unknown` for v47 backcompat
+
 	public static VisibilitySituation fromOrdinal(Integer i){
 		return EssEnumType.fromOrdinal(VisibilitySituation.class, i);
 	}

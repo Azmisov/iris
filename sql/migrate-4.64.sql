@@ -25,14 +25,27 @@ CREATE VIEW parking_area_view AS
 GRANT SELECT ON parking_area_view TO PUBLIC;
 
 -- Add action_plan_event
-CREATE TABLE event.action_plan_event (
-	event_id integer PRIMARY KEY DEFAULT nextval('event.event_id_seq'),
-	event_date timestamp with time zone NOT NULL,
-	event_desc_id integer NOT NULL
-		REFERENCES event.event_description(event_desc_id),
-	action_plan VARCHAR(16) NOT NULL,
-	detail VARCHAR(15) NOT NULL
-);
+-- v47: rename iris_user -> detail; also table/values may already exist
+DO
+$do$
+BEGIN
+	IF EXISTS (
+		select 1 from information_schema.columns
+		where table_schema='event' and table_name='action_plan_event' and column_name='iris_user'
+	) THEN
+		ALTER TABLE event.action_plan_event RENAME COLUMN iris_user TO detail;
+	ELSE
+		CREATE TABLE IF NOT EXISTS event.action_plan_event (
+			event_id integer PRIMARY KEY DEFAULT nextval('event.event_id_seq'),
+			event_date timestamp with time zone NOT NULL,
+			event_desc_id integer NOT NULL
+				REFERENCES event.event_description(event_desc_id),
+			action_plan VARCHAR(16) NOT NULL,
+			detail VARCHAR(15) NOT NULL
+		);
+	END IF;
+END
+$do$;
 
 -- Add action_plan_event_view
 CREATE VIEW action_plan_event_view AS
@@ -44,20 +57,20 @@ GRANT SELECT ON action_plan_event_view TO PUBLIC;
 
 -- Add event descriptions for action plan events
 INSERT INTO event.event_description (event_desc_id, description)
-	VALUES (900, 'Action Plan ACTIVATED');
+	VALUES (900, 'Action Plan ACTIVATED') ON CONFLICT DO NOTHING;
 INSERT INTO event.event_description (event_desc_id, description)
-	VALUES (901, 'Action Plan DEACTIVATED');
+	VALUES (901, 'Action Plan DEACTIVATED') ON CONFLICT DO NOTHING;
 INSERT INTO event.event_description (event_desc_id, description)
 	VALUES (902, 'Action Plan Phase CHANGED');
 
 -- Add action_plan_event_purge_days system attribute
 INSERT INTO iris.system_attribute (name, value)
-	VALUES ('action_plan_event_purge_days', '90');
+	VALUES ('action_plan_event_purge_days', '90') ON CONFLICT DO NOTHING;
 
 -- Add action plan alert system attributes
 INSERT INTO iris.system_attribute (name, value)
-	VALUES ('action_plan_alert_list', '');
+	VALUES ('action_plan_alert_list', '') ON CONFLICT DO NOTHING;
 INSERT INTO iris.system_attribute (name, value)
-	VALUES ('email_recipient_action_plan', '');
+	VALUES ('email_recipient_action_plan', '') ON CONFLICT DO NOTHING;
 
 COMMIT;

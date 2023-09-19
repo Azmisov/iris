@@ -56,10 +56,10 @@ public final class Distance implements Comparable<Distance> {
 		return d;
 	}
 
-        /** Get system units */
-        static private boolean useSi() {
-                return SystemAttrEnum.CLIENT_UNITS_SI.getBoolean();
-        }
+	/** Get system units */
+	static private boolean useSi() {
+		return SystemAttrEnum.CLIENT_UNITS_SI.getBoolean();
+	}
 
 	/** Distance value */
 	public final double value;

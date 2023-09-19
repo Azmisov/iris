@@ -39,7 +39,7 @@ public class EssString extends EssConverter<String, ASN1OctetString>{
 	@Override
 	public String toString(){
 		var val = get();
-		return val == null ? "" : val;
+		return val == null ? null : val;
 	}
 	/** Json key + string, or an empty string if null */
 	@Override

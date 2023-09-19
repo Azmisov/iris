@@ -66,7 +66,7 @@ public class EssEnum<T extends Enum<T> & EssEnumType> extends EssInteger<T>{
 	}
 	@Override
 	public String toString(){
-		return get(e -> e.toString(), "");
+		return get(e -> e.toString());
 	}
 	@Override
 	public void toJson(JsonBuilder jb){

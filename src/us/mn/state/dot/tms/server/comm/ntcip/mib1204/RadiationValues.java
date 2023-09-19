@@ -32,6 +32,7 @@ public class RadiationValues implements JsonBuilder.Buildable{
 		new EssInterval("total_sun", essTotalSun);
 
 	/** Cloud situation */
+	// overwritten manually to `clear` if no device support
 	public final EssEnum<CloudSituation> cloud_situation =
 		EssEnum.make(CloudSituation.class, "cloud_situation", essCloudSituation);
 
@@ -58,26 +59,6 @@ public class RadiationValues implements JsonBuilder.Buildable{
 	/** Solar radiation over 24 hours (Joules / m^2; deprecated in V2) */
 	public final EssNumber solar_radiation = 
 		new EssNumber("solar_radiation", essSolarRadiation);
-
-	/** Get the total sun minutes */
-	public Integer getTotalSun() {
-		return total_sun.toInteger();
-	}
-
-	/** Get the cloud situation */
-	public CloudSituation getCloudSituation() {
-		return cloud_situation.get();
-	}
-
-	/** Get the total radiation period (seconds) */
-	public Integer getTotalRadiationPeriod() {
-		return total_radiation_period.toInteger();
-	}
-
-	/** Get the solar radiation (joules / m^2) */
-	public Integer getSolarRadiation() {
-		return solar_radiation.toInteger();
-	}
 
 	/** Get JSON representation */
 	public void toJson(JsonBuilder jb){

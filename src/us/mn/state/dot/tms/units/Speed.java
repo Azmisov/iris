@@ -56,10 +56,10 @@ public final class Speed {
 		return (u != null) ? u : Units.KPH;
 	}
 
-        /** Get system units */
-        static private boolean useSi() {
-                return SystemAttrEnum.CLIENT_UNITS_SI.getBoolean();
-        }
+	/** Get system units */
+	static private boolean useSi() {
+		return SystemAttrEnum.CLIENT_UNITS_SI.getBoolean();
+	}
 
 	/** Enumeration of speed units */
 	public enum Units {

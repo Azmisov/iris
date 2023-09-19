@@ -1123,8 +1123,7 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 
 	/** Write weather sensor configuration data as an XML element */
 	public void writeXml(Writer w) throws IOException {
-		var xb = new XmlBuilder(w).setPrettyPrint(true);
-		xb.INDENT = ""; // disable indent currently
+		var xb = new XmlBuilder(w);
 		xb.tag("weather_sensor")
 			.attr("name", getName())
 			.attr("description",GeoLocHelper.getLocation(geo_loc))
@@ -1142,8 +1141,8 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 
 	/** Write real-time weather data as an xml element */
 	public void writeWeatherSensorDataXml(Writer w) throws IOException {
+		// TODO: use references to EssRec data for everything
 		var xb = new XmlBuilder(w).setPrettyPrint(true);
-		xb.INDENT = ""; // disable indent currently
 		// metadata
 		// FIXME: would be better to not write metadata 
 		//        but customers already depend on it.
@@ -1174,22 +1173,26 @@ public class WeatherSensorImpl extends DeviceImpl implements WeatherSensor {
 			.attr("spot_wind_speed_kph", getSpotWindSpeed())
 			.attr("spot_wind_dir_degs", getSpotWindDir())
 			.attr("precip_rate_mmhr", getPrecipRate())
-			.attr("precip_situation", PrecipSituation.from(this))
+			.attr("precip_situation",
+				PrecipSituation.from(this).toStringUpperSnake())
 			.attr("precip_1h_mm", getPrecipOneHour())
 			.attr("precip_3h_mm", getPrecip3Hour())
 			.attr("precip_6h_mm", getPrecip6Hour())
 			.attr("precip_12h_mm", getPrecip12Hour())
 			.attr("precip_24h_mm", getPrecip24Hour())
 			.attr("visibility_m", getVisibility())
-			.attr("visibility_situation", VisibilitySituation.from(this))
+			.attr("visibility_situation",
+				VisibilitySituation.from(this).toStringUpperSnake())
 			.attr("atmos_pressure_pa", getPressureQC())
 			.attr("atmos_pressure_sealevel_pa", getSeaLevelPressure())
 			.attr("pvmt_temp_c", getPvmtTemp())
 			.attr("surf_temp_c", getSurfTempQC())
-			.attr("pvmt_surf_status", SurfaceStatus.from(this))
+			.attr("surface_status",
+				SurfaceStatus.from(this).toStringUpperSnake())
 			.attr("surf_freeze_temp_c", getSurfFreezeTemp())
 			.attr("subsurf_temp_c", getSubSurfTemp())
-			.attr("cloud_cover_situation", getCloudCoverSituation())
+			.attr("cloud_cover_situation",
+				CloudSituation.from(this).toStringUpperSnake())
 			.attr("friction", getFriction())
 			.attr("n_pvmt_sensors", ps_table.size())
 			.attr("n_subsurf_sensors", ss_table.size())

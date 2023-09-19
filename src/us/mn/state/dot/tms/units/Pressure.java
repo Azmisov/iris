@@ -14,8 +14,9 @@ final public class Pressure {
 
 	/** Enumeration of units */
 	public enum Units {
+		// scale parameter: 1 pascal = 1/scale other units
 		PASCALS(1, "Pa", 0),
-		MICROBARS(10, "μbar", 0),
+		MICROBARS(0.1, "μbar", 0),
 		MILLIBARS(100, "mbar", 0),
 		HECTOPASCALS(100, "hPa", 0),
 		CENTIBARS(1e3, "cbar", 0),
@@ -65,10 +66,10 @@ final public class Pressure {
 		return vr;
 	}
 
-        /** Get system units */
-        static private boolean useSi() {
-                return SystemAttrEnum.CLIENT_UNITS_SI.getBoolean();
-        }
+	/** Get system units */
+	static private boolean useSi() {
+		return SystemAttrEnum.CLIENT_UNITS_SI.getBoolean();
+	}
 
 	/** Pressure in pascals */
 	public final double value;
@@ -125,11 +126,11 @@ final public class Pressure {
 		return asDouble(Units.PASCALS);
 	}
 
-	/** Get pressure as an NTCIP value.
-	 * @return Pressure in 1/10 mbar = 1/10 hPa = 1 microbar;
+	/** Get pressure as an NTCIP value: rounded to 1/10 mbar
+	 * @return Pressure in 1/10 mbar = 1/10 hPa
 	 * 	See NTCIP essAtmosphericPressure. */
 	public Integer ntcip() {
-		return Integer.valueOf((int) Math.round(asDouble(Units.MICROBARS)));
+		return Integer.valueOf((int) Math.round(asDouble(Units.MILLIBARS)*10));
 	}
 
 	/** Unit formatter */

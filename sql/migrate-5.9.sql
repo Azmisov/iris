@@ -305,6 +305,20 @@ CREATE VIEW encoder_stream_view AS
 	LEFT JOIN iris.encoding_quality eq ON es.quality = eq.id;
 GRANT SELECT ON encoder_stream_view TO PUBLIC;
 
+-- v47; still images allowed in VidPanel, but are incompatible with _camera changes
+-- we'll delete the rows for now; can come up with a compatible solution later
+DO
+$do$
+DECLARE
+	rec RECORD;
+BEGIN
+	FOR rec IN (SELECT * FROM iris._camera where encoder like 'http%') LOOP
+		RAISE NOTICE 'removing incompatible camera: %', quote_ident(rec.encoder);
+	END LOOP;
+END
+$do$;
+DELETE from iris._camera where encoder like 'http%';
+
 -- Alter columns of _camera table
 ALTER TABLE iris._camera ALTER COLUMN notes TYPE VARCHAR(256);
 ALTER TABLE iris._camera ADD COLUMN enc_address INET;

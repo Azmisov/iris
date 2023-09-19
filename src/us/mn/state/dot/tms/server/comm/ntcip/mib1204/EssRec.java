@@ -53,6 +53,12 @@ public class EssRec implements JsonBuilder.Buildable {
 		dlog.log(dlog_prefix + msg);
 	}
 
+	/** Store instrument/meta data */
+	private void storeInstrument(WeatherSensorImpl ws) {
+		var I = instrument_values;
+		// TODO: not implemented yet
+	}
+
 	/** Store the atmospheric values */
 	private void storeAtmospheric(WeatherSensorImpl ws) {
 		var A = atmospheric_values;
@@ -121,6 +127,12 @@ public class EssRec implements JsonBuilder.Buildable {
 		ws.setSubSurfTempNotify(ss_table.getFirstValidTemp());
 		ws.setSubSurfaceSensorsTable(ss_table);
 	}
+
+	/** Store radiation values */
+	private void storeRadiation(WeatherSensorImpl ws) {
+		var R = rad_values;
+		ws.setCloudCoverSituationNotify(R.cloud_situation.toInteger());
+	}
 	  
 	/** Reorganize the tables for the High Sierra controllers, 
 	 * so standard data extraction can be used. This must be 
@@ -156,12 +168,14 @@ public class EssRec implements JsonBuilder.Buildable {
 			log("EssRec.store: pre.sst=" + ss_table);
 			reorgHighSierra();
 		}
+		storeInstrument(ws);
 		storeAtmospheric(ws);
 		storeWinds(ws);
 		storeTemps(ws);
 		storePrecip(ws);
 		storePavement(ws);
 		storeSubSurface(ws);
+		storeRadiation(ws);
 		long st = TimeSteward.currentTimeMillis();
 		ws.setStampNotify(st);
 	}
@@ -178,6 +192,6 @@ public class EssRec implements JsonBuilder.Buildable {
 			ss_table,
 			rad_values
 		});
-		System.out.println("JSON: "+jb.toString());
+		//System.out.println("JSON: "+jb.toString());
 	}
 }

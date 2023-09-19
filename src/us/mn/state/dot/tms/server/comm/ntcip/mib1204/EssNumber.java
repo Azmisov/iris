@@ -46,7 +46,7 @@ public class EssNumber extends EssInteger<Double>{
      */
     @Override
     public String toString(){
-        return this.value != null ? Num.format(this.value, digits) : "";
+        return this.value != null ? Num.format(this.value, digits) : null;
     }
 
     // -------- Presets --------

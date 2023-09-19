@@ -29,7 +29,7 @@ public class EssBoolean extends EssInteger<Boolean>{
      */
     @Override
     public String toString(){
-        return this.value != null ? String.valueOf(this.value) : "";
+        return this.value != null ? String.valueOf(this.value) : null;
     }
     @Override
     public Double toDouble(){

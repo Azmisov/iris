@@ -1,5 +1,7 @@
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums;
 
+import us.mn.state.dot.tms.utils.SString;
+
 /** An EssEnumType is used as an interface for enums in MIB1204. It is assumed
  * that 0 = undefined for default implementations, which is used also used as
  * the default value in {@link EssEnum}. This can be manually overriden
@@ -26,6 +28,10 @@ public interface EssEnumType{
     default String toStringValid(){
         return toStringValid("");
     }
+	/** Serialize to string using {@link #toString} and convert to upper snake case */
+	default String toStringUpperSnake(){
+		return SString.camelToUpperSnake(toString());
+	}
     /** Serializes to string, with special case if not {@link #isValid} */
     static <T extends EssEnumType> String toStringValid(T val, String invalid){
         return val != null && val.isValid() ? val.toString() : invalid;
@@ -45,7 +51,7 @@ public interface EssEnumType{
     static <T extends Enum<T>> T fromOrdinal(Class<T> enumClass, Integer o) {
         var values = enumClass.getEnumConstants();
         // undefined if out-of-bounds/null
-        if (o == null || o >= 0 || o < values.length)
+        if (o == null || o < 0 || o > values.length)
             o = 0;
         return values[o];
     }

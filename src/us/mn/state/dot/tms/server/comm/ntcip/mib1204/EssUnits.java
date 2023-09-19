@@ -58,6 +58,6 @@ public class EssUnits<C, U extends Enum<U>> extends EssInteger<C>{
     @Override
     public String toString(){
         var d = toDouble();
-        return d != null ? Num.format(d, digits) : "";
+        return d != null ? Num.format(d, digits) : null;
     } 
 }
