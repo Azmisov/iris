@@ -12,7 +12,7 @@
 //
 use crate::device::{Device, DeviceAnc};
 use crate::error::Result;
-use crate::item::ItemState;
+use crate::item::{ItemState, ItemStates};
 use crate::resource::{
     disabled_attr, AncillaryData, Card, View, EDIT_BUTTON, LOC_BUTTON, NAME,
 };
@@ -107,17 +107,22 @@ impl Beacon {
         matches!(self.state, 4 | 6 | 7)
     }
 
-    /// Get item state
-    fn item_state(&self, anc: &BeaconAnc) -> ItemState {
-        if anc.dev.is_active(self) {
-            match self.state {
-                0 => ItemState::Unknown,
-                2 => ItemState::Available,
-                4 => ItemState::Deployed,
-                _ => ItemState::Maintenance,
-            }
-        } else {
-            ItemState::Unknown
+    /// Get item states
+    fn item_states(&self, anc: &BeaconAnc) -> ItemStates {
+        let state = anc.dev.item_state(self);
+        match state {
+            ItemState::Available => match self.state {
+                2 => ItemState::Available.into(),
+                4 => ItemState::Deployed.into(),
+                5 => ItemState::Fault.into(),
+                6 => {
+                    ItemStates::from(ItemState::Deployed).with(ItemState::Fault)
+                }
+                7 => ItemStates::from(ItemState::Deployed)
+                    .with(ItemState::External),
+                _ => ItemState::Unknown.into(),
+            },
+            _ => state.into(),
         }
     }
 
@@ -135,12 +140,11 @@ impl Beacon {
 
     /// Convert to Compact HTML
     fn to_html_compact(&self, anc: &BeaconAnc) -> String {
-        let comm_state = anc.dev.comm_state(self);
-        let item_state = self.item_state(anc);
+        let item_states = self.item_states(anc);
         let disabled = disabled_attr(self.controller.is_some());
         let location = HtmlStr::new(&self.location).with_len(32);
         format!(
-            "<div class='{NAME} end'>{comm_state} {self} {item_state}</div>\
+            "<div class='{NAME} end'>{self} {item_states}</div>\
             <div class='info fill{disabled}'>{location}</div>"
         )
     }
@@ -148,10 +152,7 @@ impl Beacon {
     /// Convert to Status HTML
     fn to_html_status(&self, anc: &BeaconAnc, config: bool) -> String {
         let location = HtmlStr::new(&self.location).with_len(64);
-        let comm_state = anc.dev.comm_state(self);
-        let comm_desc = comm_state.description();
-        let item_state = self.item_state(anc);
-        let item_desc = item_state.description();
+        let item_states = self.item_states(anc).description();
         let flashing = if self.flashing() {
             CLASS_FLASHING
         } else {
@@ -164,8 +165,7 @@ impl Beacon {
               <span class='info'>{location}</span>\
             </div>\
             <div class='row'>\
-              <span>{comm_state} {comm_desc}</span>\
-              <span>{item_state} {item_desc}</span>\
+              <span>{item_states}</span>\
             </div>\
             <div class='beacon-container row center'>\
               <button id='ob_flashing'></button>\
@@ -262,8 +262,7 @@ impl Card for Beacon {
     fn is_match(&self, search: &str, anc: &BeaconAnc) -> bool {
         self.name.contains_lower(search)
             || self.location.contains_lower(search)
-            || anc.dev.comm_state(self).is_match(search)
-            || self.item_state(anc).is_match(search)
+            || self.item_states(anc).is_match(search)
             || self.message.contains_lower(search)
             || self.notes.contains_lower(search)
     }

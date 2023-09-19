@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017-2019 Iteris Inc.
+ * Copyright (C) 2017-2023 Iteris Inc.
  * Copyright (C) 2019-2023  Minnesota Department of Transportation
  *
  * This program is free software; you can redistribute it and/or modify
@@ -242,13 +242,16 @@ public class OpQueryEssStatus extends OpEss {
 				// pr.sensor_model_info,
 				// pr.temp_depth
 			}, true);
+			// With an error condition, some Vaisala firmware
+			// return 255 for essSurfaceIceOrWaterDepth instead of
+			// 65535.  We must check for a sensor error first to
+			// avoid erroneously returning 25.5 mm in that case.
+			if (!pr.sensor_error.isNull())
+				pr.ice_or_water_depth.reset();
 			// Fallback to V1 water depth
 			if (err != null)
 				return new QueryPavementRowV1(pr);
-			else{
-				pr.ice_or_water_depth.reset();
-				return new QueryPavementRowV4(pr);
-			}			
+			return new QueryPavementRowV4(pr);
 		}
 	}
 
@@ -394,7 +397,8 @@ public class OpQueryEssStatus extends OpEss {
 		// Note: this object was introduced in V2
 		if (err != null)
 			return QueryWindSensorV1;
-		// For compatibility with older v47, falling back to v1 values
+		// For compatibility with older v47, falling back to v1 values;
+		// was not fetching all values when only v2 was queried
 		return ws_table.isDone()
 			? QueryWindSensorV1 //QueryTemperatureSensors
 			: QueryWindTableV2;
@@ -402,11 +406,13 @@ public class OpQueryEssStatus extends OpEss {
 
 	/** Get phase to query wind sensor data */
 	Pollable<ASN1Object> queryWindSensors() {
-		// LX model RPUs contain a bug which sometimes causes objects in
-		// the wind sensor table to update only once every 12 hours or
-		// so.  The workaround is to query the (deprecated) wind sensor
-		// objects from 1204v1 (for LX controllers only).
-		return (getSoftwareModel().contains("LX"))
+		// Vaisala LX model RPUs contain a bug which causes objects
+		// in tables to update only once every 12 hours or so.  The
+		// preferred workaround is to randomize SNMP request-IDs.
+		// This lesser workaround is to query the (deprecated) wind
+		// sensor objects from 1204v1
+		// FIXME: remove this workaround after testing
+		return isVaisalaLx()
 			? QueryWindSensorV1
 			: QueryWindSensorsV2;
 	}

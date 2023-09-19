@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2000-2021  Minnesota Department of Transportation
+ * Copyright (C) 2000-2023  Minnesota Department of Transportation
  * Copyright (C) 2019  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -35,7 +35,7 @@ public class SNMP extends BER {
 	/** SNMP debug log */
 	static private final DebugLog SNMP_LOG = new DebugLog("snmp");
 
- 	/** SNMP error status codes */
+	/** SNMP error status codes */
 	static private final int NO_ERROR = 0;
 	static private final int TOO_BIG = 1;
 	static private final int NO_SUCH_NAME = 2;
@@ -56,12 +56,8 @@ public class SNMP extends BER {
 	/** SNMP version number */
 	static public final int SNMP_VERSION = 0;
 
-	/** Ledstar firmware bug workaround. Instead of 128,129,130,..., it
-	 * returns -128,-127,-126,... */
-	static private final int REQUEST_ID_MAX_LEDSTAR_BUG = 127;
-
-	/** Last SNMP request-id */
-	private int last_request = 0;
+	/** Public community name */
+	static public final String PUBLIC = "Public";
 
 	/** Encode an SNMP message */
 	private void encodeSNMPMessage(String community) throws IOException {
@@ -105,13 +101,13 @@ public class SNMP extends BER {
 			new ArrayList<ASN1Object>();
 
 		/** Create a new SNMP message */
-		public Message(OutputStream o, InputStream i, String c) {
+		public Message(OutputStream o, InputStream i, String c,
+			int req_id)
+		{
 			os = o;
 			is = i;
-			community = (c != null) ? c : "";
-			request_id = last_request++;
-			if (last_request > REQUEST_ID_MAX_LEDSTAR_BUG)
-				last_request = 0;
+			community = (c != null) ? c : PUBLIC;
+			request_id = req_id;
 		}
 
 		/** Add a controller property */

@@ -1,7 +1,5 @@
 # Fonts
 
-Select `View ➔ Message Signs ➔ DMS Fonts` menu item
-
 A font is a set of bitmapped glyphs for displaying text on a [DMS].  Fonts can
 contain only printable ASCII characters (U+0020 to U+007E).
 
@@ -29,12 +27,12 @@ be converted to upper-case.
 
 ## Predefined Fonts
 
-A number of fonts are included in the `sql/fonts` directory.  These fonts are
-designed to have a similar visual style.  To import a font into the IRIS
-database, use psql:
+A number of fonts are included in the `/var/lib/iris/fonts` directory.  These
+fonts are designed to have a similar visual style.  To import a font into the
+IRIS database, use ifnt_import.py (in `bin` directory):
 
 ```
-psql tms -f [font file]
+ifnt_import.py [font file] | psql tms
 ```
 
 Number | Font Name      | Description
@@ -48,6 +46,7 @@ Number | Font Name      | Description
 7      | `12_full`      | 12 pixel high full-matrix
 8      | `12_full_bold` | 12 pixel high full-matrix bold
 9      | `13_full`      | 13 pixel high full-matrix
+10     | `14_ledstar`   | 14 pixel high full-matrix
 11     | `14_full`      | 14 pixel high full-matrix
 21     | `15_full`      | 15 pixel high full-matrix
 13     | `16_full`      | 16 pixel high full-matrix
@@ -57,9 +56,30 @@ Number | Font Name      | Description
 20     | `26_full`      | 26 pixel high full-matrix
 17     | `_09_full_12`  | 9 pixel high (12 with lower case descenders)
 18     | `_7_full`      | 7 pixel high full-matrix
+19     | `_9_line`      | 9 pixel high line-matrix
 
-The IRIS client also contains a font editor which can be used to design new DMS
-fonts.
+### Non-ASCII Characters
+
+Since NTCIP 1203 does not support Unicode, ASCII characters must be used as
+surrogates for arrows, diamonds, etc:
+
+| Character     | Code Point | ASCII | Fonts
+|---------------|------------|-------|---------------------------------
+| <sup>ND</sup> | 38         | &     | `14_ledstar`
+| ◊             | 42         | *     | `07_line`, `_07_full`, `26_full`
+| ↖             | 94         | ^     | `14_ledstar`
+| █             | 96         | \`    | `14_ledstar`
+| ↙             | 123        | {     | `_07_full`, `14_ledstar`
+| ↓             | 125        | }     | `_07_full`
+| ↘             | 125        | }     | `14_ledstar`
+| `wide space`  | 126        | ~     | `_07_full`
+
+## Send and Query Fonts
+
+The status tab of the DMS properties dialog contains two settings buttons.
+Pressing `Send Settings` will cause all necessary fonts to be sent to the sign.
+`Query Settings` will read all fonts currently on the sign, and store them in
+the `/var/lib/iris/fonts/{sign_name}` directory.
 
 
 [DMS]: dms.html

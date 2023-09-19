@@ -8,6 +8,7 @@ build/
 *.swp
 devel/
 devel*.cfg
+target/
 patches*
 /iris-client
 

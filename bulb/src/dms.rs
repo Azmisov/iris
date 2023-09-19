@@ -12,9 +12,9 @@
 //
 use crate::device::{Device, DeviceAnc};
 use crate::error::Result;
-use crate::item::ItemState;
+use crate::item::{ItemState, ItemStates};
 use crate::resource::{
-    disabled_attr, AncillaryData, Card, View, EDIT_BUTTON, LOC_BUTTON, NAME,
+    AncillaryData, Card, View, EDIT_BUTTON, LOC_BUTTON, NAME,
 };
 use crate::util::{ContainsLower, Fields, HtmlStr, Input, OptVal};
 use serde::{Deserialize, Serialize};
@@ -43,6 +43,7 @@ pub struct PowerSupply {
 /// Sign status
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct SignStatus {
+    faults: Option<String>,
     photocells: Option<Vec<Photocell>>,
     light_output: Option<u32>,
     power_supplies: Option<Vec<PowerSupply>>,
@@ -70,8 +71,10 @@ pub struct Dms {
     pub name: String,
     pub location: Option<String>,
     pub controller: Option<String>,
-    pub notes: String,
+    pub notes: Option<String>,
+    pub hashtags: Option<String>,
     pub msg_current: Option<String>,
+    pub has_faults: Option<bool>,
     // full attributes
     pub pin: Option<u32>,
     pub sign_config: Option<String>,
@@ -139,85 +142,146 @@ impl AncillaryData for DmsAnc {
     }
 }
 
-impl DmsAnc {
+impl SignMessage {
     /// Get message owner
-    fn msg_owner(&self, msg: Option<&str>) -> Option<&str> {
-        match (&self.messages, msg) {
-            (Some(messages), Some(msg)) => messages
-                .iter()
-                .find(|m| m.name == msg)
-                .map(|m| &m.msg_owner[..]),
-            _ => None,
-        }
+    fn owner(&self) -> &str {
+        &self.msg_owner
     }
 
-    /// Get message sources
-    fn sources(&self, msg: Option<&str>) -> Option<&str> {
-        match self.msg_owner(msg) {
-            Some(owner) => owner.split(';').nth(1),
-            None => None,
-        }
+    /// Get "system" owner
+    fn system(&self) -> Option<&str> {
+        self.owner().split(';').nth(0)
     }
 
-    /// Get item state
-    fn item_state(&self, msg: Option<&str>) -> ItemState {
-        self.sources(msg)
+    /// Get "sources" owner
+    fn sources(&self) -> Option<&str> {
+        self.owner().split(';').nth(1)
+    }
+
+    /// Get "user" owner
+    fn user(&self) -> Option<&str> {
+        self.owner().split(';').nth(2)
+    }
+
+    /// Get item states
+    fn item_states(&self) -> ItemStates {
+        self.sources()
             .map(|src| {
-                if src.contains("schedule") {
-                    ItemState::Scheduled
-                } else if !src.contains("blank") {
-                    ItemState::Deployed
-                } else {
-                    ItemState::Available
+                let mut states = ItemStates::default();
+                if src.contains("blank") {
+                    states = states.with(ItemState::Available);
                 }
+                if src.contains("operator") {
+                    states = states.with(ItemState::Deployed);
+                }
+                if src.contains("schedule") {
+                    states = states.with(ItemState::Planned);
+                }
+                if src.contains("external") {
+                    states = states.with(ItemState::External);
+                }
+                states
             })
-            .unwrap_or(ItemState::Available)
+            .unwrap_or(ItemState::Fault.into())
+    }
+
+    /// Check if a search string matches
+    fn is_match(&self, search: &str) -> bool {
+        // checks are ordered by "most likely to be searched"
+        self.multi.contains_lower(search)
+            || self.user().is_some_and(|u| u.contains_lower(search))
+            || self.system().is_some_and(|s| s.contains_lower(search))
+    }
+}
+
+impl DmsAnc {
+    /// Find a sign message
+    fn sign_message(&self, msg: Option<&str>) -> Option<&SignMessage> {
+        msg.and_then(|msg| {
+            self.messages
+                .as_ref()
+                .and_then(|msgs| msgs.iter().find(|m| m.name == msg))
+        })
+    }
+
+    /// Get message item states
+    fn msg_states(&self, msg: Option<&str>) -> ItemStates {
+        self.sign_message(msg)
+            .map(|m| m.item_states())
+            .unwrap_or(ItemState::Fault.into())
     }
 }
 
 impl Dms {
     pub const RESOURCE_N: &'static str = "dms";
 
-    /// Get item state
-    fn item_state(&self, anc: &DmsAnc) -> ItemState {
-        if anc.dev.is_active(self) {
-            anc.item_state(self.msg_current.as_deref())
-        } else {
-            ItemState::Unknown
+    /// Check if dedicated-purpose sign
+    fn is_dedicated(&self) -> bool {
+        self.hashtags.as_ref().is_some_and(|h| {
+            h.contains_lower("#laneuse")
+                || h.contains_lower("#parking")
+                || h.contains_lower("#safety")
+                || h.contains_lower("#tolling")
+                || h.contains_lower("#traveltime")
+                || h.contains_lower("#vsl")
+                || h.contains_lower("#wayfinding")
+        })
+    }
+
+    /// Get all item states as html options
+    pub fn item_state_options() -> &'static str {
+        "<option value=''>all ↴</option>\
+         <option value='🔹'>🔹 available</option>\
+         <option value='🔶'>🔶 deployed</option>\
+         <option value='🕗'>🕗 planned</option>\
+         <option value='👽'>👽 external</option>\
+         <option value='🎯'>🎯 dedicated</option>\
+         <option value='⚠️'>⚠️ fault</option>\
+         <option value='🔌'>🔌 offline</option>\
+         <option value='🔻'>🔻 disabled</option>"
+    }
+
+    /// Get item states
+    fn item_states(&self, anc: &DmsAnc) -> ItemStates {
+        let state = anc.dev.item_state(self);
+        let mut states = match state {
+            ItemState::Available => anc.msg_states(self.msg_current.as_deref()),
+            _ => state.into(),
+        };
+        if self.is_dedicated() {
+            states = states.with(ItemState::Dedicated);
         }
+        if self.has_faults.is_some_and(|f| f) {
+            states = states.with(ItemState::Fault);
+        }
+        states
     }
 
     /// Convert to Compact HTML
     fn to_html_compact(&self, anc: &DmsAnc) -> String {
-        let comm_state = anc.dev.comm_state(self);
-        let item_state = self.item_state(anc);
-        let location = HtmlStr::new(&self.location).with_len(32);
-        let disabled = disabled_attr(self.controller.is_some());
-        format!(
-            "<div class='{NAME} end'>{comm_state} {self} {item_state}</div>\
-            <div class='info fill{disabled}'>{location}</div>"
-        )
+        let item_states = self.item_states(anc);
+        let mut html =
+            format!("<div class='{NAME} end'>{self} {item_states}</div>");
+        if let Some(msg_current) = &self.msg_current {
+            html.push_str("<img class='message' src='/iris/img/");
+            html.push_str(msg_current);
+            html.push_str(".gif'>");
+        }
+        html
     }
 
     /// Convert to Status HTML
     fn to_html_status(&self, anc: &DmsAnc, config: bool) -> String {
         let location = HtmlStr::new(&self.location).with_len(64);
-        let comm_state = anc.dev.comm_state(self);
-        let comm_desc = comm_state.description();
-        let item_state = self.item_state(anc);
-        let item_desc = item_state.description();
-        let mut status = format!(
-            "<div class='info fill'>{location}</div>\
-            <div class='row'>\
-              <span>{comm_state} {comm_desc}</span>\
-              <span>{item_state} {item_desc}</span>\
-            </div>"
-        );
+        let mut status = format!("<div class='info fill'>{location}</div>");
         if let Some(msg_current) = &self.msg_current {
             status.push_str("<img class='message' src='/iris/img/");
             status.push_str(msg_current);
             status.push_str(".gif'>");
         }
+        status.push_str("<div class='end'>");
+        status.push_str(&self.item_states(anc).description());
+        status.push_str("</div>");
         if config {
             status.push_str("<div class='row'>");
             status.push_str(&anc.dev.controller_button());
@@ -278,8 +342,18 @@ impl Card for Dms {
     fn is_match(&self, search: &str, anc: &DmsAnc) -> bool {
         self.name.contains_lower(search)
             || self.location.contains_lower(search)
-            || anc.dev.comm_state(self).is_match(search)
-            || self.item_state(anc).is_match(search)
+            || self
+                .notes
+                .as_ref()
+                .is_some_and(|n| n.contains_lower(search))
+            || self
+                .hashtags
+                .as_ref()
+                .is_some_and(|h| h.contains_lower(search))
+            || self.item_states(anc).is_match(search)
+            || anc
+                .sign_message(self.msg_current.as_deref())
+                .is_some_and(|m| m.is_match(search))
     }
 
     /// Convert to HTML view
