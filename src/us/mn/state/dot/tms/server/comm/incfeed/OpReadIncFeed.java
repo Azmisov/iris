@@ -38,15 +38,15 @@ public class OpReadIncFeed extends OpController<IncFeedProperty> {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<IncFeedProperty> phaseOne() {
+	protected Phase phaseOne() {
 		return new PhaseReadIncFeed();
 	}
 
 	/** Phase to read the incident feed */
-	protected class PhaseReadIncFeed extends Phase<IncFeedProperty> {
+	protected class PhaseReadIncFeed extends Phase {
 
 		/** Execute the phase */
-		protected Phase<IncFeedProperty> poll(
+		public Phase poll(
 			CommMessage<IncFeedProperty> mess) throws IOException
 		{
 			mess.add(new IncFeedProperty(cache));

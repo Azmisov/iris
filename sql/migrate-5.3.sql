@@ -64,13 +64,15 @@ UPDATE iris.road_affix SET allow_retain = 't'
 ALTER TABLE iris.road_affix ALTER COLUMN allow_retain SET NOT NULL;
 
 -- Add sample to weather_sensor
-DROP VIEW weather_sensor_view;
+-- v47 view doesn't exist yet
+DROP VIEW IF EXISTS weather_sensor_view;
 DROP VIEW iris.weather_sensor;
 DROP FUNCTION iris.weather_sensor_insert();
 DROP FUNCTION iris.weather_sensor_update();
 DROP FUNCTION iris.weather_sensor_delete();
 
-ALTER TABLE iris._weather_sensor ADD COLUMN sample JSONB;
+-- v47 column already created
+ALTER TABLE iris._weather_sensor ADD COLUMN IF NOT EXISTS sample JSONB;
 
 CREATE VIEW iris.weather_sensor AS SELECT
 	m.name, geo_loc, controller, pin, notes, sample

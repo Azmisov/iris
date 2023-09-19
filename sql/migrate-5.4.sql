@@ -12,7 +12,8 @@ DROP FUNCTION iris.weather_sensor_insert();
 DROP FUNCTION iris.weather_sensor_update();
 DROP FUNCTION iris.weather_sensor_delete();
 
-ALTER TABLE iris._weather_sensor ADD COLUMN settings JSONB;
+-- v47 column already created
+ALTER TABLE iris._weather_sensor ADD COLUMN IF NOT EXISTS settings JSONB;
 
 CREATE VIEW iris.weather_sensor AS SELECT
 	m.name, geo_loc, controller, pin, notes, settings, sample

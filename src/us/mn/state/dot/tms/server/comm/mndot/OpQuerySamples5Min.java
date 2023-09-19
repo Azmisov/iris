@@ -69,12 +69,12 @@ public class OpQuerySamples5Min extends OpQuerySamples {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<MndotProperty> phaseOne() {
+	protected Phase phaseOne() {
 		return new GetNextRecord();
 	}
 
 	/** Phase to get the next sample data record */
-	protected class GetNextRecord extends Phase<MndotProperty> {
+	protected class GetNextRecord extends Phase {
 
 		/** Binned data record */
 		private byte[] rec;
@@ -100,7 +100,7 @@ public class OpQuerySamples5Min extends OpQuerySamples {
 
 		/** Collect 5-minute data from the controller */
 		@Override
-		protected Phase<MndotProperty> poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			int recs = 0;

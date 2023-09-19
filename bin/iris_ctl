@@ -130,7 +130,10 @@ function create_links() {
 	echo "Creating IRIS links for verion $version"
 	host=`hostname -f`
 	ln -snf /usr/share/java/iris-server/iris-server-$version.jar /usr/share/java/iris-server/iris-server.jar
-	sed -i ''s,@@WEBSTART.HOST@@,$host,'' /var/www/html/iris-client/iris-client.jnlp /var/www/html/iris-client/mail.jnlp
+	sed -i ''s,@@WEBSTART.HOST@@,$host,'' \
+		/var/www/html/iris-client/iris-client.jnlp \
+		/var/www/html/iris-client/mail.jnlp \
+		/var/www/html/iris-client/package_client.sh
 	install -o nginx -g nginx -m 0444 /etc/iris/iris-client.keystore /var/www/html/iris-client/
 	install -o nginx -g nginx -m 0444 /etc/iris/iris-client.properties /var/www/html/iris-client/
 	SED_STR='3s,^,\# DO NOT EDIT -- copied from /etc/iris by iris_ctl update\n,'
@@ -140,6 +143,197 @@ function create_links() {
 function update_database() {
 	echo
 	# FIXME: run required SQL migrate scripts
+}
+
+# Cleanup the effects of init. Can be run from source, since doesn't depend on
+# java filtersets. Note: this doesn't undo string substitutions
+function clean(){
+	# performing in the reverse order
+	enable_error_logging
+
+	# create_links: remove jar link, assume there was no other older version it
+	# 	should be linked to; remove keystores
+	echo "Removing IRIS links"
+	/usr/bin/rm -f /usr/share/java/iris-server/iris-server.jar
+	/usr/bin/rm -f /var/www/html/iris-client/iris-client.keystore
+	/usr/bin/rm -f /var/www/html/iris-client/iris-client.properties
+
+	# configure_services: stop/disable nginx/iris; assume stopped originally
+	echo "Disabling iris/nginx services"
+	systemctl stop iris.service
+	systemctl disable iris.service
+	systemctl stop nginx.service
+	systemctl disable nginx.service	
+	
+	# configure_firewall: remove port 1037
+	echo "Removing firewall port"
+	firewall-cmd --permanent --remove-port=1037/tcp
+	firewall-cmd --reload
+
+	# configure_selinux; assume network connect was disabled (default I
+	# 	believe); remove the 3030 port
+	echo "Removing nginx SELinux configurations"
+	setsebool -P httpd_can_network_connect false
+	if semanage port -l | grep "^http_port_t\s*tcp.*\s3030\(,\|$\)"; then
+		semanage port -d -p tcp 3030
+	fi
+
+	if pgrep postgres; then
+		# create_tms_database: drop db
+		echo "Removing tms database"
+		su --login postgres -c "dropdb --if-exists tms;"
+		
+		# create_tms_user: remove user; cap schema prevents deletion
+		su --login postgres -c "psql -c 'DROP SCHEMA IF EXISTS cap;'"
+		su --login postgres -c "dropuser --if-exists tms;"
+
+		# create_earthwyrm_database: drop db
+		echo "Removing earthwyrm database"
+		su --login postgres -c "dropdb --if-exists earthwyrm;"
+	else
+		echo -e "\033[31mPostgres not running; assuming postgres cleanup has already occurred"
+		echo -e "Restart postgres and rerun if this is not the case\033[0m"
+	fi
+	
+	# init_db: remove custom IRIS postgres settings (assumes 2 lines added after comment);
+	# 	disable db service, assuming stopped originally
+	echo "Removing IRIS postgres settings"
+	pg_conf=/var/lib/pgsql/data/postgresql.conf
+	sed -i -e '/IRIS osm schema/,+2d' $pg_conf
+	echo "Disabling postgres service"
+	systemctl stop postgresql.service
+	systemctl disable postgresql.service
+
+	# create_keystores: remove keys
+	echo "Removing keystores"
+	k_cert=/etc/iris/iris-sonar-public.cert
+	k_server=/etc/iris/iris-server.keystore
+	k_client=/etc/iris/iris-client.keystore
+	/usr/bin/rm -f $k_cert $k_server $k_client
+
+	echo -e "\033[0;32mCleanup complete!\033[0m"
+	echo "If uninstalling, you'll still need to remove the rpm package"
+}
+
+# Setup for development, to be performed after init
+function dev(){
+	enable_error_logging
+
+	# ensure running in correct directory
+	sprops_src=./etc/dev/iris-server.properties
+	if test -f "$sprops_src"; then
+		# existing dev directory already setup?
+		if test -e "./dev"; then
+			read -p "Existing ./dev found, do you want to overwrite (y/n)? " choice
+			case "$choice" in 
+				y|Y ) ;;
+				* ) exit 1;;
+			esac
+			echo "Removing existing ./dev"
+			/usr/bin/rm -rf ./dev
+		fi
+
+		echo "Copying templates"
+		mkdir ./dev
+		chown --reference=./etc/dev/ ./dev
+		cp -p ./etc/dev/iris-server.properties ./etc/dev/dev.cfg ./dev
+
+		# so we don't have to always stop iris service on restart during development
+		echo "Disabling any installed iris service"
+		systemctl stop iris.service
+		systemctl disable iris.service
+
+		echo "Copying server keystores"
+		k_cert=/etc/iris/iris-sonar-public.cert
+		k_server=/etc/iris/iris-server.keystore
+		# should match ownership of ./dev folder
+		cp -f --preserve=mode,timestamps $k_cert $k_server ./dev/
+		chown --reference=./dev/iris-server.properties ./dev/*.keystore ./dev/*.cert
+
+		echo "Copying passwords"
+		skeystore_pass=`sed -n 's/.*keystore\.password=\(.*\)/\1/p' /etc/iris/iris-server.properties`
+		db_pass=`sed -n 's/.*db\.password=\(.*\)/\1/p' /etc/iris/iris-server.properties`
+		sprops=./dev/iris-server.properties
+		sed -i "s/.*keystore\.password=.*/keystore.password=$skeystore_pass/" $sprops
+		sed -i "s/.*db\.password=.*/db.password=$db_pass/" $sprops
+
+		# even with db.version commented, it still seems to refuse to start if version isn't same
+		# so doing this always, just to be doubly sure the server will run
+		echo "Copying IRIS version number"
+		iris_version=`sed -n 's/^version=\(.*\)/\1/p' ./project.properties`
+		sed -i "s/.*db.version\ =\ .*/db.version\ =\ $iris_version/" ./dev/dev.cfg
+
+		# debug logs only get written if the file exists first; DebugLog.init is
+		# called when server starts with the root logging directory; search for
+		# DevelLog in source code to see what log filenames are being used
+		mkdir -p ./dev/logs/log
+		pushd ./dev/logs/log
+		touch sonar sonar_tls sonar_task sonar_time sched alert device gps kadaptive samples flush \
+			profile sign_msg sql sys_attr toll poll_err modem axisptz canoga cbw clearguide \
+			dinrelay dmsxml dr500 e6_pkt e6 e6_err g4 inc_feed infinova manchester feed mndot170 \
+			gatendorv5 ndotbeacon ntcip2 ntcip mib1202 org815 pelcod snmp ss105 ss125 stc bottleneck \
+			server
+		popd
+		# fix ownership
+		chown -R --reference=./dev/iris-server.properties ./dev/logs
+
+		# Setup client
+		if test -d "./iris-client/"; then
+			echo "Copying client files"
+			mkdir ./dev/client
+			cp /etc/iris/iris-client.keystore ./etc/dev/iris-client.properties ./dev/client/
+			touch ./dev/client/session_ids
+			ln -sf ../../iris-client/images ./dev/client/images
+			ln -sf ../../iris-client/lib ./dev/client/lib
+			ln -sf ../../etc/client/index.html ./dev/client/index.html
+			cp ./iris-client/iris-client.jnlp ./iris-client/mail.jnlp ./dev/client
+
+			echo "Copying host IP address"
+			# TODO: try `hostname -d` first and see if there's a response
+			host_ip=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
+			sed -i ''s,@@WEBSTART.HOST@@,$host_ip,'' \
+				./dev/client/iris-client.jnlp \
+				./dev/client/mail.jnlp \
+				./dev/client/iris-client.properties
+			
+			echo "Copying client password"
+			ckeystore_pass=`sed -n 's/.*keystore\.password=\(.*\)/\1/p' /etc/iris/iris-client.properties`
+			sed -i "s/.*keystore\.password=.*/keystore.password=$ckeystore_pass/" ./dev/client/iris-client.properties
+			
+			# fix ownership
+			chown -h --reference=./dev/iris-server.properties ./dev/client ./dev/client/*
+			chmod 0644 ./dev/client/session_ids ./dev/client/iris-client.keystore
+
+			# publish client files
+			echo "Creating public html links"
+			ln -sfn `realpath ./dev/client` /var/www/html/iris-client-dev
+		else
+			echo "No iris-client directory found. Run 'ant client' first to enable client dev setup." 
+		fi
+
+		echo -e "\033[0;32mSetup complete!\033[0m"
+	else
+		echo "Expected $sprops_src file. Try running from the iris root code directory."
+		exit 1
+	fi
+}
+
+function enable_error_logging(){
+	# exit when any command fails
+	set -e
+	# keep track of the last executed command
+	trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
+	# echo an error message before exiting
+	trap log_error EXIT
+}
+function log_error(){
+	exit_code=$?
+    if [ $exit_code -ne 0 ]; then
+		echo -e "\033[31m"
+        echo "\"${last_command}\" command failed with exit code ${exit_code}."
+		echo -e "\033[0m"
+        exit $exit_code
+	fi
 }
 
 case "$1" in
@@ -164,7 +358,13 @@ case "$1" in
 		create_links
 		update_database
 		;;
+	clean)
+		clean
+		;;
+	dev)
+		dev
+		;;
 	*)
-		echo $"Usage: $0 {init|update}"
+		echo $"Usage: $0 {init|update|clean}"
 		exit 1
 esac

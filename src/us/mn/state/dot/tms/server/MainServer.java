@@ -1,7 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2000-2022  Minnesota Department of Transportation
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2021  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ import java.net.Authenticator;
 import java.net.ProxySelector;
 import java.net.UnknownHostException;
 import java.util.Properties;
+import java.util.TimeZone;
 import us.mn.state.dot.sched.DebugLog;
 import us.mn.state.dot.sched.Scheduler;
 import us.mn.state.dot.sched.TimeSteward;
@@ -82,12 +83,24 @@ public class MainServer {
 	/** SQL connection */
 	static private SQLConnection store;
 
+        /** Interface to WYDOT TRAC system */
+        static public WydotTracEvents wydot_trac_events;
+
 	/** Agency district property */
 	static private String district = "tms";
 
 	/** Get the district ID */
 	static public String districtId() {
 		return district;
+	}
+
+	/** Server debug log */
+	static public final DebugLog SERVER_LOG = new DebugLog("server");
+
+	/** Log a message */
+	static public void log(String msg) {
+		if (SERVER_LOG.isOpen())
+			SERVER_LOG.log(msg);
 	}
 
 	/** Main server entry point */
@@ -113,6 +126,7 @@ public class MainServer {
 			server = new Server(ns, props, new AccessLogger(FLUSH));
 			auth_provider = new IrisProvider();
 			server.addProvider(auth_provider);
+                        wydot_trac_events = WydotTracEvents.create(server, ns);
 			System.err.println("IRIS Server active");
 			server.join();
 		}
@@ -124,6 +138,7 @@ public class MainServer {
 	/** Initialize the server process */
 	static private void initialize() throws IOException {
 		redirectStdStreams();
+		sanityChecks();
 		DebugLog.init(new File(LOG_FILE_DIR), DevelCfg.get(
 			"log.start.msg", "IRIS @@VERSION@@ restarted"));
 		checkAssert();
@@ -150,6 +165,18 @@ public class MainServer {
 				+ TimeSteward.getDateInstance();
 			System.out.println(msg);
 			System.err.println(msg);
+		}
+	}
+
+	/** perform sanity and debug checks */
+	static public void sanityChecks() {
+		// Timezone checks
+		String tz = TimeZone.getDefault().getDisplayName();
+		boolean dst = TimeZone.getDefault().useDaylightTime();
+		System.err.println("time_zone=" + tz + " supports_dst=" + dst);
+		if (!dst) {
+			System.err.println("Warning: default time zone " +
+				tz + " does not support DST");
 		}
 	}
 
@@ -212,6 +239,7 @@ public class MainServer {
 		TIMER.addJob(new ParkingAreaJob());
 		TIMER.addJob(new ReaperJob());
 		TIMER.addJob(new ActionPlanJob(TIMER));
+		TIMER.addJob(new DmsPixelTestJob());
 	}
 
 	/** Schedule jobs on FLUSH thread */
@@ -224,6 +252,9 @@ public class MainServer {
 		FLUSH.addJob(new SignMessageXmlJob());
 		FLUSH.addJob(new IncidentXmlJob());
 		FLUSH.addJob(new WeatherSensorXmlJob());
+		FLUSH.addJob(new WeatherSensorPikalertJob());
+		FLUSH.addJob(new WeatherSensorVerifyJob());
+		FLUSH.addJob(new BeaconXmlJob());
 		FLUSH.addJob(new EventPurgeJob());
 	}
 

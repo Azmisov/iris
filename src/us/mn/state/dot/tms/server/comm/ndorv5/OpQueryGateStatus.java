@@ -54,7 +54,7 @@ public class OpQueryGateStatus extends OpGateNdorV5 {
 
 		/** Query the status */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess)
+		public Phase poll(CommMessage mess)
 			throws IOException
 		{
 			mess.add(prop);

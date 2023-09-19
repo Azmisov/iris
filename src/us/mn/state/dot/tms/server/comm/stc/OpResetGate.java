@@ -38,15 +38,15 @@ public class OpResetGate extends OpSTC {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<STCProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new ExecuteReset();
 	}
 
 	/** Phase to execute the reset */
-	protected class ExecuteReset extends Phase<STCProperty> {
+	protected class ExecuteReset extends Phase {
 
 		/** Execute the reset */
-		protected Phase<STCProperty> poll(CommMessage<STCProperty> mess)
+		public Phase poll(CommMessage<STCProperty> mess)
 			throws IOException
 		{
 			ResetProperty reset = new ResetProperty(password());
@@ -57,14 +57,14 @@ public class OpResetGate extends OpSTC {
 	}
 
 	/** Phase to query the version (and wait for reset completion) */
-	protected class QueryVersion extends Phase<STCProperty> {
+	protected class QueryVersion extends Phase {
 
 		/** Time to stop checking if the test has completed */
 		private final long expire = TimeSteward.currentTimeMillis() + 
 			RESET_TIMEOUT;
 
 		/** Query the version */
-		protected Phase<STCProperty> poll(CommMessage<STCProperty> mess)
+		public Phase poll(CommMessage<STCProperty> mess)
 			throws IOException
 		{
 			VersionProperty v = new VersionProperty(password());

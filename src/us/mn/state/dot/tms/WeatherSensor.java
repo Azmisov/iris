@@ -83,34 +83,60 @@ public interface WeatherSensor extends Device {
 	Integer getPrecipRate();
 
 	/** Get precip situation essPrecipSituation (null for missing) */
-	String getPrecipSituation();
+	Integer getPrecipSituation();
 
-	/** Get precipitation accumulation for 1h in mm (null for missing) */
-	Integer getPrecipOneHour();
+	/** Get precipitation accumulation in mm (null for missing) */
+	Float getPrecipOneHour();
+	Float getPrecip3Hour();
+	Float getPrecip6Hour();
+	Float getPrecip12Hour();
+	Float getPrecip24Hour();
 
 	/** Get visibility in meters (null for missing) */
 	Integer getVisibility();
 
+	/** Get visibility situation code essVisibilitySituation 
+	 * (null for missing) */
+	Integer getVisibilitySituation();
+
+	/** Get cloud cover situation (null for missing) */
+	Integer getCloudCoverSituation();
+
+	/** Get water depth in cm (null for missing) */
+	Integer getWaterDepth();
+
+	/** Get the adjacent snow depth in cm (null for missing) */
+	Integer getAdjacentSnowDepth();
+
 	/** Get relative humidity as a percent (null for missing) */
 	Integer getHumidity();
+
+	/** Get friction as a percent 0 - 100 (null for missing) */
+	Integer getFriction();
 
 	/** Get the atmospheric pressure in pascals (null for missing) */
 	Integer getPressure();
 
-	/** Get the pavement surface temperature (null for missing) */
-	Integer getPvmtSurfTemp();
+	/** Get the pavement temp 2-10 cm below surface (null for missing) */
+	Integer getPvmtTemp();
 
 	/** Get the surface temperature (null for missing) */
 	Integer getSurfTemp();
 
 	/** Get the pavement surface status (null for missing) */
-	String getPvmtSurfStatus();
+	Integer getSurfaceStatus();
 
 	/** Get the pavement surface freeze temperature (null for missing) */
 	Integer getSurfFreezeTemp();
 
 	/** Get the subsurface temperature (null for missing) */
 	Integer getSubSurfTemp();
+
+	/** Get the station elevation in meters (null for missing) */
+	Integer getElevation();
+
+	/** Get the pressure sensor height w.r.t. elevation (null for missing)*/
+	Integer getPressureSensorHeight();
 
 	/** Get the latest sample time stamp */
 	Long getStamp();

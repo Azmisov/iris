@@ -2,6 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2008-2022  Minnesota Department of Transportation
  * Copyright (C) 2014  AHMCT, University of California
+ * Copyright (C) 2017-2019  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +26,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JPasswordField;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
@@ -55,6 +55,7 @@ import us.mn.state.dot.tms.utils.I18N;
  *
  * @author Douglas Lau
  * @author Travis Swanston
+ * @author Michael Darter
  */
 public class ControllerForm extends SonarObjectForm<Controller> {
 
@@ -79,6 +80,9 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 	private final JComboBox<CommLink> comm_link_cbx =
 		new JComboBox<CommLink>();
 
+	/** Comm link name label */
+	private final JLabel cl_name_lbl = new JLabel();
+
 	/** Comm link URI label */
 	private final JLabel uri_lbl = new JLabel();
 
@@ -92,16 +96,7 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 	private final JTextArea notes_txt = new JTextArea(3, 24);
 
 	/** Access password */
-	private final JPasswordField password = new JPasswordField(16);
-
-	/** Action to clear the access password */
-	private final IAction clear_pwd = new IAction(
-		"controller.password.clear")
-	{
-		protected void doActionPerformed(ActionEvent e) {
-			proxy.setPassword(null);
-		}
-	};
+	private final JTextField password = new JTextField(16);
 
 	/** Condition action */
 	private final IAction condition_act = new IAction(
@@ -251,12 +246,12 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 		IPanel p = new IPanel();
 		p.add("comm.link");
 		p.add(comm_link_cbx);
-		p.add(uri_lbl, Stretch.LAST);
+		p.add(cl_name_lbl, Stretch.LAST);
 		p.add("controller.drop");
-		p.add(drop_spn, Stretch.LAST);
+		p.add(drop_spn);
+		p.add(uri_lbl, Stretch.LAST);
 		p.add("controller.password");
 		p.add(password);
-		p.add(new JButton(clear_pwd), Stretch.RIGHT);
 		p.add("device.notes");
 		p.add(notes_txt, Stretch.FULL);
 		p.add("controller.condition");
@@ -281,11 +276,8 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 		password.addFocusListener(new FocusAdapter() {
 			@Override
 			public void focusLost(FocusEvent e) {
-				String pwd = new String(
-					password.getPassword()).trim();
-				password.setText("");
-				if (pwd.length() > 0)
-					proxy.setPassword(pwd);
+				String pwd = new String(password.getText());
+				proxy.setPassword(pwd);
 			}
 		});
 		notes_txt.addFocusListener(new FocusAdapter() {
@@ -359,7 +351,6 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 		notes_txt.setEnabled(canWrite("notes"));
 		condition_act.setEnabled(canWrite("condition"));
 		password.setEnabled(canWrite("password"));
-		clear_pwd.setEnabled(canWrite("password"));
 	}
 
 	/** Update one attribute on the form */
@@ -374,6 +365,8 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 		}
 		if (a == null || a.equals("drop"))
 			drop_spn.setValue(proxy.getDrop());
+		if (a == null || a.equals("password"))
+			password.setText(proxy.getPassword());
 		if (a == null || a.equals("cabinetStyle"))
 			cab_style_act.updateSelected();
 		if (a == null || a.equals("notes"))
@@ -425,9 +418,12 @@ public class ControllerForm extends SonarObjectForm<Controller> {
 	private void updateCommLink() {
 		CommLink cl = proxy.getCommLink();
 		comm_link_mdl.setSelectedItem(cl);
-		if (cl != null)
+		if (cl != null) {
+			cl_name_lbl.setText("Comm Link: " + cl.getName());
 			uri_lbl.setText(cl.getUri());
-		else
+		} else {
+			cl_name_lbl.setText("");
 			uri_lbl.setText("");
+		}
 	}
 }

@@ -92,6 +92,10 @@ GRANT SELECT ON comm_link_view TO PUBLIC;
 
 INSERT INTO iris.sonar_type (name) VALUES ('comm_config');
 
+-- v47 uses full 8 chars for privilege name, so need to expand to
+-- accomodate the additional 'x' for the next query
+ALTER TABLE iris.privilege ALTER COLUMN name TYPE character varying(10);
+
 INSERT INTO iris.privilege (name, capability, type_n, obj_n, attr_n, group_n, write)
 SELECT name || 'x', capability, 'comm_config', '', '', '', write
   FROM iris.privilege

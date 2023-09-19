@@ -46,6 +46,9 @@ DELETE FROM iris.system_attribute WHERE name = 'incident_clear_advice_abbrev';
 -- Add camera_action sonar_type
 INSERT INTO iris.sonar_type (name) VALUES ('camera_action');
 
+-- v47, plan_admin has been removed it seems; will re-add
+INSERT INTO iris.capability (name, enabled)
+	VALUES ('plan_admin',true) ON CONFLICT DO NOTHING;
 -- Add privileges for camera_action
 INSERT INTO iris.privilege (name, capability, type_n, write)
 	VALUES ('PRV_ca0', 'plan_admin', 'camera_action', true),

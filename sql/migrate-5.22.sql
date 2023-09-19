@@ -5,10 +5,24 @@ BEGIN;
 
 SELECT iris.update_version('5.21.0', '5.22.0');
 
-ALTER TABLE iris.sign_config
-    ADD COLUMN exclude_font VARCHAR(16) REFERENCES iris.font;
-ALTER TABLE iris.sign_config ADD COLUMN module_width INTEGER;
-ALTER TABLE iris.sign_config ADD COLUMN module_height INTEGER;
+-- v47, columns added already, but no foreign key
+DO
+$do$
+BEGIN
+	IF EXISTS (
+		select 1 from information_schema.columns
+		where table_schema='iris' and table_name='sign_config' and column_name='exclude_font'
+	) THEN
+		-- add foreign key constraint
+		ALTER TABLE iris.sign_config ADD FOREIGN KEY (exclude_font) REFERENCES iris.font;
+	ELSE
+		ALTER TABLE iris.sign_config
+			ADD COLUMN IF NOT EXISTS exclude_font VARCHAR(16) REFERENCES iris.font;
+		ALTER TABLE iris.sign_config ADD COLUMN module_width INTEGER;
+		ALTER TABLE iris.sign_config ADD COLUMN module_height INTEGER;
+	END IF;
+END
+$do$;
 
 DROP VIEW dms_view;
 DROP VIEW sign_config_view;
@@ -46,9 +60,14 @@ DROP VIEW weather_sensor_view;
 DROP VIEW iris.weather_sensor;
 DROP FUNCTION iris.weather_sensor_insert;
 DROP FUNCTION iris.weather_sensor_update;
+-- v47 additional cleanup
+DROP TRIGGER IF EXISTS weather_sensor_insert_trig on iris.weather_sensor;
+DROP TRIGGER IF EXISTS weather_sensor_update_trig on iris.weather_sensor;
+DROP TRIGGER IF EXISTS weather_sensor_delete_trig on iris.weather_sensor;
 
-ALTER TABLE iris._weather_sensor ADD COLUMN site_id VARCHAR(20);
-ALTER TABLE iris._weather_sensor ADD COLUMN alt_id VARCHAR(20);
+-- v47 columns exist already
+ALTER TABLE iris._weather_sensor ADD COLUMN IF NOT EXISTS site_id VARCHAR(20);
+ALTER TABLE iris._weather_sensor ADD COLUMN IF NOT EXISTS alt_id VARCHAR(20);
 
 CREATE VIEW iris.weather_sensor AS SELECT
 	m.name, site_id, alt_id, geo_loc, controller, pin, notes, settings,

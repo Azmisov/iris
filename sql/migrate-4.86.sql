@@ -261,6 +261,12 @@ UPDATE iris.sign_message s
   FROM sign_config_dups n
  WHERE n.old_name = s.sign_config;
 
+-- (v47) Replace duplicate sign_config on _dms records
+UPDATE iris._dms d
+   SET sign_config = n.new_name
+  FROM sign_config_dups n
+ WHERE n.old_name = d.sign_config;
+
 -- Delete duplicate sign_config records
 DELETE FROM iris.sign_config s
       USING sign_config_dups d

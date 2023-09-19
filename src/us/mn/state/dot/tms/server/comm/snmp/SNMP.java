@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2000-2023  Minnesota Department of Transportation
+ * Copyright (C) 2019  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +28,7 @@ import us.mn.state.dot.tms.server.comm.ParsingException;
  * Simple Network Management Protocol (SNMP)
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class SNMP extends BER {
 

@@ -1,7 +1,8 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2016-2022  Minnesota Department of Transportation
- *
+ * Copyright (C) 2018  Iteris Inc.
+ * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -18,7 +19,7 @@ import java.util.Date;
 import java.util.HashSet;
 import us.mn.state.dot.sched.DebugLog;
 import us.mn.state.dot.sonar.SonarException;
-import us.mn.state.dot.tms.CorridorBase;
+import us.mn.state.dot.tms.server.Corridor;
 import us.mn.state.dot.tms.GeoLoc;
 import us.mn.state.dot.tms.Incident;
 import us.mn.state.dot.tms.IncidentHelper;
@@ -30,11 +31,16 @@ import static us.mn.state.dot.tms.server.BaseObjectImpl.corridors;
 import us.mn.state.dot.tms.server.IncidentImpl;
 import us.mn.state.dot.tms.units.Distance;
 import static us.mn.state.dot.tms.units.Distance.Units.MILES;
+import us.mn.state.dot.tms.Road;
+import us.mn.state.dot.tms.SystemAttrEnum;
+import us.mn.state.dot.tms.server.RoadImpl;
+import us.mn.state.dot.tms.Direction;
 
 /**
  * Cache of incidents in an incident feed.
  *
  * @author Douglas Lau
+ * @author Michael Darter, Isaac Nygaard
  */
 public class IncidentCache {
 
@@ -72,6 +78,11 @@ public class IncidentCache {
 		inc_log = il;
 	}
 
+	/** Video still functionality enabled? */
+	static private boolean freeIncidentsEnabled() {
+		return SystemAttrEnum.INCIDENT_FREE_ENABLE.getBoolean();
+	}
+
 	/** Put an incident into the cache */
 	public void put(ParsedIncident pi) {
 		if (pi.isValid()) {
@@ -82,7 +93,7 @@ public class IncidentCache {
 				else
 					inc_log.log("No location: " + pi);
 			}
-		} else if (inc_log.isOpen())
+		} else
 			inc_log.log("Invalid incident: " + pi);
 	}
 
@@ -108,7 +119,9 @@ public class IncidentCache {
 			MAX_DIST, pi.dir);
 		if (loc != null)
 			updateIncident(pi, loc);
-		else if (inc_log.isOpen())
+		else if (freeIncidentsEnabled())
+			updateIncident(pi, null, -1);
+		else
 			inc_log.log("Failed to snap incident: " + pi);
 	}
 
@@ -117,35 +130,56 @@ public class IncidentCache {
 		int n_lanes = getLaneCount(LaneCode.MAINLINE, loc);
 		if (n_lanes > 0)
 			updateIncident(pi, loc, n_lanes);
-		else if (inc_log.isOpen())
+		else
 			inc_log.log("No lanes at location: " + loc);
 	}
 
 	/** Get the lane count at the incident location */
 	private int getLaneCount(LaneCode lc, GeoLoc loc) {
-		CorridorBase cb = corridors.getCorridor(loc);
+		Corridor cb = corridors.getCorridor(loc);
 		return (cb != null) ? cb.getLaneCount(lc, loc) : 0;
 	}
 
-	/** Update an incident */
+	/** Update an incident
+	 * @param loc set this to null for an incident free of infastructure
+	 */
 	private void updateIncident(ParsedIncident pi, GeoLoc loc, int n_lanes){
 		IncidentImpl inc = lookupIncident(pi.id);
 		String oid = originalId(pi.id);
+		String nid = null;
 		// Is this a new incident?
 		if (null == inc && !incidents.contains(pi.id)) {
 			inc_log.log("Creating incident: " + pi);
-			createIncidentNotify(oid, null, pi, loc, n_lanes);
+			nid = oid;
+			oid = null;
 		}
 		// Is this a continuing incident?
-		if (isContinuing(inc, pi) &&
+		else if (isContinuing(inc, pi) &&
 			(hasMoved(inc, pi) || pi.isDetailChanged(inc)))
 		{
 			inc_log.log("Updating incident: " + pi);
 			inc.setClearedNotify(true);
 			inc.notifyRemove();
-			String n = IncidentHelper.createUniqueName();
-			createIncidentNotify(n, oid, pi, loc, n_lanes);
+			nid = IncidentHelper.createUniqueName();
 		}
+		// Notification needed
+		if (nid != null){
+			Road road; short dir; String im; String no;
+			// free incident
+			if (loc == null){
+				road = RoadImpl.createNotify("Unknown");
+				dir = (short) Direction.UNKNOWN.ordinal();
+				im = pi.getImpactCode();
+				no = pi.notes;
+			}
+			else{
+				road = loc.getRoadway();
+				dir = loc.getRoadDir();
+				im = LaneImpact.fromLanes(n_lanes);
+				no = "";
+			}
+			createIncidentNotify(nid, oid, pi, road, dir, im, no);
+		}		
 	}
 
 	/** Check if an incident in continuing */
@@ -160,17 +194,16 @@ public class IncidentCache {
 	 * @param n Incident name.
 	 * @param orig Original name.
 	 * @param pi Parsed incident.
-	 * @param loc Geo location.
-	 * @param n_lanes Lane count at incident location. */
+	 * @param road Snapped road from geolocation
+	 * @param dir Roadway direction
+	 * @param im String indicating the lane impact */
 	private boolean createIncidentNotify(String n, String orig,
-		ParsedIncident pi, GeoLoc loc, int n_lanes)
+		ParsedIncident pi, Road road, short dir, String im, String no)
 	{
-		String lc = LaneCode.MAINLINE.lcode;
-		String im = LaneImpact.fromLanes(n_lanes);
 		IncidentImpl inc = new IncidentImpl(n, orig,
 			pi.inc_type.id, new Date(), pi.detail,
-			lc, loc.getRoadway(), loc.getRoadDir(),
-			pi.lat, pi.lon, pi.lookupCamera(), im, false, false);
+			LaneCode.MAINLINE.lcode, road, dir,
+			pi.lat, pi.lon, pi.lookupCamera(), im, false, false, no);
 		try {
 			inc.notifyCreate();
 			return true;

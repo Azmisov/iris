@@ -16,6 +16,7 @@
 package us.mn.state.dot.tms.units;
 
 import junit.framework.TestCase;
+import static us.mn.state.dot.tms.units.Angle.Units.*;
 
 /** 
  * Angle test cases
@@ -34,8 +35,8 @@ public class AngleTest extends TestCase {
 		final double REV = 2 * Math.PI;
 
 		// missing
-		assertTrue(new Angle().toRads() == 0d);
-		assertTrue(new Angle().toDegs() == 0);
+		assertTrue(new Angle().asDouble(RADIANS) == 0d);
+		assertTrue(new Angle().asDouble(DEGREES) == 0);
 
 		// get degrees Integer
 		assertTrue(new Angle().toDegsInt() == 0);
@@ -44,8 +45,8 @@ public class AngleTest extends TestCase {
 		assertTrue(new Angle(-500).toDegsInt() == -500);
 
 		// get rads
-		assertTrue(new Angle(180).toRads() == Math.PI);
-		assertTrue(new Angle(360 * 5).toRads() == 5 * REV);
+		assertTrue(new Angle(180).asDouble(RADIANS) == Math.PI);
+		assertTrue(new Angle(360 * 5).asDouble(RADIANS) == 5 * REV);
 
 		// to string
 		assertTrue(new Angle(5).toString().equals("5\u00B0"));
@@ -75,10 +76,10 @@ public class AngleTest extends TestCase {
 		assertTrue(Angle.round(33.33) == 33);
 
 		// round
-		assertTrue(new Angle(2).round(10).toDegs() == 0);
-		assertTrue(new Angle(8).round(10).toDegs() == 10);
+		assertTrue(new Angle(2).round(10).asDouble(DEGREES) == 0);
+		assertTrue(new Angle(8).round(10).asDouble(DEGREES) == 10);
 		assertTrue(new Angle(350).round(10).toDegsInt() == 350);
-		assertTrue(new Angle(356).round(10).toDegs() == 360);
+		assertTrue(new Angle(356).round(10).asDouble(DEGREES) == 360);
 		assertTrue(new Angle(176).round(10).equals(
 			new Angle(182).round(10)));
 
@@ -105,19 +106,19 @@ public class AngleTest extends TestCase {
 		assertTrue(Angle.floorRev(-2.5 * REV) == -2 * REV);
 
 		// invert
-		assertTrue(new Angle().invert().toDegs() == 0);
-		assertTrue(new Angle(0).invert().toDegs() == 0);
+		assertTrue(new Angle().invert().asDouble(DEGREES) == 0);
+		assertTrue(new Angle(0).invert().asDouble(DEGREES) == 0);
 		assertTrue(new Angle(10).invert().toDegsInt() == 350);
-		assertTrue(new Angle(90).invert().toDegs() == 270);
-		assertTrue(new Angle(180).invert().toDegs() == 180);
-		assertTrue(new Angle(270).invert().toDegs() == 90);
+		assertTrue(new Angle(90).invert().asDouble(DEGREES) == 270);
+		assertTrue(new Angle(180).invert().asDouble(DEGREES) == 180);
+		assertTrue(new Angle(270).invert().asDouble(DEGREES) == 90);
 		assertTrue(new Angle(359).invert().toDegsInt() == 1);
 		assertTrue(new Angle(360 + 10).invert().
-			toDegs() == 360 + 350);
+			asDouble(DEGREES) == 360 + 350);
 		assertTrue(new Angle(360 + 180 - 10).invert().
-			toDegs() == 360 + 180 + 10);
+			asDouble(DEGREES) == 360 + 180 + 10);
 		assertTrue(new Angle(360 + 180).invert().
-			toDegs() == 360 + 180);
+			asDouble(DEGREES) == 360 + 180);
 		assertTrue(new Angle(-10).invert().toDegsInt() == -350);
 		assertTrue(new Angle(-90).invert().toDegsInt() == -270);
 		assertTrue(new Angle(-360 - 10).invert().
@@ -125,12 +126,12 @@ public class AngleTest extends TestCase {
 
 		// add: this tests conversion from NTCIP 1204 angles
 		//      to Java transform angles + 90 for marker
-		assertTrue(new Angle(180).add(-0).toDegs() == 180);
-		assertTrue(new Angle(180).add(-45).toDegs() == 135);
-		assertTrue(new Angle(180).add(-90).toDegs() == 90);
-		assertTrue(new Angle(180).add(-135).toDegs() == 45);
-		assertTrue(new Angle(180).add(-180).toDegs() == 0);
-		assertTrue(new Angle(180).add(-225).toDegs() == -45);
-		assertTrue(new Angle(180).add(-270).toDegs() == -90);
+		assertTrue(new Angle(180).add(-0).asDouble(DEGREES) == 180);
+		assertTrue(new Angle(180).add(-45).asDouble(DEGREES) == 135);
+		assertTrue(new Angle(180).add(-90).asDouble(DEGREES) == 90);
+		assertTrue(new Angle(180).add(-135).asDouble(DEGREES) == 45);
+		assertTrue(new Angle(180).add(-180).asDouble(DEGREES) == 0);
+		assertTrue(new Angle(180).add(-225).asDouble(DEGREES) == -45);
+		assertTrue(new Angle(180).add(-270).asDouble(DEGREES) == -90);
 	}
 }

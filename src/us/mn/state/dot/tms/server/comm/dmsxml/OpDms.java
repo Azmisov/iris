@@ -449,7 +449,7 @@ abstract class OpDms extends OpDevice {
 		 * @see Messenger#handleCommError()
 		 * @see Messenger#shouldReopen()
 		 */
-		protected Phase poll(CommMessage argmess)
+		public Phase poll(CommMessage argmess)
 			throws IOException
 		{
 			Message mess = (Message) argmess;

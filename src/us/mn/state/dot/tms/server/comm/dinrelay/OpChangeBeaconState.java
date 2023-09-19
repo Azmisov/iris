@@ -52,15 +52,15 @@ public class OpChangeBeaconState extends OpDevice<DinRelayProperty> {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<DinRelayProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new ChangeBeacon();
 	}
 
 	/** Phase to change the beacon state */
-	protected class ChangeBeacon extends Phase<DinRelayProperty> {
+	protected class ChangeBeacon extends Phase {
 
 		/** Change the beacon state */
-		protected Phase<DinRelayProperty> poll(
+		public Phase poll(
 			CommMessage<DinRelayProperty> mess) throws IOException
 		{
 			int p = beacon.getPin();

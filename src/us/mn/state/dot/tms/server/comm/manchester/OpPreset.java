@@ -36,15 +36,15 @@ public class OpPreset extends OpManchester {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<ManchesterProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new CommandPreset();
 	}
 
 	/** Phase to recall or store a camera preset */
-	protected class CommandPreset extends Phase<ManchesterProperty> {
+	protected class CommandPreset extends Phase {
 
 		/** Command controller to recall or store a preset */
-		protected Phase<ManchesterProperty> poll(
+		public Phase poll(
 			CommMessage<ManchesterProperty> mess) throws IOException
 		{
 			mess.add(prop);

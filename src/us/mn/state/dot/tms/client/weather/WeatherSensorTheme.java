@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2019  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@ import java.util.Date;
 import java.awt.Color;
 import us.mn.state.dot.tms.ItemStyle;
 import us.mn.state.dot.tms.WeatherSensor;
+import us.mn.state.dot.tms.WeatherSensorHelper;
 import us.mn.state.dot.tms.client.ToolTipBuilder;
 import us.mn.state.dot.tms.client.map.MapObject;
 import us.mn.state.dot.tms.client.proxy.ProxyManager;
@@ -28,6 +29,9 @@ import us.mn.state.dot.tms.units.Distance;
 import us.mn.state.dot.tms.units.Temperature;
 import us.mn.state.dot.tms.units.Pressure;
 import us.mn.state.dot.tms.units.Speed;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PrecipSituation;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.VisibilitySituation;
 
 /**
  * Theme for weather sensor objects on the map.
@@ -72,18 +76,28 @@ public class WeatherSensorTheme extends ProxyTheme<WeatherSensor> {
 		ttb.addLine("Visibility", 
 			Distance.create(p.getVisibility(), 
 			Distance.Units.METERS));
+		ttb.addLine("Visibility Situation",
+			VisibilitySituation.from(p).toStringValid());
+		ttb.addLine("Water depth", 
+			p.getWaterDepth(), "cm");
 		ttb.addLine("Relative humidity", 
 			p.getHumidity(), "%");
 		ttb.addLine("Barometric pressure",
 			Pressure.create(p.getPressure()));
+		ttb.addLine("Barometric sea-level pressure",
+			WeatherSensorHelper.calcSeaLevelPressure(p));
 		ttb.addLine("Precipitation rate", 
 			p.getPrecipRate(), "mm/hr");
 		ttb.addLine("Precipitation 1h", 
 			p.getPrecipRate(), "mm");
+		ttb.addLine("Precip. situation",
+			PrecipSituation.from(p).toStringValid());
 		ttb.addLine("Dew point temperature", 
 			Temperature.create(p.getDewPointTemp()));
-		ttb.addLine("Pavement surface temperature", 
-			Temperature.create(p.getPvmtSurfTemp()));
+		ttb.addLine("Pavement surface status", 
+			SurfaceStatus.from(p).toStringValid());
+		ttb.addLine("Pavement temperature", 
+			Temperature.create(p.getPvmtTemp()));
 		ttb.addLine("Surface temperature", 
 			Temperature.create(p.getSurfTemp()));
 		ttb.addLine("Subsurface temperature", 

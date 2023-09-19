@@ -64,7 +64,7 @@ public class OpSendLCSIndications extends OpLCS {
 		private int lane = 0;
 
 		/** Create a sign message */
-		protected Phase poll(CommMessage mess) {
+		public Phase poll(CommMessage mess) {
 			if (lane < msgs.length) {
 				msgs[lane] = createSignMessage(lane);
 				lane++;
@@ -123,7 +123,7 @@ public class OpSendLCSIndications extends OpLCS {
 	protected class SendMessages extends Phase {
 
 		/** Send sign messages */
-		protected Phase poll(CommMessage mess) {
+		public Phase poll(CommMessage mess) {
 			for (int lane = 0; lane < msgs.length; lane++)
 				sendIndication(lane);
 			return null;

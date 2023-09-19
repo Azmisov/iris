@@ -61,7 +61,7 @@ public class CommThread<T extends ControllerProperty> {
 	}
 
 	/** Write a message to the comm log */
-	private void clog(String msg) {
+	public void clog(String msg) {
 		if (logger.isOpen())
 			logger.log(thread.getName() + " " + msg);
 	}
@@ -139,7 +139,7 @@ public class CommThread<T extends ControllerProperty> {
 		uri = u;
 		timeout = rt;
 		no_resp_disconnect_sec = nrd;
-		idle_disconnect_ms = poller.getIdleDisconnectSec() * 1000L;
+		idle_disconnect_ms = Math.max(0, poller.getIdleDisconnectSec() * 1000L);
 		logger = log;
 	}
 

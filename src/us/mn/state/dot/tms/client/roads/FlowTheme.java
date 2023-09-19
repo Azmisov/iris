@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2016  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +22,7 @@ import us.mn.state.dot.tms.utils.I18N;
  * A theme for drawing segment objects based on flow thresholds.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class FlowTheme extends SegmentTheme {
 
@@ -44,8 +46,9 @@ public class FlowTheme extends SegmentTheme {
 	@Override
 	protected Style getSegmentStyle(MapSegment ms) {
 		Integer f = ms.getFlow();
+		// no detection
 		if (f == null)
-			return DEFAULT_STYLE;
+			return NO_DETECTION_STYLE;
 		if (f <= 1500)
 			return F_STYLES[0];
 		if (f <= 2000)

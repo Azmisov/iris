@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2000-2023  Minnesota Department of Transportation
+ * Copyright (C) 2018  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +34,7 @@ import us.mn.state.dot.tms.server.comm.snmp.ReqIdGenerator;
  * NTCIP thread
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class NtcipThread extends CommThread {
 
@@ -143,7 +145,9 @@ public class NtcipThread extends CommThread {
 	{
 		ControllerImpl c = o.getController();
 		int req_id = generateReqId(o);
+		String pw = c.getPassword();
+		clog("ctl=" + c.getName() + " pw=" + pw);
 		return snmp.new Message(m.getOutputStream(c),
-			m.getInputStream("", c), c.getPassword(), req_id);
+			m.getInputStream("", c), pw, req_id);
 	}
 }

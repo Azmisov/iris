@@ -3,6 +3,7 @@
  * Copyright (C) 2002-2020  Minnesota Department of Transportation
  * Copyright (C) 2014-2015  AHMCT, University of California
  * Copyright (C) 2022-2023  SRF Consulting Group
+ * Copyright (C) 2018  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +44,7 @@ import static us.mn.state.dot.tms.client.widget.Widgets.UI;
  * @author Michael Janson
  * @author Gordon Parikh
  * @author John L. Stanley
+ * @author Michael Darter
  */
 public class StreamPanel extends JPanel {
 
@@ -86,11 +88,22 @@ public class StreamPanel extends JPanel {
 		}
 	};
 
+	/** Timer listener for updating still images */
+	private class StillImageUpdater implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			screen_pnl.updateStillImage();
+		}
+	};
+
 	/** Timer task for updating video status */
 	private final StatusUpdater stat_updater = new StatusUpdater();
 
 	/** Stream progress timer */
 	private final Timer timer = new Timer(STATUS_DELAY, stat_updater);
+
+	/** Still image update timer */
+	private final Timer simage_timer = 
+		new Timer(20 * 1000, new StillImageUpdater());
 
 	/** Stream status listeners to notify on stream status change events */
 	private final Set<StreamStatusListener> ssl_set =
@@ -132,6 +145,7 @@ public class StreamPanel extends JPanel {
 		setPreferredSize(psz);
 		setMinimumSize(psz);
 		setMaximumSize(psz);
+		simage_timer.start();
 	}
 
 	/**

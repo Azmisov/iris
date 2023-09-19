@@ -39,15 +39,15 @@ public class OpQuerySetup extends OpDevice<CBWProperty> {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<CBWProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new QueryState();
 	}
 
 	/** Phase to query the state */
-	private class QueryState extends Phase<CBWProperty> {
+	private class QueryState extends Phase {
 
 		/** Query the state */
-		protected Phase<CBWProperty> poll(
+		public Phase poll(
 			CommMessage<CBWProperty> mess) throws IOException
 		{
 			CBWProperty prop = new CBWProperty(

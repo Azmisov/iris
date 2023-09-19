@@ -47,15 +47,15 @@ public class OpReadCap extends OpController<CapProperty> {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<CapProperty> phaseOne() {
+	protected Phase phaseOne() {
 		return new PhaseReadCap();
 	}
 
 	/** Phase to read the alert feed */
-	protected class PhaseReadCap extends Phase<CapProperty> {
+	protected class PhaseReadCap extends Phase {
 
 		/** Execute the phase */
-		protected Phase<CapProperty> poll(
+		public Phase poll(
 			CommMessage<CapProperty> mess) throws IOException
 		{
 			CapPoller.slog("polling feed " + alertFeed);

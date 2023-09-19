@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2016-2022  Minnesota Department of Transportation
+ * Copyright (C) 2021-2022  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +19,8 @@ import java.io.IOException;
 import us.mn.state.dot.tms.BeaconState;
 import us.mn.state.dot.tms.ControllerHelper;
 import us.mn.state.dot.tms.server.BeaconImpl;
+import us.mn.state.dot.tms.server.CommLinkImpl;
+import us.mn.state.dot.tms.server.ControllerImpl;
 import us.mn.state.dot.tms.server.comm.CommMessage;
 import us.mn.state.dot.tms.server.comm.OpDevice;
 import us.mn.state.dot.tms.server.comm.PriorityLevel;
@@ -46,19 +49,20 @@ public class OpQueryBeaconState extends OpDevice<CBWProperty> {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<CBWProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new QueryBeacon();
 	}
 
 	/** Phase to query the beacon status */
-	private class QueryBeacon extends Phase<CBWProperty> {
+	private class QueryBeacon extends Phase {
 
 		/** Query the beacon status */
-		protected Phase<CBWProperty> poll(
+		public Phase poll(
 			CommMessage<CBWProperty> mess) throws IOException
 		{
 			mess.add(prop);
 			mess.queryProps();
+			updateController();
 			return null;
 		}
 	}
@@ -85,5 +89,11 @@ public class OpQueryBeaconState extends OpDevice<CBWProperty> {
 	private boolean getVerifyValue() {
 		Integer vp = beacon.getVerifyPin();
 		return (vp != null) ? prop.getInput(vp) : false;
+	}
+
+	/** Update the controller with new values */
+	private void updateController() {
+		ControllerImpl ci = getController();
+		ci.setVersionNotify("Vin=" + prop.getVoltageIn() + ", SN=" + prop.getSerialNumber());
 	}
 }

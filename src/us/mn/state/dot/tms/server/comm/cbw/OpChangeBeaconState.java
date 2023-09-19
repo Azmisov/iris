@@ -60,12 +60,12 @@ public class OpChangeBeaconState extends OpDevice<CBWProperty> {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<CBWProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new ChangeBeacon(beacon.getPin());
 	}
 
 	/** Phase to change the beacon relay state */
-	protected class ChangeBeacon extends Phase<CBWProperty> {
+	protected class ChangeBeacon extends Phase {
 
 		/** Relay pin (for flasher or verify) */
 		private final int pin;
@@ -76,7 +76,7 @@ public class OpChangeBeaconState extends OpDevice<CBWProperty> {
 		}
 
 		/** Change the beacon state */
-		protected Phase<CBWProperty> poll(
+		public Phase poll(
 			CommMessage<CBWProperty> mess) throws IOException
 		{
 			String pq = getPathQuery(pin, flash);

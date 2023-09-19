@@ -135,7 +135,7 @@ public class OpQueryDMSConfiguration extends OpDMS {
 
 		/** Query the DMS information */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(access);
 			mess.add(type);
 			mess.add(face_height);
@@ -164,7 +164,7 @@ public class OpQueryDMSConfiguration extends OpDMS {
 
 		/** Query the VMS information */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(s_height);
 			mess.add(s_width);
 			mess.add(h_pitch);
@@ -187,7 +187,7 @@ public class OpQueryDMSConfiguration extends OpDMS {
 
 		/** Query dmsMessageBeacon object */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			// Verify beacon activation flag support by reading
 			// dmsMessageBeacon from the changeable.1 message slot
 			ASN1Integer beacon = dmsMessageBeacon.makeInt(
@@ -209,7 +209,7 @@ public class OpQueryDMSConfiguration extends OpDMS {
 
 		/** Query dmsMessagePixelService object */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			// Verify pixel service flag by reading
 			// dmsMessagePixelService from the
 			// changeable.1 message slot.
@@ -232,7 +232,7 @@ public class OpQueryDMSConfiguration extends OpDMS {
 
 		/** Query the 1203v2 objects */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(mono_color);
 			mess.add(color_scheme);
 			mess.add(supported_tags);

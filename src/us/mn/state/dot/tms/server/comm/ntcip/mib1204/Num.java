@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2023  Minnesota Department of Transportation
+ * Copyright (C) 2023  Iteris
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,35 +15,38 @@
  */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
-import java.text.NumberFormat;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 
 /**
  * Number formatting utility.
  *
  * @author Douglas Lau
+ * @authro Isaac Nygaard
  */
 public class Num {
 
 	/** Create a number formatter for a given number of digits */
-	static private NumberFormat createFormatter(int digits) {
-		NumberFormat f = NumberFormat.getInstance();
+	static private DecimalFormat createFormatter(int digits) {
+		// used for Json serialization, so only use compatible formats
+		// TODO: this will be localized, so can be incorrect (e.g. comma for decimal point)
+		DecimalFormat f = new DecimalFormat();
+		f.setRoundingMode(RoundingMode.HALF_EVEN);
 		f.setGroupingUsed(false);
 		f.setMaximumFractionDigits(digits);
-		f.setMinimumFractionDigits(Math.min(1, digits));
+		f.setMinimumFractionDigits(0); // since we format integers too
 		return f;
 	}
 
-	/** Format a Float to the given number of digits */
-	static public String format(Float num, int digits) {
-		return (num != null)
-		      ? createFormatter(digits).format(num)
-		      : null;
+	/** Format long/int to string with specified fractional digits, or null if
+	 * input is null */
+	static public String format(Long num, int digits) {
+		return num != null ? createFormatter(digits).format(num) : null;
 	}
 
-	/** Format a Double to the given number of digits */
+	/** Format double/float to string with specified fractional digits, or null
+	 * if input is null */
 	static public String format(Double num, int digits) {
-		return (num != null)
-		      ? createFormatter(digits).format(num)
-		      : null;
+		return num != null ? createFormatter(digits).format(num) : null;
 	}
 }

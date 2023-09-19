@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2000-2019  Minnesota Department of Transportation
+ * Copyright (C) 2018  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +20,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import us.mn.state.dot.sonar.SonarException;
 import us.mn.state.dot.tms.ChangeVetoException;
 import us.mn.state.dot.tms.Direction;
 import us.mn.state.dot.tms.Road;
+import us.mn.state.dot.tms.RoadHelper;
 import us.mn.state.dot.tms.TMSException;
 
 /**
@@ -29,6 +32,7 @@ import us.mn.state.dot.tms.TMSException;
  * group traffic management devices.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class RoadImpl extends BaseObjectImpl implements Road {
 
@@ -51,6 +55,22 @@ public class RoadImpl extends BaseObjectImpl implements Road {
 				));
 			}
 		});
+	}
+
+	/** Create the specified road and notify clients.
+	 * @return The new or existing object or null */
+	static public RoadImpl createNotify(String na) {
+		RoadImpl rd = (RoadImpl)RoadHelper.lookup(na);
+		if (rd instanceof RoadImpl)
+			return rd;
+		rd = new RoadImpl(na);
+		try {
+			rd.notifyCreate();
+			return rd;
+		} catch (SonarException e) {
+			System.err.println("createNotify: " + e.getMessage());
+			return null;
+		}
 	}
 
 	/** Get a mapping of the columns */

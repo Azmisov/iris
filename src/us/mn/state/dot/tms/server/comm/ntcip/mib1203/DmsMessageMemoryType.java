@@ -23,7 +23,7 @@ package us.mn.state.dot.tms.server.comm.ntcip.mib1203;
  */
 public enum DmsMessageMemoryType {
 	undefined	(false),
-	other		(false),
+	other		(false), // true is deprecated by NTCIP 1204 V2 spec
 	permanent	(true),
 	changeable	(true),
 	_volatile	(true),

@@ -18,7 +18,7 @@
 	<property name="src.dir" value="src"/>
 	<property name="etc.dir" value="etc"/>
 	<property name="fonts.dir" value="fonts"/>
-	<property name="images.dir" value="images"/>
+	<property name="images.dir" value="src/images"/>
 	<property name="bin.dir" value="bin"/>
 	<property name="lib.dir" value="lib"/>
 	<property name="i18n.dir" value="etc/i18n"/>
@@ -35,6 +35,8 @@
 	<property name="manifest.client" value="client-MANIFEST.MF"/>
 	<property name="dist.server" value="${name}-server"/>
 	<property name="dist.client" value="${name}-client"/>
+	<!-- TODO: should probably reorganize this so it is in common jar instead -->
+	<property name="mib1204" value="us/mn/state/dot/tms/server/comm/ntcip/mib1204/enums"/>
 
 	<!-- Build directory configuration -->
 	<property name="build.dir" value="${basedir}/build"/>
@@ -178,8 +180,8 @@
 		       debug="${debug}"
 		       deprecation="on"
 		       includeantruntime="false"
-		       source="1.8"
-		       target="1.8">
+		       source="17"
+		       target="17">
 			<classpath refid="classpath"/>
 			<compilerarg value="-Xlint:unchecked"/>
 			<compilerarg value="-Xlint:cast"/>
@@ -252,6 +254,11 @@
 				 includes="us/mn/state/dot/sonar/client/**/*"/>
 			<fileset dir="${build.classes}"
 				 includes="us/mn/state/dot/tms/client/**/*"/>
+			<fileset dir="${build.classes}">
+				<include name="${mib1204}/PrecipSituation.class"/>
+				<include name="${mib1204}/SurfaceStatus.class"/>
+				<include name="${mib1204}/VisibilitySituation.class"/>
+			</fileset>
 			<fileset dir="${build.dir}" includes="images/*"/>
 		</jar>
 	</target>
@@ -290,6 +297,7 @@
 			<fileset dir="${lib.dir}">
 				<include name="javax.activation.jar"/>
 				<include name="mail.jar"/>
+				<include name="javax.activation-${javax_version}.jar"/>
 				<include name="jna-${jna_version}.jar"/>
 				<include name="jna-platform-${jna_version}.jar"/>
 				<include name="gst1-java-core-${gst_java_version}.jar"/>
@@ -464,8 +472,8 @@
 		       debug="true"
 		       deprecation="on"
 		       includeantruntime="true"
-		       source="1.8"
-		       target="1.8">
+		       source="17"
+		       target="17">
 			<classpath refid="junit.classpath"/>
 		</javac>
 	</target>

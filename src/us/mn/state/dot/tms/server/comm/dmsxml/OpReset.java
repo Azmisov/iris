@@ -154,7 +154,7 @@ class OpReset extends OpDms {
 	private class PhaseResetDms extends Phase
 	{
 		/** Query current message */
-		protected Phase poll(CommMessage argmess) 
+		public Phase poll(CommMessage argmess) 
 			throws IOException 
 		{
 			LOG.log(

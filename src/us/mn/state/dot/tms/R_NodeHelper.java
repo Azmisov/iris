@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2022  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +21,7 @@ import java.util.Iterator;
  * R_NodeHelper has static methods for dealing with r_nodes.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class R_NodeHelper extends BaseHelper {
 
@@ -81,7 +83,9 @@ public class R_NodeHelper extends BaseHelper {
 		       hasActiveDetection(n);
 	}
 
-	/** Check if an R_Node has active detection */
+	/** Check if an R_Node has active detection
+	 * @return True if r_node has at least one detector configured. 
+	 */
 	static private boolean hasActiveDetection(R_Node n) {
 		Iterator<Detector> it = DetectorHelper.iterator();
 		while (it.hasNext()) {

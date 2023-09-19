@@ -122,7 +122,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Query the maximum character size (v2 only) */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer max_char = fontMaxCharacterSize.makeInt();
 			mess.add(max_char);
 			try {
@@ -144,7 +144,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Query the number of supported fonts */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(num_fonts);
 			mess.add(max_characters);
 			mess.queryProps();
@@ -162,7 +162,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Query the font number for one row in font table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer number = fontNumber.makeInt(row);
 			mess.add(number);
 			try {
@@ -312,7 +312,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Verify a font */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer version = fontVersionID.makeInt(frow.row);
 			mess.add(version);
 			try {
@@ -367,7 +367,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Query the initial font status */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Enum<FontStatus> status = makeStatus(frow.row);
 			mess.add(status);
 			mess.queryProps();
@@ -397,7 +397,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Request the font status be "notUsed" */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Enum<FontStatus> status = makeStatus(frow.row);
 			status.setEnum(FontStatus.notUsedReq);
 			mess.add(status);
@@ -420,7 +420,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Verify the font status is "notUsed" */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Enum<FontStatus> status = makeStatus(frow.row);
 			mess.add(status);
 			mess.queryProps();
@@ -449,7 +449,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Set the font status to modifying */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Enum<FontStatus> status = makeStatus(frow.row);
 			status.setEnum(FontStatus.modifyReq);
 			mess.add(status);
@@ -472,7 +472,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Verify the font status is modifying */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Enum<FontStatus> status = makeStatus(frow.row);
 			mess.add(status);
 			mess.queryProps();
@@ -501,7 +501,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Invalidate a font entry in the font table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer height = fontHeight.makeInt(frow.row);
 			mess.add(height);
 			logStore(height);
@@ -525,7 +525,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Create a new font in the font table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			int row = frow.row;
 			ASN1Integer number = fontNumber.makeInt(row);
 			DisplayString name = new DisplayString(fontName.node,
@@ -585,7 +585,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Add a character to the font table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			int row = frow.row;
 			int code_point = glyph.getCodePoint();
 			byte[] pixels = Base64.decode(glyph.getPixels());
@@ -631,7 +631,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Validate a font entry in the font table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer height = fontHeight.makeInt(frow.row);
 			height.setInteger(frow.font.getHeight());
 			mess.add(height);
@@ -650,7 +650,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Validate a font entry in the font table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Enum<FontStatus> status = makeStatus(frow.row);
 			status.setEnum(FontStatus.readyForUseReq);
 			mess.add(status);
@@ -673,7 +673,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Verify the font status is ready for use */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Enum<FontStatus> status = makeStatus(frow.row);
 			mess.add(status);
 			mess.queryProps();
@@ -709,7 +709,7 @@ public class OpSendDMSFonts extends OpDMS {
 
 		/** Set the default font number */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			int fnum = frow.f_num;
 			ASN1Integer dfont = defaultFont.makeInt();
 			dfont.setInteger(fnum);

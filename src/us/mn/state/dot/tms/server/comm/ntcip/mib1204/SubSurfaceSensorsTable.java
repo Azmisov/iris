@@ -1,178 +1,169 @@
-/*
- * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017  Iteris Inc.
- * Copyright (C) 2019-2023  Minnesota Department of Transportation
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
-import java.util.ArrayList;
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Enum;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Integer;
-import us.mn.state.dot.tms.server.comm.snmp.DisplayString;
-import us.mn.state.dot.tms.units.Distance;
-import us.mn.state.dot.tms.utils.Json;
-
-import static us.mn.state.dot.tms.units.Distance.Units.CENTIMETERS;
-import static us.mn.state.dot.tms.units.Distance.Units.METERS;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceSensorError;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SubSurfaceType;
+import static us.mn.state.dot.tms.units.Distance.Units.*;
+import java.io.IOException;
+import us.mn.state.dot.tms.utils.JsonBuilder;
+import us.mn.state.dot.tms.utils.XmlBuilder;
 
 /**
  * SubSurface sensors data table, where each table row contains data read from a
  * single sensor within the same controller.
  *
- * @author Michael Darter
+ * @author Michael Darter, Isaac Nygaard
+ * @copyright 2017-2023 Iteris, Inc
  * @author Douglas Lau
+ * @copyright 2019-2023  Minnesota Department of Transportation
+ * @license GPL-2.0
  */
-public class SubSurfaceSensorsTable {
-
-	/** Depth of 1001 indicates error or missing value */
-	static private final int DEPTH_ERROR_MISSING = 1001;
-
-	/** Convert depth to Distance.
-	 * @param d Depth in centimeters with 1001 indicating an error or
-	 *          missing value.
-	 * @return Depth distance or null for missing */
-	static private Distance convertDepth(ASN1Integer d) {
-		if (d != null) {
-			int id = d.getInteger();
-			if (id != DEPTH_ERROR_MISSING)
-				return new Distance(id, CENTIMETERS);
-		}
-		return null;
+public class SubSurfaceSensorsTable extends EssTable<SubSurfaceSensorsTable.Row>
+	implements XmlBuilder.Buildable
+{
+	/** Number of temperature sensors in table; may be manually modified by High
+	 * Sierra remapping */
+	public final EssNumber num_sensors =
+		EssNumber.Count("subsurface_sensors", numEssSubSurfaceSensors);
+	
+	public SubSurfaceSensorsTable(){
+		setSensorCount(num_sensors);
 	}
 
-	/** Number of temperature sensors in table */
-	public final ASN1Integer num_sensors =
-		numEssSubSurfaceSensors.makeInt();
-
 	/** Table row */
-	static public class Row {
-		public final DisplayString location;
-		public final ASN1Enum<SubSurfaceType> sub_surface_type;
-		public final ASN1Integer depth;
-		public final TemperatureObject temp;
-		public final PercentObject moisture;
-		public final ASN1Enum<SubSurfaceSensorError> sensor_error;
+	static public class Row implements JsonBuilder.Buildable, XmlBuilder.Buildable{
+		/** Row/sensor number */
+		public final int number;
+		/** Sensor location as a display string */
+		public final EssString location;
+		/** Subsurface type enum */
+		public final EssEnum<SubSurfaceType> sub_surface_type;
+		/** Subsurface depth in meters */
+		public final EssDistance depth;
+		/** Subsurface temperature in celcius; may be overwritten by High Sierra
+		 * remapping */
+		public EssTemperature temp;
+		/** Moisture in percent 0-100 */
+		public final EssNumber moisture;
+		/** Subsurface sensor error enum; may be manually modified by High
+		 * Sierra remapping */
+		public final EssEnum<SubSurfaceSensorError> sensor_error;
 
 		/** Create a table row */
 		private Row(int row) {
-			location = new DisplayString(
-				essSubSurfaceSensorLocation.node, row);
-			sub_surface_type = new ASN1Enum<SubSurfaceType>(
-				SubSurfaceType.class, essSubSurfaceType.node,
-				row);
-			depth = essSubSurfaceSensorDepth.makeInt(row);
-			depth.setInteger(DEPTH_ERROR_MISSING);
-			temp = new TemperatureObject("temp",
-				essSubSurfaceTemperature.makeInt(row));
-			moisture = new PercentObject("moisture",
-				essSubSurfaceMoisture.makeInt(row));
-			sensor_error = new ASN1Enum<SubSurfaceSensorError>(
-				SubSurfaceSensorError.class,
-				essSubSurfaceSensorError.node, row);
+			number = row;
+			location =
+				new EssString("location", essSubSurfaceSensorLocation, row);
+			sub_surface_type =
+				EssEnum.make(SubSurfaceType.class, "sub_surface_type", essSubSurfaceType, row);
+			depth = 
+				new EssDistance("depth", essSubSurfaceSensorDepth, row)
+					.setUnits(1, CENTIMETERS)
+					.setDigits(2);
+			temp =
+				new EssTemperature("temp", essSubSurfaceTemperature, row);
+			moisture =
+				EssNumber.Percent("moisture", essSubSurfaceMoisture, row);
+			sensor_error =
+				EssEnum.make(SubSurfaceSensorError.class, "sensor_error", essSubSurfaceSensorError, row);
 		}
 
-		/** Get the sensor location */
-		public String getSensorLocation() {
-			String sl = location.getValue();
-			return (sl.length() > 0) ? sl : null;
+		/** Is this sensor active? */
+		public boolean isActive(){
+			// These values were determined empirically, with valid
+			// surface temps present when sensor err was one of these:
+			var se = sensor_error.get();
+			return (se == SubSurfaceSensorError.none || 
+				se == SubSurfaceSensorError.noResponse ||
+				se == SubSurfaceSensorError.other);
 		}
 
-		/** Get sub-surface type or null on error */
-		public SubSurfaceType getSubSurfaceType() {
-			SubSurfaceType sst = sub_surface_type.getEnum();
-			return (sst != SubSurfaceType.undefined) ? sst : null;
+		/** Logging format */
+		public String toString() {
+			return new StringBuilder()
+				.append(EssConvertible.toLogString(new EssConvertible[]{
+					temp,
+					location,
+					sub_surface_type,
+					depth,
+					moisture,
+					sensor_error
+				}, number))
+				.append(EssConvertible.toLogString("isActive",isActive(),number))
+				.toString();
 		}
-
-		/** Get sub-surface sensor depth in meters */
-		private String getDepth() {
-			Distance d = convertDepth(depth);
-			if (d != null) {
-				Float dm = d.asFloat(METERS);
-				return Num.format(dm, 2); // cm
-			} else
-				return null;
-		}
-
-		/** Get sub-surface temp or null on error */
-		public Integer getTempC() {
-			return temp.getTempC();
-		}
-
-		/** Get sensor error or null on error */
-		public SubSurfaceSensorError getSensorError() {
-			SubSurfaceSensorError se = sensor_error.getEnum();
-			return (se != null && se.isError()) ? se : null;
-		}
-
 		/** Get JSON representation */
-		private String toJson() {
-			StringBuilder sb = new StringBuilder();
-			sb.append('{');
-			sb.append(Json.str("location", getSensorLocation()));
-			sb.append(Json.str("sub_surface_type",
-				getSubSurfaceType()));
-			sb.append(Json.num("depth", getDepth()));
-			sb.append(temp.toJson());
-			sb.append(moisture.toJson());
-			sb.append(Json.str("sensor_error", getSensorError()));
-			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-			sb.append("},");
-			return sb.toString();
+		public void toJson(JsonBuilder jb){
+			jb.beginObject()
+				.extend(new EssConvertible[]{
+					location,
+					sub_surface_type,
+					depth,
+					temp,
+					moisture,
+					sensor_error
+				})
+				.pair("active", isActive())
+				.endObject();
+		}
+		/** Get Xml representation */
+		public void toXml(XmlBuilder xb) throws IOException{
+			xb.tag("subsurf_sensor")
+				.attr("row", number)
+				.attr("is_active",isActive())
+				.attr("location",location)
+				.attr("subsurf_type",
+					sub_surface_type.toInteger())
+				.attr("subsurf_depth",depth)
+				.attr("subsurf_temp_c",temp)
+				.attr("subsurf_moisture",moisture)
+				.attr("subsurf_sensor_error",
+					sensor_error.get(v -> v.toStringUpperSnake()));
 		}
 	}
 
-	/** Rows in table */
-	private final ArrayList<Row> table_rows = new ArrayList<Row>();
-
-	/** Get number of rows in table reported by ESS */
-	private int size() {
-		return num_sensors.getInteger();
+	@Override
+	protected Row createRow(int row_num) {
+		return new Row(row_num);
 	}
 
-	/** Check if all rows have been read */
-	public boolean isDone() {
-		return table_rows.size() >= size();
+	/** Get the first valid temperature or null on error */
+	public Integer getFirstValidTemp() {
+		return findRowValue(r -> r.isActive() ? r.temp.toInteger() : null);
 	}
 
-	/** Add a row to the table */
-	public Row addRow() {
-		Row tr = new Row(table_rows.size() + 1);
-		table_rows.add(tr);
-		return tr;
+	/** Recreate High Sierra table with a single row containing 
+	 * subsurface temperature and status
+	 * @param ss_temp subsurface temperature to use */
+	public void recreateHighSierra(EssTemperature ss_temp) {
+		clear();
+		num_sensors.setValue(1);
+		var nrow = addRow();
+		nrow.temp = ss_temp;
+		nrow.sensor_error.setValue(SubSurfaceSensorError.none);
 	}
 
-	/** Get one table row */
-	public Row getRow(int row) {
-		return (row >= 1 && row <= table_rows.size())
-		      ? table_rows.get(row - 1)
-		      : null;
+	/** To string */
+	public String toString() {
+		return new StringBuilder()
+			.append("SubSurfaceSensorsTable: ")
+			.append(num_sensors.toLogString())
+			.append(super.toString())
+			.toString();
 	}
 
 	/** Get JSON representation */
-	public String toJson() {
-		StringBuilder sb = new StringBuilder();
-		if (table_rows.size() > 0) {
-			sb.append("\"sub_surface_sensor\":[");
-			for (Row row : table_rows)
-				sb.append(row.toJson());
-			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-			sb.append("],");
+	public void toJson(JsonBuilder jb){
+		if (!isEmpty()){
+			jb.key("sub_surface_sensor");
+			super.toJson(jb);
 		}
-		return sb.toString();
+	}
+	/** Get XML representation */
+	public void toXml(XmlBuilder xb) throws IOException{
+		xb.tag("subsurf_sensors").attr("size",size()).child();
+		for (var row: table_rows)
+			row.toXml(xb);
+		xb.parent();
 	}
 }

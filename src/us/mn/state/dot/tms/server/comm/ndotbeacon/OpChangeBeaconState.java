@@ -51,17 +51,17 @@ public class OpChangeBeaconState extends OpNdotBeacon<NdotBeaconProperty> {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<NdotBeaconProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new ChangeBeacon();
 	}
 
 	/** Phase to change the beacon state */
-	protected class ChangeBeacon extends Phase<NdotBeaconProperty> {
+	protected class ChangeBeacon extends Phase {
 
 		int failCount = 0;
 
 		/** Set the state of the beacon controller */
-		protected Phase<NdotBeaconProperty> poll(CommMessage<NdotBeaconProperty> mess)
+		public Phase poll(CommMessage<NdotBeaconProperty> mess)
 			throws IOException
 		{
 			mess.add(prop);

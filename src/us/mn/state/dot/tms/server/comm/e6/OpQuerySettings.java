@@ -67,15 +67,15 @@ public class OpQuerySettings extends OpE6 {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<E6Property> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new QueryFirmware();
 	}
 
 	/** Phase to query the firmware versions */
-	private class QueryFirmware extends Phase<E6Property> {
+	private class QueryFirmware extends Phase {
 
 		/** Query the firmware versions */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			FirmwareVersionsProp v = new FirmwareVersionsProp();
@@ -87,10 +87,10 @@ public class OpQuerySettings extends OpE6 {
 	}
 
 	/** Phase to query the data ack timeout */
-	private class QueryAckTimeout extends Phase<E6Property> {
+	private class QueryAckTimeout extends Phase {
 
 		/** Query the ack timeout */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			AckTimeoutProp ack_timeout = new AckTimeoutProp(
@@ -103,10 +103,10 @@ public class OpQuerySettings extends OpE6 {
 	}
 
 	/** Phase to query the RF control setting */
-	private class QueryRFControl extends Phase<E6Property> {
+	private class QueryRFControl extends Phase {
 
 		/** Query the RF control setting */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			RFControlProp rf_control = new RFControlProp();
@@ -118,10 +118,10 @@ public class OpQuerySettings extends OpE6 {
 	}
 
 	/** Phase to query the downlink frequency */
-	private class QueryDownlinkFreq extends Phase<E6Property> {
+	private class QueryDownlinkFreq extends Phase {
 
 		/** Query the downlink frequency */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			FrequencyProp freq = new FrequencyProp(
@@ -134,10 +134,10 @@ public class OpQuerySettings extends OpE6 {
 	}
 
 	/** Phase to query the uplink frequency */
-	private class QueryUplinkFreq extends Phase<E6Property> {
+	private class QueryUplinkFreq extends Phase {
 
 		/** Query the uplink frequency */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			FrequencyProp freq = new FrequencyProp(Source.uplink);
@@ -149,10 +149,10 @@ public class OpQuerySettings extends OpE6 {
 	}
 
 	/** Phase to query the line loss */
-	private class QueryLineLoss extends Phase<E6Property> {
+	private class QueryLineLoss extends Phase {
 
 		/** Query the line loss */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			LineLossProp line_loss = new LineLossProp();
@@ -164,10 +164,10 @@ public class OpQuerySettings extends OpE6 {
 	}
 
 	/** Phase to query the master/slave setting */
-	private class QueryMasterSlave extends Phase<E6Property> {
+	private class QueryMasterSlave extends Phase {
 
 		/** Query the master/slave setting */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			MasterSlaveProp master_slave = new MasterSlaveProp();
@@ -183,10 +183,10 @@ public class OpQuerySettings extends OpE6 {
 	}
 
 	/** Phase to query the mux mode */
-	private class QueryMuxMode extends Phase<E6Property> {
+	private class QueryMuxMode extends Phase {
 
 		/** Query the mux mode */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			MuxModeProp mux_mode = new MuxModeProp();
@@ -198,10 +198,10 @@ public class OpQuerySettings extends OpE6 {
 	}
 
 	/** Phase to query the manual antenna channel control */
-	private class QueryAntennaChannel extends Phase<E6Property> {
+	private class QueryAntennaChannel extends Phase {
 
 		/** Query the manual antenna channel */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			AntennaChannelProp antenna_channel =
@@ -215,7 +215,7 @@ public class OpQuerySettings extends OpE6 {
 	}
 
 	/** Get the next query phase */
-	private Phase<E6Property> nextQueryPhase(RFProtocol prot) {
+	private Phase nextQueryPhase(RFProtocol prot) {
 		RFProtocol p = RFProtocol.next(prot);
 		return (p != null)
 		      ? new QueryAtten(new ProtocolSettings(p))
@@ -223,14 +223,14 @@ public class OpQuerySettings extends OpE6 {
 	}
 
 	/** Phase to query the RF attenuation for one protocol */
-	private class QueryAtten extends Phase<E6Property> {
+	private class QueryAtten extends Phase {
 		private final ProtocolSettings p_settings;
 		private QueryAtten(ProtocolSettings ps) {
 			p_settings = ps;
 		}
 
 		/** Query the RF attenuation */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			RFAttenProp atten = new RFAttenProp(
@@ -252,14 +252,14 @@ public class OpQuerySettings extends OpE6 {
 	}
 
 	/** Phase to query the data detect for one protocol */
-	private class QueryDataDetect extends Phase<E6Property> {
+	private class QueryDataDetect extends Phase {
 		private final ProtocolSettings p_settings;
 		private QueryDataDetect(ProtocolSettings ps) {
 			p_settings = ps;
 		}
 
 		/** Query the data detect */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			DataDetectProp det =
@@ -272,14 +272,14 @@ public class OpQuerySettings extends OpE6 {
 	}
 
 	/** Phase to query the seen count for one protocol */
-	private class QuerySeen extends Phase<E6Property> {
+	private class QuerySeen extends Phase {
 		private final ProtocolSettings p_settings;
 		private QuerySeen(ProtocolSettings ps) {
 			p_settings = ps;
 		}
 
 		/** Query the seen count */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			SeenCountProp seen_count =
@@ -293,14 +293,14 @@ public class OpQuerySettings extends OpE6 {
 	}
 
 	/** Phase to query the uplink source control for one protocol */
-	private class QueryUplinkSource extends Phase<E6Property> {
+	private class QueryUplinkSource extends Phase {
 		private final ProtocolSettings p_settings;
 		private QueryUplinkSource(ProtocolSettings ps) {
 			p_settings = ps;
 		}
 
 		/** Query the uplink source */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			UplinkSourceProp src =
@@ -313,14 +313,14 @@ public class OpQuerySettings extends OpE6 {
 	}
 
 	/** Phase to query the slot for one protocol */
-	private class QuerySlot extends Phase<E6Property> {
+	private class QuerySlot extends Phase {
 		private final ProtocolSettings p_settings;
 		private QuerySlot(ProtocolSettings ps) {
 			p_settings = ps;
 		}
 
 		/** Query the protocol slot */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			if (RFProtocol.IAG == p_settings.protocol) {

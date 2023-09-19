@@ -1,7 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2013-2020  Minnesota Department of Transportation
- * Copyright (C) 2017       Iteris Inc.
+ * Copyright (C) 2017-2023       Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ import static us.mn.state.dot.tms.units.Distance.Units.FEET;
 import static us.mn.state.dot.tms.units.Distance.Units.METERS;
 import static us.mn.state.dot.tms.units.Distance.Units.MILES;
 import static us.mn.state.dot.tms.units.Distance.Units.KILOMETERS;
+import static us.mn.state.dot.tms.units.Distance.Units.MILLIMETERS;
 import static us.mn.state.dot.tms.units.Interval.Units.SECONDS;
 import static us.mn.state.dot.tms.units.Interval.Units.HOURS;
 import us.mn.state.dot.tms.SystemAttrEnum;
@@ -28,7 +29,7 @@ import us.mn.state.dot.tms.SystemAttrEnum;
  * Speed of travel units.
  *
  * @author Douglas Lau
- * @author Michael Darter
+ * @author Michael Darter, Isaac Nygaard
  */
 public final class Speed {
 
@@ -55,17 +56,19 @@ public final class Speed {
 		return (u != null) ? u : Units.KPH;
 	}
 
-        /** Get system units */
-        static private boolean useSi() {
-                return SystemAttrEnum.CLIENT_UNITS_SI.getBoolean();
-        }
+	/** Get system units */
+	static private boolean useSi() {
+		return SystemAttrEnum.CLIENT_UNITS_SI.getBoolean();
+	}
 
 	/** Enumeration of speed units */
 	public enum Units {
 		FPS(1.097280, "fps", FEET, SECONDS),
 		MPH(1.609344, "mph", MILES, HOURS),
 		KPH(1.000000, "kph", KILOMETERS, HOURS),
-		MPS(3.600000, "mps", METERS, SECONDS);
+		MPS(3.600000, "mps", METERS, SECONDS),
+		// used for rain/snow rates, which are slow
+		MMPH(1e-6, "mmph", MILLIMETERS, HOURS);
 
 		/** Conversion rate to kilometers per hour*/
 		public final double kph;
@@ -164,10 +167,16 @@ public final class Speed {
 	 * @param u Units to return.
 	 * @return Speed as a float value. */
 	public float asFloat(Units u) {
+		return (float) asDouble(u);
+	}
+
+	/** Get a speed as a double in specified units.
+	 * @param u Units to return.
+	 * @return Speed as a double value. */
+	public double asDouble(Units u) {
 		if (u == units)
-			return (float)value;
-		else
-			return (float)(kph() / u.kph);
+			return value;
+		return kph() / u.kph;
 	}
 
 	/** Round a speed to nearest whole unit.

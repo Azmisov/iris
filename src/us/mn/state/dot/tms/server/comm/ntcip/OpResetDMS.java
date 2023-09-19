@@ -49,7 +49,7 @@ public class OpResetDMS extends OpDMS {
 
 		/** Execute the DMS reset */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer reset = dmsSWReset.makeInt();
 			reset.setInteger(1);
 			mess.add(reset);
@@ -68,7 +68,7 @@ public class OpResetDMS extends OpDMS {
 
 		/** Check for reset completion */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer reset = dmsSWReset.makeInt();
 			mess.add(reset);
 			try {

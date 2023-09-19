@@ -1,138 +1,116 @@
-/*
- * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017  Iteris Inc.
- * Copyright (C) 2019-2022  Minnesota Department of Transportation
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
-import java.util.ArrayList;
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Integer;
+import us.mn.state.dot.tms.utils.JsonBuilder;
 
 /**
  * Temperature sensors data table, where each table row contains data read from
  * a single temperature sensor within the same controller.
  *
- * @author Michael Darter
  * @author Douglas Lau
+ * @copyright 2019-2022 Minnesota Department of Transportation
+ * @author Michael Darter, Isaac Nygaard
+ * @copyright 2017-2023 Iteris Inc.
+ * @license GPL-2.0
  */
-public class TemperatureSensorsTable {
-
+public class TemperatureSensorsTable extends EssTable<TemperatureSensorsTable.Row>{
 	/** Number of sensors in table */
-	public final ASN1Integer num_temp_sensors =
-		essNumTemperatureSensors.makeInt();
+	public final EssNumber num_temp_sensors =
+		EssNumber.Count("num_temp_sensors", essNumTemperatureSensors);
+
+	public TemperatureSensorsTable(){
+		setSensorCount(num_temp_sensors);
+	}
 
 	/** Wet-bulb temperature */
-	public final TemperatureObject wet_bulb_temp = new TemperatureObject(
-		"wet_bulb_temp", essWetbulbTemp.makeInt());
+	public final EssTemperature wet_bulb_temp =
+		new EssTemperature("wet_bulb_temp", essWetbulbTemp);
 
 	/** Dew point temperature */
-	public final TemperatureObject dew_point_temp = new TemperatureObject(
-		"dew_point_temp", essDewpointTemp.makeInt());
+	public final EssTemperature dew_point_temp =
+		new EssTemperature("dew_point_temp", essDewpointTemp);
 
 	/** Maximum air temperature */
-	public final TemperatureObject max_air_temp = new TemperatureObject(
-		"max_air_temp", essMaxTemp.makeInt());
+	public final EssTemperature max_air_temp =
+		new EssTemperature("max_air_temp", essMaxTemp);
 
 	/** Minimum air temperature */
-	public final TemperatureObject min_air_temp = new TemperatureObject(
-		"min_air_temp", essMinTemp.makeInt());
+	public final EssTemperature min_air_temp =
+		new EssTemperature("min_air_temp", essMinTemp);
 
 	/** Temperature table row */
-	static public class Row {
-		public final HeightObject height;
-		public final TemperatureObject air_temp;
+	static public class Row implements JsonBuilder.Buildable{
+		/** Row number */
+		public final int number;
+		/** Sensor height in meters */
+		public final EssDistance height;
+		/** Air temperature in degrees C */
+		public final EssTemperature air_temp;
 
 		/** Create a table row */
 		private Row(int row) {
-			height = new HeightObject("height",
-				essTemperatureSensorHeight.makeInt(row));
-			air_temp = new TemperatureObject("air_temp",
-				essAirTemperature.makeInt(row));
+			number = row;
+			height = new EssDistance("height", essTemperatureSensorHeight, row);
+			air_temp = new EssTemperature("air_temp", essAirTemperature, row);
 		}
 
+		/** Is the nth sensor active? The temperature sensor table has
+		 * no error codes so a sensor is always active if present. */
+		public boolean isActive(){
+			return true;
+		}
+
+		/** Get log/debug string representation */
+		public String toString(){
+			return new StringBuilder()
+				.append(EssConvertible.toLogString("isActive",isActive(),number))
+				.append(EssConvertible.toLogString(new EssConvertible[]{
+					height,
+					air_temp,
+				}))
+				.toString();
+		}
 		/** Get JSON representation */
-		private String toJson() {
-			StringBuilder sb = new StringBuilder();
-			sb.append('{');
-			sb.append(height.toJson());
-			sb.append(air_temp.toJson());
-			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-			sb.append("},");
-			return sb.toString();
+		public void toJson(JsonBuilder jb){
+			jb.object(new EssConvertible[] {
+				height,
+				air_temp
+			});
 		}
 	}
 
-	/** Rows in table */
-	private final ArrayList<Row> table_rows = new ArrayList<Row>();
-
-	/** Get number of rows in table reported by ESS */
-	private int size() {
-		return num_temp_sensors.getInteger();
+	@Override
+	protected Row createRow(int row_num) {
+		return new Row(row_num);
 	}
 
-	/** Check if all rows have been read */
-	public boolean isDone() {
-		return table_rows.size() >= size();
+	/** Get the first valid temperature or null on error */
+	public EssTemperature getFirstValidTemp(){
+		return findRowValue(r -> r.isActive() ? r.air_temp : null);
 	}
 
-	/** Add a row to the table */
-	public Row addRow() {
-		Row tr = new Row(table_rows.size() + 1);
-		table_rows.add(tr);
-		return tr;
+	/** Get log/debug string representation */
+	public String toString(){
+		return new StringBuilder()
+			.append("TemperatureSensorsTable:")
+			.append(num_temp_sensors.toLogString())
+			.append(EssConvertible.toLogString("firstValidTemp", getFirstValidTemp()))
+			.append(super.toString())
+			.toString();
 	}
-
-	/** Get one table row */
-	public Row getRow(int row) {
-		return (row >= 1 && row <= table_rows.size())
-		      ? table_rows.get(row - 1)
-		      : null;
-	}
-
-	/** Get the dew point temp */
-	public Integer getDewPointTempC() {
-		return dew_point_temp.getTempC();
-	}
-
-	/** Get the max temp */
-	public Integer getMaxTempC() {
-		return max_air_temp.getTempC();
-	}
-
-	/** Get the min temp */
-	public Integer getMinTempC() {
-		return min_air_temp.getTempC();
-	}
-
 	/** Get JSON representation */
-	public String toJson() {
-		StringBuilder sb = new StringBuilder();
-		if (table_rows.size() > 0) {
-			sb.append("\"temperature_sensor\":[");
-			for (Row row : table_rows)
-				sb.append(row.toJson());
-			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-			sb.append("],");
+	public void toJson(JsonBuilder jb){
+		if (!isEmpty()){
+			jb.key("temperature_sensor");
+			super.toJson(jb);
 		}
-		sb.append(wet_bulb_temp.toJson());
-		sb.append(dew_point_temp.toJson());
-		sb.append(max_air_temp.toJson());
-		sb.append(min_air_temp.toJson());
-		return sb.toString();
+		else{
+			jb.extend(new EssConvertible[]{
+				wet_bulb_temp,
+				dew_point_temp,
+				max_air_temp,
+				min_air_temp
+			});
+		}
 	}
 }

@@ -2,7 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2000-2023  Minnesota Department of Transportation
  * Copyright (C) 2008-2014  AHMCT, University of California
- * Copyright (C) 2012 Iteris Inc.
+ * Copyright (C) 2012-2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -233,14 +233,15 @@ class OpQueryMsg extends OpDms {
 		if (rpri == SignMsgPriority.invalid)
 			rpri = SignMsgPriority.medium_sys;
 
-		return createMsg(multi, owner, rpri, duration);
+		// TODO: should we set beacon here?
+		return createMsg(multi, owner, false, rpri, duration);
 	}
 
 	/** Create a sign message */
-	private SignMessageImpl createMsg(String multi, String owner,
+	private SignMessageImpl createMsg(String multi, String owner, boolean beacon,
 		SignMsgPriority rpri, Integer duration)
 	{
-		return (SignMessageImpl) m_dms.createMsg(multi, owner, false,
+		return (SignMessageImpl) m_dms.createMsg(multi, owner, beacon,
 			rpri, duration);
 	}
 
@@ -290,6 +291,7 @@ class OpQueryMsg extends OpDms {
 		xrr.addRes("DisplayTimeMS");
 		xrr.addRes("UseBitmap");
 		xrr.addRes("Bitmap");
+		xrr.addRes("BeaconEnabled");
 
 		return xrr;
 	}
@@ -312,6 +314,7 @@ class OpQueryMsg extends OpDms {
 		Interval pgOnTime = new Interval(0);
 		boolean usebitmap = false;
 		String bitmap = "";
+		boolean beaconenabled = false;
 
 		// parse response
 		try {
@@ -369,8 +372,12 @@ class OpQueryMsg extends OpDms {
 				usebitmap = xrr.getResBoolean("UseBitmap");
 				bitmap = xrr.getResString("Bitmap");
 
-				LOG.log(
-					"OpQueryMsg() parsed msg values: " +
+				// beacon enabled
+				beaconenabled = xrr.getResBoolean(
+					"BeaconEnabled");
+
+				LOG.log("OpQueryMsg() mess=" + mess + ", xrr=" + xrr);
+				LOG.log("OpQueryMsg() parsed msg values: " +
 					"IsValid:" + valid +
 					", MsgTextAvailable:" + txtavail +
 					", MsgText:" + msgtext +
@@ -380,6 +387,7 @@ class OpQueryMsg extends OpDms {
 					", OnTime:"  + ont.getTime() +
 					", OffTime:" + offt.getTime() +
 					", pgOnTime:" + pgOnTime +
+					", beaconenabled:" + beaconenabled +
 					", bitmap:" + bitmap);
 			}
 		} catch (IllegalArgumentException ex) {
@@ -421,7 +429,7 @@ class OpQueryMsg extends OpDms {
 				// the DisplayTimeMS XML field, not the
 				// MULTI string.
 				msgtext = updatePageOnTime(msgtext, pgOnTime);
-				SignMessageImpl sm = createMsg(msgtext, owner,
+				SignMessageImpl sm = createMsg(msgtext, owner, beaconenabled,
 					rpri, duramins);
 				if (sm != null)
 					m_dms.setMsgCurrentNotify(sm);
@@ -438,7 +446,7 @@ class OpQueryMsg extends OpDms {
 						m_dms.setMsgCurrentNotify(sm);
 				}
 				if (sm == null) {
-					sm = createMsg("", owner, rpri, null);
+					sm = createMsg("", owner, beaconenabled, rpri, duramins);
 					if (sm != null)
 						m_dms.setMsgCurrentNotify(sm);
 				}
@@ -474,7 +482,7 @@ class OpQueryMsg extends OpDms {
 	private class PhaseQueryMsg extends Phase
 	{
 		/** Query current message */
-		protected Phase poll(CommMessage argmess)
+		public Phase poll(CommMessage argmess)
 			throws IOException
 		{
 			// ignore startup operations for DMS on dial-up lines

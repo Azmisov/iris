@@ -48,15 +48,15 @@ public class OpQueryGateStatus extends OpSTC {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<STCProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new QueryVersion();
 	}
 
 	/** Phase to query the version */
-	protected class QueryVersion extends Phase<STCProperty> {
+	protected class QueryVersion extends Phase {
 
 		/** Query the version */
-		protected Phase<STCProperty> poll(CommMessage<STCProperty> mess)
+		public Phase poll(CommMessage<STCProperty> mess)
 			throws IOException
 		{
 			VersionProperty v = new VersionProperty(password());
@@ -68,10 +68,10 @@ public class OpQueryGateStatus extends OpSTC {
 	}
 
 	/** Phase to query the gate status */
-	protected class QueryStatus extends Phase<STCProperty> {
+	protected class QueryStatus extends Phase {
 
 		/** Query the status */
-		protected Phase<STCProperty> poll(CommMessage<STCProperty> mess)
+		public Phase poll(CommMessage<STCProperty> mess)
 			throws IOException
 		{
 			mess.add(status);
@@ -100,10 +100,10 @@ public class OpQueryGateStatus extends OpSTC {
 	}
 
 	/** Phase to query the gate faults */
-	protected class QueryFaults extends Phase<STCProperty> {
+	protected class QueryFaults extends Phase {
 
 		/** Query the faults */
-		protected Phase<STCProperty> poll(CommMessage<STCProperty> mess)
+		public Phase poll(CommMessage<STCProperty> mess)
 			throws IOException
 		{
 			FaultProperty faults = new FaultProperty(password());

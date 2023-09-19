@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2016  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +22,7 @@ import us.mn.state.dot.tms.utils.I18N;
  * A theme for drawing segment objects based on density thresholds.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class DensityTheme extends SegmentTheme {
 
@@ -42,9 +44,14 @@ public class DensityTheme extends SegmentTheme {
 	/** Get the style to draw a given segment */
 	@Override
 	protected Style getSegmentStyle(MapSegment ms) {
+		Integer f = ms.getFlow();
+		// no detection
+		if(f == null)
+			return NO_DETECTION_STYLE;
 		Integer d = ms.getDensity();
+		// detection but no density
 		if (d == null)
-			return DEFAULT_STYLE;
+			return NO_DATA_STYLE;	// gray
 		if (d < 30)
 			return D_STYLES[0];
 		if (d < 50)

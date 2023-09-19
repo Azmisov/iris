@@ -159,7 +159,7 @@ class OpBlank extends OpDms {
 	private class PhaseSetBlank extends Phase
 	{
 		/** Query the number of modules */
-		protected Phase poll(CommMessage argmess)
+		public Phase poll(CommMessage argmess)
 			throws IOException 
 		{
 			if(m_sm == null)

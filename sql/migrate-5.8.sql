@@ -293,6 +293,9 @@ CREATE VIEW controller_report AS
 GRANT SELECT ON controller_report TO PUBLIC;
 
 -- Delete unused IN/OUT directions
+-- v47 "IN" direction is used for cabinets; changing those to 0
+UPDATE iris.geo_loc SET cross_dir = 0 WHERE cross_dir > 6;
+UPDATE iris.geo_loc SET road_dir = 0 WHERE road_dir > 6;
 DELETE FROM iris.direction WHERE id > 6;
 
 -- Drop alt_dir from road / road_view

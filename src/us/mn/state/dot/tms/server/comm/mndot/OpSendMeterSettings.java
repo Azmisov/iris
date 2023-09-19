@@ -140,15 +140,15 @@ public class OpSendMeterSettings extends Op170Device {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<MndotProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new ResetWatchdogMonitor();
 	}
 
 	/** Phase to reset the watchdog monitor */
-	protected class ResetWatchdogMonitor extends Phase<MndotProperty> {
+	protected class ResetWatchdogMonitor extends Phase {
 
 		/** Reset the watchdog monitor */
-		protected Phase<MndotProperty> poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] data = {Address.WATCHDOG_BITS};
@@ -160,10 +160,10 @@ public class OpSendMeterSettings extends Op170Device {
 	}
 
 	/** Phase to clear the watchdog monitor */
-	protected class ClearWatchdogMonitor extends Phase<MndotProperty> {
+	protected class ClearWatchdogMonitor extends Phase {
 
 		/** Clear the watchdog monitor */
-		protected Phase<MndotProperty> poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] data = new byte[1];
@@ -175,10 +175,10 @@ public class OpSendMeterSettings extends Op170Device {
 	}
 
 	/** Phase to set the comm fail time */
-	protected class SetCommFail extends Phase<MndotProperty> {
+	protected class SetCommFail extends Phase {
 
 		/** Set the comm fail time */
-		protected Phase<MndotProperty> poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] data = {MeterPoller.COMM_FAIL_THRESHOLD};
@@ -189,10 +189,10 @@ public class OpSendMeterSettings extends Op170Device {
 	}
 
 	/** Phase to set the timing table for the ramp meter */
-	protected class SetTimingTable extends Phase<MndotProperty> {
+	protected class SetTimingTable extends Phase {
 
 		/** Set the timing table for the ramp meter */
-		protected Phase<MndotProperty> poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			MemoryProperty p = new MemoryProperty(tableAddress(),
@@ -221,10 +221,10 @@ public class OpSendMeterSettings extends Op170Device {
 	}
 
 	/** Phase to clear the meter verifies for the ramp meter */
-	protected class ClearVerifies extends Phase<MndotProperty> {
+	protected class ClearVerifies extends Phase {
 
 		/** Clear the meter verifies for the ramp meter */
-		protected Phase<MndotProperty> poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			int address = getVerifyAddress();

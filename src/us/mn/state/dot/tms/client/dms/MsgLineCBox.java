@@ -2,6 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2011-2023  Minnesota Department of Transportation
  * Copyright (C) 2009-2010  AHMCT, University of California
+ * Copyright (C) 2015  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +29,7 @@ import javax.swing.JTextField;
 import us.mn.state.dot.tms.MsgLine;
 import us.mn.state.dot.tms.TransMsgLine;
 import us.mn.state.dot.tms.utils.MultiString;
+import us.mn.state.dot.tms.SystemAttrEnum;
 
 /**
  * Message composer combo box for one line of message lines.
@@ -69,6 +71,20 @@ public class MsgLineCBox extends JComboBox<MsgLine> {
 	static private final MsgLine PROTOTYPE_TEXT =
 		new TransMsgLine("123456789012345678901234");
 
+	/** Auto capitalize the specified key event if enabled */
+	static private void autoCapitalize(KeyEvent ke) {
+		if(ke.getID() == KeyEvent.KEY_TYPED) {
+			char c = ke.getKeyChar();
+			if(Character.isLowerCase(c) && autoCapitalizeEnabled())
+				ke.setKeyChar(Character.toUpperCase(c));
+		}
+	}
+
+	/** Auto-capitalize enabled? */
+	static private boolean autoCapitalizeEnabled() {
+		return SystemAttrEnum.DMS_AUTO_CAPITALIZE.getBoolean();
+	}
+
 	/** Combo box editor */
 	private final Editor editor = new Editor();
 
@@ -106,6 +122,13 @@ public class MsgLineCBox extends JComboBox<MsgLine> {
 		}
 	};
 
+	/** Key listener for editor */
+	private final KeyAdapter editor_key_listener = new KeyAdapter() {
+		@Override public void keyTyped(KeyEvent ke) {
+			autoCapitalize(ke);
+		}
+	};
+
 	/** Create a message line combo box */
 	public MsgLineCBox() {
 		setMaximumRowCount(21);
@@ -119,10 +142,12 @@ public class MsgLineCBox extends JComboBox<MsgLine> {
 		addKeyListener(key_listener);
 		editor.addFocusListener(focus_listener);
 		editor.addActionListener(editor_listener);
+		editor.addKeyListener(editor_key_listener);
 	}
 
 	/** Dispose of the message combo box */
 	public void dispose() {
+		editor.removeKeyListener(editor_key_listener);
 		editor.removeActionListener(editor_listener);
 		editor.removeFocusListener(focus_listener);
 		removeKeyListener(key_listener);

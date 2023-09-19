@@ -2,7 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2008-2011  AHMCT, University of California
  * Copyright (C) 2013-2020  Minnesota Department of Transportation
- * Copyright (C) 2017 Iteris Inc.
+ * Copyright (C) 2017-2018 Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -141,17 +141,22 @@ public class SString {
 	/** Convert double to string with rounding */
 	static public String doubleToString(double d, int numdecplaces) {
 		if (numdecplaces < 0)
-			return Double.valueOf(d).toString();
-		else if (numdecplaces == 0) {
-			String ret = Double.valueOf(Math.round(d)).toString();
-			if (ret.endsWith(".0"))
-				return ret.replace(".0","");
-			else
-				return ret;
-		} else {
+			return Double.toString(d);
+		else{
+			String ret = Double.toString(round(d, numdecplaces));
+			if (numdecplaces == 0 && ret.endsWith(".0"))
+ 				return ret.replace(".0","");
+			return ret;
+		}
+	}
+
+	/** Round a double to the specified number of decimal places */
+	static public double round(double value, int numdecplaces) {
+		if (numdecplaces >= 0) {
 			double mult = Math.pow(10, numdecplaces);
-			return Double.valueOf(Math.round(d * mult) / mult)
-				.toString();
+			return Math.round(value * mult) / mult;
+		} else {
+			return value;
 		}
 	}
 
@@ -320,16 +325,40 @@ public class SString {
 	}
 
 	/** Split a camel-case string into words.
-	 * @param s String in camel case, e.g. 'blaBlaBla' or null.
-	 * @return Space separated words, e.g. 'bla Bla Bla' or null */
-	static public String splitCamel(String s) {
-		String regex = "(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])";
+ 	 * @param s String in camel case, e.g. 'blaBlaBla' or null.
+ 	 * @param space String to insert between words.
+  	 * @return Space separated words, e.g. 'bla Bla Bla' or null */
+	static public String splitCamel(String s, String space) {
 		if (s != null) {
-			StringBuilder sb = new StringBuilder();
-			for (String w : s.split(regex))
-				sb.append(w).append(" ");
-			return sb.toString().trim();
+			String regex = "(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])";
+			String[] sa = s.split(regex);
+				StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < sa.length; ++i) {
+				sb.append(sa[i]);
+				if (i + 1 < sa.length)
+					sb.append(space);
+			}
+			return sb.toString();
 		}
 		return null;
+	}
+
+	/** Convert a string from camelcase to upper snake case
+	 * @param cc Camelcase string, e.g. highWind
+	 * @return Uppercase underscore separated words, e.g. HIGH_WIND */
+	static public String camelToUpperSnake(String cc) {
+		cc = SString.splitCamel(cc, "_");
+		if (cc != null)
+			cc = cc.toUpperCase();
+		return cc;
+	}
+
+	/** Remove CR, LF, tabs and excess whitespace
+	 * @param str String that may be null
+	 * @return Argument with CR, LF tabs and extra spaces removed */
+	static public String stripCrLf(String str) {
+		return str != null
+			? str.replaceAll("\\s", " ").trim()
+			: str;
 	}
 }

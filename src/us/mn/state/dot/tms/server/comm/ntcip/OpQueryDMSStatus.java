@@ -130,7 +130,7 @@ public class OpQueryDMSStatus extends OpDMS {
 
 		/** Query the DMS brightness status */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer b_level =
 				dmsIllumBrightLevelStatus.makeInt();
 			ASN1Integer light =
@@ -159,7 +159,7 @@ public class OpQueryDMSStatus extends OpDMS {
 
 		/** Query the DMS message table status */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer perm_num = dmsNumPermanentMsg.makeInt();
 			ASN1Integer chg_num = dmsNumChangeableMsg.makeInt();
 			ASN1Integer chg_max = dmsMaxChangeableMsg.makeInt();
@@ -191,7 +191,7 @@ public class OpQueryDMSStatus extends OpDMS {
 
 		/** Query the DMS controller temperature */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			pollTemp(mess,
 				tempMinCtrlCabinet, DMS.CABINET_TEMP_MIN,
 				tempMaxCtrlCabinet, DMS.CABINET_TEMP_MAX);
@@ -204,7 +204,7 @@ public class OpQueryDMSStatus extends OpDMS {
 
 		/** Query the DMS ambient temperature */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			pollTemp(mess,
 				tempMinAmbient, DMS.AMBIENT_TEMP_MIN,
 				tempMaxAmbient, DMS.AMBIENT_TEMP_MAX);
@@ -217,7 +217,7 @@ public class OpQueryDMSStatus extends OpDMS {
 
 		/** Query the DMS housing temperature */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			pollTemp(mess,
 				tempMinSignHousing, DMS.HOUSING_TEMP_MIN,
 				tempMaxSignHousing, DMS.HOUSING_TEMP_MAX);
@@ -230,7 +230,7 @@ public class OpQueryDMSStatus extends OpDMS {
 
 		/** Query the DMS failure status */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(shortError);
 			mess.queryProps();
 			logQuery(shortError);
@@ -246,7 +246,7 @@ public class OpQueryDMSStatus extends OpDMS {
 
 		/** Query more DMS failure status */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Enum<DmsActivateMsgError> msg_err = new ASN1Enum<
 				DmsActivateMsgError>(DmsActivateMsgError.class,
 				dmsActivateMsgError.node);
@@ -276,7 +276,7 @@ public class OpQueryDMSStatus extends OpDMS {
 
 		/** Query test/message rows in pixel failure table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(test_rows);
 			mess.add(message_rows);
 			try {
@@ -299,7 +299,7 @@ public class OpQueryDMSStatus extends OpDMS {
 
 		/** Query number of power supplies */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer n_pwr = dmsPowerNumRows.makeInt();
 			mess.add(n_pwr);
 			try {
@@ -329,7 +329,7 @@ public class OpQueryDMSStatus extends OpDMS {
 
 		/** Query status of one power supply */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			DisplayString desc = new DisplayString(
 				dmsPowerDescription.node, row);
 			ASN1Enum<DmsPowerType> p_type = new ASN1Enum<
@@ -387,7 +387,7 @@ public class OpQueryDMSStatus extends OpDMS {
 
 		/** Query number of light sensors */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			ASN1Integer n_snsr = dmsLightSensorNumRows.makeInt();
 			mess.add(n_snsr);
 			try {
@@ -418,7 +418,7 @@ public class OpQueryDMSStatus extends OpDMS {
 
 		/** Query status of one light sensor */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			DisplayString desc = new DisplayString(
 				dmsLightSensorDescription.node, row);
 			ASN1Enum<DmsLightSensorStatus> s_stat = new ASN1Enum<
@@ -486,7 +486,7 @@ public class OpQueryDMSStatus extends OpDMS {
 
 		/** Query Ledstar-specific status */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(potBase);
 			mess.add(low);
 			mess.add(high);
@@ -514,7 +514,7 @@ public class OpQueryDMSStatus extends OpDMS {
 
 		/** Query Skyline-specific status */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			IllumPowerStatus power = new IllumPowerStatus();
 			SensorFailures sensor = new SensorFailures();
 			mess.add(power);

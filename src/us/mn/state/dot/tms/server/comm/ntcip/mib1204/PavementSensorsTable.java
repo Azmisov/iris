@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2018  Iteris Inc.
  * Copyright (C) 2019-2023  Minnesota Department of Transportation
  *
  * This program is free software; you can redistribute it and/or modify
@@ -15,289 +15,296 @@
  */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
-import java.util.ArrayList;
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Enum;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Integer;
-import us.mn.state.dot.tms.server.comm.snmp.DisplayString;
-import us.mn.state.dot.tms.units.Distance;
-import static us.mn.state.dot.tms.units.Distance.Units.METERS;
-import static us.mn.state.dot.tms.units.Distance.Units.MICROMETERS;
-import static us.mn.state.dot.tms.units.Distance.Units.MILLIMETERS;
-import us.mn.state.dot.tms.utils.Json;
+import static us.mn.state.dot.tms.units.Distance.Units.*;
+import us.mn.state.dot.tms.utils.JsonBuilder;
+import us.mn.state.dot.tms.utils.SString;
+import us.mn.state.dot.tms.utils.XmlBuilder;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PavementSensorError;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PavementSensorType;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.PavementType;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceBlackIceSignal;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.SurfaceStatus;
+import java.io.IOException;
 
 /**
  * Pavement sensors data table, where each table row contains data read from
  * a single pavement sensor within the same controller.
  *
- * @author Michael Darter
+ * @author Michael Darter, Isaac Nygaard
  * @author Douglas Lau
  */
-public class PavementSensorsTable {
-
-	/** A depth of 255 is an error condition or missing value */
-	static private final int DEPTH_V1_ERROR_MISSING = 255;
-
-	/** Convert depth to Distance.
-	 * @param d Depth in millimeters with 255 indicating an error or missing
-	 *          value.
-	 * @return Depth distance or null for missing */
-	static private Distance convertDepthV1(ASN1Integer d) {
-		if (d != null) {
-			int id = d.getInteger();
-			if (id < DEPTH_V1_ERROR_MISSING)
-				return new Distance(id, MILLIMETERS);
-		}
-		return null;
+public class PavementSensorsTable extends EssTable<PavementSensorsTable.Row>
+	implements XmlBuilder.Buildable
+{
+	/** Number of sensors in table; May be manually modified by High Sierra
+	 * remapping */
+	public final EssNumber num_sensors =
+		EssNumber.Count("size", numEssPavementSensors);
+	
+	public PavementSensorsTable(){
+		setSensorCount(num_sensors);
 	}
-
-	/** A depth of 65,535 is an error condition or missing value */
-	static private final int DEPTH_V2_ERROR_MISSING = 65535;
-
-	/** Convert depth to Distance.
-	 * @param d Depth in tenth of millimeters with 65,535 indicating an
-	 *          error or missing value.
-	 * @return Depth distance or null for missing */
-	static private Distance convertDepthV2(ASN1Integer d) {
-		if (d != null) {
-			int id = d.getInteger();
-			if (id < DEPTH_V2_ERROR_MISSING)
-				return new Distance(100 * id, MICROMETERS);
-		}
-		return null;
-	}
-
-	/** A salinity of 65,535 is an error condition or missing value */
-	static private final int SALINITY_ERROR_MISSING = 65535;
-
-	/** Convert salinity to ppm.
-	 * @param s Salinity in parts per 100,000 by weight with 65535
-	 * 	    indicating an error or missing value.
-	 * @return Salinity in ppm or null for missing */
-	static private Integer convertSalinity(ASN1Integer s) {
-		if (s != null) {
-			int is = s.getInteger();
-			if (is >= 0 && is < SALINITY_ERROR_MISSING)
-				return 10 * is;
-		}
-		return null;
-	}
-
-	/** Number of sensors in table */
-	public final ASN1Integer num_sensors = numEssPavementSensors.makeInt();
 
 	/** Table row */
-	static public class Row {
+	static public class Row implements JsonBuilder.Buildable, XmlBuilder.Buildable {
+		/** Row/sensor number */
 		public final int number;
-		public final DisplayString location;
-		public final ASN1Enum<PavementType> pavement_type;
-		public final HeightObject height;
-		public final PercentObject exposure;
-		public final ASN1Enum<PavementSensorType> sensor_type;
-		public final ASN1Enum<SurfaceStatus> surface_status;
-		public final TemperatureObject surface_temp;
-		public final TemperatureObject pavement_temp;
-		public final ASN1Enum<PavementSensorError> sensor_error;
-		public final ASN1Integer water_depth;
-		public final ASN1Integer ice_or_water_depth;
-		public final ASN1Integer salinity;
-		public final TemperatureObject freeze_point;
-		public final ASN1Enum<SurfaceBlackIceSignal> black_ice_signal;
-		public final PercentObject friction;
+		public final EssString location;
+		/** Pavement type enum */
+		public final EssEnum<PavementType> pavement_type;
+		public final EssDistance height;
+		/** Pavement exposure in percentage 0-100 */
+		public final EssNumber exposure;
+		/** Pavement sensor type enum */
+		public final EssEnum<PavementSensorType> sensor_type;
+		/** Surface status enum; may be manually overwritten by High Sierra
+		 * remapping */
+		public EssEnum<SurfaceStatus> surface_status;
+		/** Surface temp in celcius; may be manually overwritten by High Sierra
+		 * remapping */
+		public EssTemperature surface_temp;
+		/** Pavement temp in celcius */
+		public final EssTemperature pavement_temp;
+		/** Pavement sensor error enum; may be manually modified by High Sierra
+		 * remapping */
+		public final EssEnum<PavementSensorError> sensor_error;
+		/** Surface water depth in meters */
+		public final EssDistance water_depth;
+		/** Surface ice or water depth in meters */
+		public final EssDistance ice_or_water_depth;
+		/** Surface salinity in ppm */
+		public final EssNumber salinity;
+		/** Surface freeze temp in celcius */
+		public final EssTemperature freeze_point;
+		/** Surface black ice signal enum */
+		public final EssEnum<SurfaceBlackIceSignal> black_ice_signal;
+		/** Pavement friction in percentage 0-100 */
+		public final EssNumber friction;
+		/** Conductivity in 0.1 milli-mhos/cm */
+		public final EssNumber conductivity;
+		/** Temperature sensor depth below surface in cm */
+		public final EssDistance temp_depth;
+		/** Sensor model info (0-255) */
+		public final EssNumber sensor_model_info;
 
 		/** Create a table row */
 		private Row(int row) {
 			number = row;
-			location = new DisplayString(
-				essPavementSensorLocation.node, row);
-			pavement_type = new ASN1Enum<PavementType>(
-				PavementType.class, essPavementType.node, row);
-			height = new HeightObject("height",
-				essPavementElevation.makeInt(row));
-			exposure = new PercentObject("exposure",
-				essPavementExposure.makeInt(row));
-			sensor_type = new ASN1Enum<PavementSensorType>(
-				PavementSensorType.class,
-				essPavementSensorType.node, row);
-			surface_status = new ASN1Enum<SurfaceStatus>(
-				SurfaceStatus.class, essSurfaceStatus.node,
-				row);
-			surface_temp = new TemperatureObject("surface_temp",
-				essSurfaceTemperature.makeInt(row));
-			pavement_temp = new TemperatureObject("pavement_temp",
-				essPavementTemperature.makeInt(row));
-			sensor_error = new ASN1Enum<PavementSensorError>(
-				PavementSensorError.class,
-				essPavementSensorError.node, row);
-			water_depth = essSurfaceWaterDepth.makeInt(row);
-			water_depth.setInteger(DEPTH_V1_ERROR_MISSING);
+			location =
+				new EssString("location", essPavementSensorLocation, row);
+			pavement_type =
+				EssEnum.make(PavementType.class, "pavement_type", essPavementType, row);
+			height =
+				new EssDistance("height", essPavementElevation, row);
+			exposure =
+				new EssNumber("exposure", essPavementExposure, row)
+					.setRange(0, 101);
+			sensor_type =
+				EssEnum.make(PavementSensorType.class, "pavement_sensor_type", essPavementSensorType, row);
+			surface_status =
+				EssEnum.make(SurfaceStatus.class, "surface_status", essSurfaceStatus, row);
+			surface_temp =
+				new EssTemperature("surface_temp", essSurfaceTemperature, row);
+			pavement_temp =
+				new EssTemperature("pavement_temp", essPavementTemperature, row);
+			sensor_error = 
+				EssEnum.make(PavementSensorError.class, "pavement_sensor_error", essPavementSensorError, row);
+			water_depth =
+				new EssDistance("water_depth", essSurfaceWaterDepth, row)
+					.setUnits(1, MILLIMETERS)
+					.setOutput(1, METERS, 3)
+					.setRange(0, 255);
 			ice_or_water_depth =
-				essSurfaceIceOrWaterDepth.makeInt(row);
-			ice_or_water_depth.setInteger(DEPTH_V2_ERROR_MISSING);
-			salinity = essSurfaceSalinity.makeInt(row);
-			salinity.setInteger(SALINITY_ERROR_MISSING);
-			freeze_point = new TemperatureObject("freeze_point",
-				essSurfaceFreezePoint.makeInt(row));
-			black_ice_signal = new ASN1Enum<SurfaceBlackIceSignal>(
-				SurfaceBlackIceSignal.class,
-				essSurfaceBlackIceSignal.node, row);
-			friction = new PercentObject("friction",
-				pavementSensorFrictionCoefficient.makeInt(row));
-		}
-
-		/** Get the sensor location */
-		public String getSensorLocation() {
-			String sl = location.getValue();
-			return (sl.length() > 0) ? sl : null;
-		}
-
-		/** Get pavement type or null on error */
-		public PavementType getPavementType() {
-			PavementType pt = pavement_type.getEnum();
-			return (pt != PavementType.undefined) ? pt : null;
-		}
-
-		/** Get pavement sensor type or null on error */
-		public PavementSensorType getPavementSensorType() {
-			PavementSensorType pst = sensor_type.getEnum();
-			return (pst != PavementSensorType.undefined)
-			      ? pst
-			      : null;
-		}
-
-		/** Get surface status or null on error */
-		public SurfaceStatus getSurfStatus() {
-			SurfaceStatus ess = surface_status.getEnum();
-			return (ess != SurfaceStatus.undefined) ? ess : null;
-		}
-
-		/** Get surface temp or null on error */
-		public Integer getSurfTempC() {
-			return surface_temp.getTempC();
-		}
-
-		/** Get pavement temp or null on error */
-		public Integer getPvmtTempC() {
-			return pavement_temp.getTempC();
-		}
-
-		/** Get pavement sensor error or null if OK */
-		public PavementSensorError getPavementSensorError() {
-			PavementSensorError pse = sensor_error.getEnum();
-			return (pse != null && pse.isError()) ? pse : null;
-		}
-
-		/** Get surface water depth formatted to meter units */
-		private String getWaterDepth() {
-			Distance d = convertDepthV1(water_depth);
-			if (d != null) {
-				Float mm = d.asFloat(METERS);
-				return Num.format(mm, 3); // mm
-			} else
-				return null;
+				new EssDistance("ice_or_water_depth", essSurfaceIceOrWaterDepth, row)
+					.setUnits(0.1, MILLIMETERS)
+					.setOutput(1, METERS, 4)
+					.setRange(0, EssDistance.MAX_WORD);
+			salinity =
+				new EssNumber("salinity", essSurfaceSalinity, row)
+					.setScale(10); // parts per 100,000 -> ppm
+			freeze_point =
+				new EssTemperature("freeze_point", essSurfaceFreezePoint, row);
+			black_ice_signal =
+				EssEnum.make(SurfaceBlackIceSignal.class, "surface_black_ice_signal", essSurfaceBlackIceSignal, row);
+			friction =
+				EssNumber.Percent("friction", pavementSensorFrictionCoefficient, row);
+			conductivity =
+				new EssNumber("conductivity", essSurfaceConductivityV2, row);
+			temp_depth =
+				new EssDistance("temp_depth", pavementSensorTemperatureDepth, row)
+					.setUnits(1, CENTIMETERS)
+					.setRange(2, 11);
+			sensor_model_info =
+				new EssNumber("sensor_model_info", pavementSensorModelInformation, row)
+					.setRange(1, 256, 0);
 		}
 
 		/** Get surface ice or water depth formatted to meter units */
-		private String getIceOrWaterDepth() {
-			// With an error condition, some Vaisala firmware
-			// return 255 for essSurfaceIceOrWaterDepth instead of
-			// 65535.  We must check for a sensor error first to
-			// avoid erroneously returning 25.5 mm in that case.
-			if (getPavementSensorError() != null)
-				return null;
-			Distance d = convertDepthV2(ice_or_water_depth);
-			if (d != null) {
-				Float mm = d.asFloat(METERS);
-				return Num.format(mm, 4); // tenth of mm
-			} else
-				return getWaterDepth();
+		private Double getIceOrWaterDepth(){
+			Double out = ice_or_water_depth.toDouble();
+			// fallback to water depth if not present
+			return out == null ? water_depth.toDouble() : out;
 		}
 
-		/** Get surface salinity in parts per million by weight */
-		private Integer getSalinity() {
-			return convertSalinity(salinity);
+		/** Is the nth sensor active? */
+		public boolean isActive(){
+			var pse = sensor_error.get();
+			// These values were determined empirically, with valid
+			// temps present when sensor err was one of those below.
+			// This was validated by NCAR.
+			return (pse == PavementSensorError.none ||
+				pse == PavementSensorError.noResponse ||
+				pse == PavementSensorError.other);
 		}
 
-		/** Get surface freeze temp or null on error */
-		public Integer getFreezePointC() {
-			return freeze_point.getTempC();
+		/** Logging string */
+		public String toString(){
+			return new StringBuilder()
+				.append(EssConvertible.toLogString(new EssConvertible[]{
+					sensor_error,
+					surface_status,
+					surface_temp,
+					pavement_temp,
+					water_depth,
+					freeze_point,
+					ice_or_water_depth,
+					black_ice_signal
+				}, number))
+				.append(EssConvertible.toLogString("isActive", isActive(), number))
+				.toString();
 		}
-
-		/** Get black ice signal or null on error */
-		public SurfaceBlackIceSignal getBlackIceSignal() {
-			SurfaceBlackIceSignal bis = black_ice_signal.getEnum();
-			return (bis != null && bis.isValue()) ? bis : null;
-		}
-
 		/** Get JSON representation */
-		private String toJson() {
-			StringBuilder sb = new StringBuilder();
-			sb.append('{');
-			sb.append(Json.str("location", getSensorLocation()));
-			sb.append(Json.str("pavement_type", getPavementType()));
-			sb.append(height.toJson());
-			sb.append(exposure.toJson());
-			sb.append(Json.str("sensor_type",
-				getPavementSensorType()));
-			sb.append(Json.str("surface_status", getSurfStatus()));
-			sb.append(surface_temp.toJson());
-			sb.append(pavement_temp.toJson());
-			sb.append(Json.str("sensor_error",
-				getPavementSensorError()));
-			sb.append(Json.num("ice_or_water_depth",
-				getIceOrWaterDepth()));
-			sb.append(Json.num("salinity", getSalinity()));
-			sb.append(freeze_point.toJson());
-			sb.append(Json.str("black_ice_signal",
-				getBlackIceSignal()));
-			sb.append(friction.toJson());
-			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-			sb.append("},");
-			return sb.toString();
+		public void toJson(JsonBuilder jb) {
+			jb.beginObject();
+			jb.extend(new EssConvertible[]{
+				location,
+				pavement_type,
+				height,
+				exposure,
+				sensor_type,
+				surface_status,
+				surface_temp,
+				pavement_temp,
+				sensor_error,
+				salinity,
+				freeze_point,
+				black_ice_signal,
+				friction,
+				conductivity,
+				temp_depth
+			});
+			var iw = getIceOrWaterDepth();
+			if (iw != null)
+				jb.pair("ice_or_water_depth", iw);
+			jb.endObject();
+		}
+		/** Get XML representation */
+		public void toXml(XmlBuilder xb) throws IOException{
+			xb.tag("pvmt_sensor")
+				.attr("row", number)
+				.attr("is_active", isActive())
+				.attr("pvmt_sens_err",
+					sensor_error.get(v -> v.toStringUpperSnake()))
+				.attr("surf_status",
+					surface_status.get(v -> v.toStringUpperSnake()))
+				.attr("surf_temp_c", surface_temp)
+				.attr("pvmt_temp_c", pavement_temp)
+				.attr("surf_water_depth_mm",
+					water_depth.get(v -> v.round(MILLIMETERS)))
+				.attr("surf_freeze_temp_c", freeze_point)
+				.attr("ice_water_depth_mm",
+					ice_or_water_depth.get(v -> v.round(MILLIMETERS)))
+				.attr("surf_black_ice_signal",
+					black_ice_signal.get(v -> v.toStringUpperSnake()));
 		}
 	}
 
-	/** Rows in table */
-	private final ArrayList<Row> table_rows = new ArrayList<Row>();
-
-	/** Get number of rows in table reported by ESS */
-	private int size() {
-		return num_sensors.getInteger();
+	@Override
+	protected Row createRow(int row_num){
+		return new Row(row_num);
 	}
 
-	/** Check if all rows have been read */
-	public boolean isDone() {
-		return table_rows.size() >= size();
+	/** Get the first valid surf freeze temp or null on error */
+	public Integer getFirstValidSurfFreezeTemp(){
+		return findRowValue(r -> r.isActive() ? r.freeze_point.toInteger() : null);
 	}
 
-	/** Add a row to the table */
-	public Row addRow() {
-		Row tr = new Row(table_rows.size() + 1);
-		table_rows.add(tr);
-		return tr;
+	/** Get the first valid pavement temp or null on error */
+	public Integer getFirstValidPvmtTemp() {
+		return findRowValue(r -> r.isActive() ? r.pavement_temp.toInteger() : null);
 	}
 
-	/** Get one table row */
-	public Row getRow(int row) {
-		return (row >= 1 && row <= table_rows.size())
-		      ? table_rows.get(row - 1)
-		      : null;
+	/** Get the row for the first valid surface temp or null on error */
+	public Row getFirstValidSurfTempRow() {
+		return findRow(r -> r.isActive() && !r.surface_temp.isNull());
+	}
+
+	/** Get the row for the first valid High Sierra surface temp,
+	 * which is stored in rows 3 or 4 (1-based) */
+	private Row getFirstValidSurfTempRowHighSierra() {
+		for (int i = 2; i < Math.min(table_rows.size(), 4); ++i) {
+			var row = table_rows.get(i);
+			if (!row.surface_temp.isNull())
+				return row;
+		}
+		return null;
+	}
+
+	/** Recreate High Sierra table. Valid pavement sensor rows start
+	 * at 3 or 4. This is remapped to row 1 */
+	public void recreateHighSierra() {
+		// Have seen rows with missing temperature but status present.
+		// In that case, the logic below returns no surf status.
+		// The row must have temperature present to be used.
+		var row = getFirstValidSurfTempRowHighSierra();
+		clear();
+		if (row != null){
+			num_sensors.setValue(1);
+			var nrow = addRow();
+			nrow.surface_status = row.surface_status;
+			nrow.surface_temp = row.surface_temp;
+			nrow.sensor_error.setValue(PavementSensorError.none);
+		}
+	}
+
+
+
+	/** Get the specified nth active sensor row or -1 if none.
+	 * @param nth Nth active sensor, ranges between 1 and size.
+	 * @return One-based row number of nth active sensor */
+	public Row getNthActive(int nth) {
+		int[] active_count = {0}; // lambda can't capture primitives by ref
+		return findRow(r -> r.isActive() ? ++active_count[0] == nth : false);
+	}
+
+	/** To debug/log string */
+	public String toString() {
+		return new StringBuilder()
+			.append("PavementSensorsTable: ")
+			.append(num_sensors.toLogString())
+			.append(EssConvertible.toLogString(
+				"firstValidSurfTempRow", getFirstValidSurfTempRow()))
+			.append(EssConvertible.toLogString(
+				"firstValidPvmtTemp", getFirstValidPvmtTemp()))
+			.append(EssConvertible.toLogString(
+				"firstValidSurfFreezeTemp", getFirstValidSurfFreezeTemp()))
+			.append(super.toString())
+			.toString();
 	}
 
 	/** Get JSON representation */
-	public String toJson() {
-		StringBuilder sb = new StringBuilder();
-		if (table_rows.size() > 0) {
-			sb.append("\"pavement_sensor\":[");
-			for (Row row : table_rows)
-				sb.append(row.toJson());
-			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-			sb.append("],");
+	public void toJson(JsonBuilder jb){
+		if (!isEmpty()){
+			jb.key("pavement_sensor");
+			super.toJson(jb);
 		}
-		return sb.toString();
+	}
+	/** Get XML representation */
+	public void toXml(XmlBuilder xb) throws IOException{
+		xb.tag("pvmt_sensors").attr("size", size()).child();
+		for (var row : table_rows)
+			row.toXml(xb);
+		xb.parent();
 	}
 }

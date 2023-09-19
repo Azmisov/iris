@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Calendar;
 import us.mn.state.dot.sched.TimeSteward;
+import us.mn.state.dot.tms.CommProtocol;
 import us.mn.state.dot.tms.server.ControllerImpl;
 import us.mn.state.dot.tms.server.DetectorImpl;
 import us.mn.state.dot.tms.server.comm.Operation;
@@ -137,7 +138,8 @@ public class DetectorStatusProp extends DetectorProp {
 		ControllerImpl ctrl = op.getController();
 		DetectorImpl det = lookupDet(ctrl);
 		if (det != null && isValidStamp())
-			det.logVehicle(duration, headway, stamp, 0, 0);
+			det.logVehicle(CommProtocol.NATCH, duration, headway, stamp,
+				0, 0, -1, -1);
 		else
 			ctrl.logGap();
 		ctrl.completeOperation(op.getId(), true);

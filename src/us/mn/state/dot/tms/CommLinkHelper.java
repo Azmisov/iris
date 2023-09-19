@@ -1,6 +1,8 @@
 /*
  * IRIS -- Intelligent Roadway Information System
+ * Copyright (C) 2009  AHMCT, University of California Davis
  * Copyright (C) 2009-2020  Minnesota Department of Transportation
+ * Copyright (C) 2017-2021  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,11 +38,46 @@ public class CommLinkHelper extends BaseHelper {
 	}
 
 	/** Get the polling enabled flag */
-	static public boolean getPollEnabled(CommLink cl) {
+	static public boolean getPollEnabledPretend(CommLink cl) {
 		// If the user doesn't have permission to read CommLink stuff,
 		// just pretend that polling is enabled
 		return (cl != null && cl.getPollEnabled())
 		    || !canRead(CommLink.SONAR_TYPE);
+	}
+
+	/** Get the polling enabled flag */
+	static public boolean getPollEnabled(CommLink cl) {
+		return (cl != null && cl.getPollEnabled());
+	}
+
+	/** Enable or disable all comm links with an active controller */
+	static public void enableActive(boolean enable) {
+		Iterator<Controller> it = ControllerHelper.iterator();
+		while (it.hasNext()) {
+			Controller co = it.next();
+			if (co != null) {
+				CtrlCondition cc = CtrlCondition.fromOrdinal(
+					co.getCondition());
+				if (cc == CtrlCondition.ACTIVE) {
+					CommLink cl = co.getCommLink();
+					if (cl != null)
+						cl.setPollEnabled(enable);
+				}
+			}
+		}
+	}
+
+	/** Enable or disable all comm links */
+	static public void enableAll(boolean enable) {
+		Iterator<Controller> it = ControllerHelper.iterator();
+		while (it.hasNext()) {
+			Controller co = it.next();
+			if (co != null) {
+				CommLink cl = co.getCommLink();
+				if (cl != null)
+					cl.setPollEnabled(enable);
+			}
+		}
 	}
 
 	/** Lookup the CommLink with the specified name */

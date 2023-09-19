@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2016-2020  Minnesota Department of Transportation
+ * Copyright (C) 2018  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +22,7 @@ import us.mn.state.dot.tms.Direction;
 import us.mn.state.dot.tms.EventType;
 import us.mn.state.dot.tms.IncidentDetail;
 import us.mn.state.dot.tms.IncidentDetailHelper;
+import us.mn.state.dot.tms.LaneImpact;
 import us.mn.state.dot.tms.server.IncidentImpl;
 import us.mn.state.dot.tms.geo.Position;
 
@@ -28,6 +30,7 @@ import us.mn.state.dot.tms.geo.Position;
  * Parsed incident.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class ParsedIncident {
 
@@ -102,8 +105,15 @@ public class ParsedIncident {
 	/** Direction */
 	public final Direction dir;
 
+	/** Predefined impact from parsed string. A derived lane impact could take
+	 * precedence over this (e.g. in IncidentCache) */
+	public final LaneImpact impact;
+
+	/** Note */
+	public String notes = "";
+
 	/** Create a new parsed incident */
-	public ParsedIncident(String line) {
+	public ParsedIncident(String line, LaneImpact imp) {
 		this.line = line;
 		String[] inc = line.split(",", 8);
 		id = (inc.length > 0) ? inc[0] : null;
@@ -113,6 +123,7 @@ public class ParsedIncident {
 		lon = (inc.length > 4) ? parseDouble(inc[4]) : null;
 		cam = (inc.length > 5) ? inc[5] : null;
 		dir = (inc.length > 6) ? parseDir(inc[6]) : parseDir("");
+		impact = imp;
 	}
 
 	/** Get a string representation */
@@ -150,5 +161,10 @@ public class ParsedIncident {
 	/** Is incident detail changed? */
 	public boolean isDetailChanged(IncidentImpl inc) {
 		return !objectEquals(detail, inc.getDetail());
+	}
+
+	/* Return impact code */
+	public String getImpactCode(){
+		return Character.toString(impact._char);
 	}
 }

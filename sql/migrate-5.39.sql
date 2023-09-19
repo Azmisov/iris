@@ -45,6 +45,7 @@ BEGIN
             res = res || 'Px';
         ELSIF length(word) > 2 AND word != 'VDL' THEN
             res = res || initcap(word);
+		-- all other words, capitalize
         ELSIF word != 'LG' AND word != 'SM' THEN
             res = res || upper(word);
         END IF;
@@ -216,7 +217,8 @@ GRANT SELECT ON dms_action_view TO PUBLIC;
 
 CREATE TABLE iris.dms_hashtag (
     dms VARCHAR(20) NOT NULL REFERENCES iris._dms,
-    hashtag VARCHAR(16) NOT NULL
+	-- v47; increasing to 32 since max length form dms_sign_group is already 16 
+    hashtag VARCHAR(32) NOT NULL
 );
 ALTER TABLE iris.dms_hashtag ADD PRIMARY KEY (dms, hashtag);
 

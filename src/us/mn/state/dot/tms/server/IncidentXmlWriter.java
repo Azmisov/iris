@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2022  Minnesota Department of Transportation
+ * Copyright (C) 2018  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +17,6 @@ package us.mn.state.dot.tms.server;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Date;
 import java.util.Iterator;
 import us.mn.state.dot.sched.TimeSteward;
 import us.mn.state.dot.tms.Incident;
@@ -26,6 +26,7 @@ import us.mn.state.dot.tms.IncidentHelper;
  * This class writes out the active incidents to an XML file.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class IncidentXmlWriter extends XmlWriter {
 
@@ -73,6 +74,7 @@ public class IncidentXmlWriter extends XmlWriter {
 		w.write("<!ATTLIST incident camera CDATA #REQUIRED>\n");
 		w.write("<!ATTLIST incident impact CDATA #REQUIRED>\n");
 		w.write("<!ATTLIST incident cleared CDATA #REQUIRED>\n");
+		w.write("<!ATTLIST incident notes CDATA #REQUIRED>\n");
 		w.write("]>\n");
 	}
 

@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2020  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,11 +65,21 @@ public class WeatherSensorXmlWriter extends XmlWriter {
 		w.write("<!ATTLIST weather_sensor " + 
 			"description CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
+			"notes CDATA #IMPLIED>\n");
+		w.write("<!ATTLIST weather_sensor " + 
+			"site_id CDATA #IMPLIED>\n");
+		w.write("<!ATTLIST weather_sensor " + 
+			"alt_id CDATA #IMPLIED>\n");
+		w.write("<!ATTLIST weather_sensor " + 
 			"lon CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
 			"lat CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
+			"alt_m CDATA #IMPLIED>\n");
+		w.write("<!ATTLIST weather_sensor " + 
 			"air_temp_c CDATA #IMPLIED>\n");
+		w.write("<!ATTLIST weather_sensor " + 
+			"water_depth_cm CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
 			"humidity_perc CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
@@ -81,9 +91,9 @@ public class WeatherSensorXmlWriter extends XmlWriter {
 		w.write("<!ATTLIST weather_sensor " + 
 			"avg_wind_speed_kph CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
-			"wind_gust_speed_kph CDATA #IMPLIED>\n");
+			"max_gust_speed_kph CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
-			"wind_gust_dir_degs CDATA #IMPLIED>\n");
+			"max_wind_gust_dir_degs CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
 			"avg_wind_dir_degs CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
@@ -99,19 +109,27 @@ public class WeatherSensorXmlWriter extends XmlWriter {
 		w.write("<!ATTLIST weather_sensor " + 
 			"visibility_m CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
+			"visibility_situation CDATA #IMPLIED>\n");
+		w.write("<!ATTLIST weather_sensor " + 
 			"atmos_pressure_pa CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
-			"pvmt_surf_temp CDATA #IMPLIED>\n");
+			"atmos_pressure_sealevel_pa CDATA #IMPLIED>\n");
+		w.write("<!ATTLIST weather_sensor " + 
+			"pvmt_temp_c CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
 			"surf_temp_c CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
-			"pvmt_surf_status CDATA #IMPLIED>\n");
+			"surface_status CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
 			"surf_freeze_temp_c CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
 			"subsurf_temp_c CDATA #IMPLIED>\n");
 		w.write("<!ATTLIST weather_sensor " + 
 			"time_stamp CDATA #IMPLIED>\n");
+		w.write("<!ATTLIST weather_sensor " + 
+			"cloud_cover_situation CDATA #IMPLIED>\n");
+		w.write("<!ATTLIST weather_sensor " + 
+			"surf_ice_water_depth_tmm CDATA #IMPLIED>\n");
 		w.write("]>\n");
 	}
 
@@ -122,7 +140,7 @@ public class WeatherSensorXmlWriter extends XmlWriter {
 			WeatherSensor ws = it.next();
 			if(ws instanceof WeatherSensorImpl) {
 				((WeatherSensorImpl)ws).
-					writeWeatherSensorXml(w);
+					writeWeatherSensorDataXml(w);
 			}
 		}
 	}

@@ -74,7 +74,8 @@ public class IrisProvider implements AuthProvider {
 	/** Authenticate a user */
 	public boolean authenticate(UserImpl user, char[] pwd) {
 		try {
-			return isBlank(user.getDn()) &&
+			//return isBlank(user.getDn()) &&
+			return 
 			       user instanceof IrisUserImpl &&
 			       check((IrisUserImpl) user, pwd);
 		}

@@ -366,6 +366,10 @@ public class ControllerImpl extends BaseObjectImpl implements Controller {
 	/** Set the access password */
 	public void doSetPassword(String pwd) throws TMSException {
 		if (!objectEquals(pwd, password)) {
+			System.err.println("ControllerImpl.doSetPassword: " +
+				"ctl=" + getName() + " new_pw=" + pwd + 
+				" old_pw=" + getPassword() + " time=" + 
+				new Date());
 			store.update(this, "password", pwd);
 			setPassword(pwd);
 		}
@@ -654,6 +658,53 @@ public class ControllerImpl extends BaseObjectImpl implements Controller {
 		return setup;
 	}
 
+	/** Extract a key's value from the controller's setup JSON
+	 * @returns the extracted value, or null if not present
+	 */
+	public String getSetup(String key){
+		if (setup != null){
+			try {
+				var jo = new JSONObject(setup);
+				return jo.getString(key);
+			} catch (JSONException e){ }
+		}
+		// invalid or uninitialized JSON, or missing key
+		return null;
+	}
+
+	/** Retreive the controller's setup as JSON 
+	 * @returns null if invalid or uninitialized JSON
+	 */
+	public JSONObject getSetupJSON(){
+		if (setup != null){
+			try {
+				return new JSONObject(setup);
+			} catch (JSONException e){ }
+		}
+		// invalid or uninitialized JSON
+		return null;
+	}
+
+	/** Set a key-value pair in the controller's setup JSON. This initializes
+	 * the JSON if not already.
+	 * @returns serialized JSON string, or null if there was an error
+	 */
+	public String setSetup(String key, String value){
+		String s = setup;
+		try {
+			JSONObject jo = (s != null)
+				? new JSONObject(s)
+				: new JSONObject();
+			jo.put(key, trimTruncate(value, 64));
+			return jo.toString();
+		}
+		catch (JSONException e) {
+			// malformed JSON
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	/** Set the JSON setup */
 	private void setSetup(String s) {
 		try {
@@ -675,18 +726,9 @@ public class ControllerImpl extends BaseObjectImpl implements Controller {
 
 	/** Set a setup value and notify clients of the change */
 	public void setSetupNotify(String key, String value) {
-		String s = setup;
-		try {
-			JSONObject jo = (s != null)
-				? new JSONObject(s)
-				: new JSONObject();
-			jo.put(key, trimTruncate(value, 64));
-			setSetupNotify(jo.toString());
-		}
-		catch (JSONException e) {
-			// malformed JSON
-			e.printStackTrace();
-		}
+		String s = setSetup(key, value);
+		if (s != null)
+			setSetupNotify(s);
 	}
 
 	/** Set the firmware version and notify clients of the change */
@@ -1133,6 +1175,11 @@ public class ControllerImpl extends BaseObjectImpl implements Controller {
 	public boolean isDialUpRequired() {
 		CommLinkImpl cl = comm_link;
 		return (cl != null) && cl.isDialUpRequired();
+	}
+
+	/** Check if the controller comm link is currently connected */
+	public boolean isConnected() {
+		return comm_link != null && comm_link.getConnected();
 	}
 
 	/** Write the controller as an XML element */

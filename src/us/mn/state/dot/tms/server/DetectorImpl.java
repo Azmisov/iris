@@ -1,7 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2000-2022  Minnesota Department of Transportation
- * Copyright (C) 2011  Berkeley Transportation Systems Inc.
+ * Copyright (C) 2011-2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ import us.mn.state.dot.tms.Road;
 import us.mn.state.dot.tms.SystemAttrEnum;
 import us.mn.state.dot.tms.TMSException;
 import us.mn.state.dot.tms.VehLengthClass;
+import us.mn.state.dot.tms.CommProtocol;
 import us.mn.state.dot.tms.units.Interval;
 import static us.mn.state.dot.tms.units.Interval.HOUR;
 import static us.mn.state.dot.tms.units.Interval.Units.MILLISECONDS;
@@ -54,6 +55,7 @@ import us.mn.state.dot.tms.server.event.DetAutoFailEvent;
  * Detector for traffic data sampling
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class DetectorImpl extends DeviceImpl implements Detector,VehicleSampler{
 
@@ -1036,15 +1038,25 @@ public class DetectorImpl extends DeviceImpl implements Detector,VehicleSampler{
 	}
 
 	/** Log a vehicle detection event.
+	 * @param cp Ordinal value for CommProtocol.
 	 * @param duration Event duration in milliseconds.
 	 * @param headway Headway since last event in milliseconds.
 	 * @param stamp Timestamp of detection event.
 	 * @param speed Speed in miles per hour.
-	 * @param length Length in feet. */
-	public void logVehicle(int duration, int headway, long stamp,
-		int speed, int length)
-	{
-		v_log.logVehicle(duration, headway, stamp, speed, length);
+	 * @param length Length in feet.
+	 * @param vclass Vehicle class
+	 * @param range  */
+	public void logVehicle(
+		CommProtocol cp, int duration, int headway, long stamp,
+		float speed, float length, int vclass, float range
+	){
+		v_log.logVehicle(this, cp, duration, headway, stamp, speed,
+			length, vclass, range);
+	}
+
+	/** Write vehicles samples as XML */
+	public void writeSampleVehicleXml(Writer w) throws IOException {
+		v_log.flushXml(w);
 	}
 
 	/** Log a gap in vehicle events */

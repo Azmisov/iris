@@ -1,238 +1,167 @@
-/*
- * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2019-2022  Minnesota Department of Transportation
- * Copyright (C) 2017  Iteris Inc.
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
 package us.mn.state.dot.tms.server.comm.ntcip.mib1204;
 
-import java.util.ArrayList;
 import static us.mn.state.dot.tms.server.comm.ntcip.mib1204.MIB1204.*;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Enum;
-import us.mn.state.dot.tms.server.comm.snmp.ASN1Integer;
-import us.mn.state.dot.tms.utils.Json;
+import us.mn.state.dot.tms.server.comm.ntcip.mib1204.enums.WindSituation;
+import us.mn.state.dot.tms.utils.JsonBuilder;
+import static us.mn.state.dot.tms.units.Speed.Units.*;
 
 /**
  * Wind sensors data table, where each table row contains data read from a
  * single wind sensor within the same controller.
  *
  * @author Douglas Lau
- * @author Michael Darter
+ * @copyright 2019-2022 Minnesota Department of Transportation
+ * @author Michael Darter, Isaac Nygaard
+ * @copyright 2023 Iteris Inc.
+ * @license GPL-2.0
  */
-public class WindSensorsTable {
+public class WindSensorsTable extends EssTable<WindSensorsTable.Row>{
+	/** Number of sensors in table (V2+) */
+	public final EssNumber num_sensors =
+		EssNumber.Count("num_wind_sensors", windSensorTableNumSensors);
 
-	/** Wind sensor row */
-	static public class Row {
-		public final HeightObject height;
-		public final WindSpeedObject avg_speed;
-		public final DirectionObject avg_direction;
-		public final WindSpeedObject spot_speed;
-		public final DirectionObject spot_direction;
-		public final WindSpeedObject gust_speed;
-		public final DirectionObject gust_direction;
-		public final ASN1Enum<WindSituation> situation;
-
-		private WindSituation getSituation() {
-			WindSituation ws = situation.getEnum();
-			return (ws != WindSituation.undefined &&
-			        ws != WindSituation.unknown)
-			      ? ws
-			      : null;
-		}
-
-		/** Create a table row */
-		private Row(int row) {
-			height = new HeightObject("height",
-				windSensorHeight.makeInt(row));
-			avg_speed = new WindSpeedObject("avg_speed",
-				windSensorAvgSpeed.makeInt(row));
-			avg_direction = new DirectionObject("avg_direction",
-				windSensorAvgDirection.makeInt(row));
-			spot_speed = new WindSpeedObject("spot_speed",
-				windSensorSpotSpeed.makeInt(row));
-			spot_direction = new DirectionObject("spot_direction",
-				windSensorSpotDirection.makeInt(row));
-			gust_speed = new WindSpeedObject("gust_speed",
-				windSensorGustSpeed.makeInt(row));
-			gust_direction = new DirectionObject("gust_direction",
-				windSensorGustDirection.makeInt(row));
-			// Note: this object not supported by all vendors
-			situation = new ASN1Enum<WindSituation>(
-				WindSituation.class, windSensorSituation.node,
-				row);
-		}
-
-		/** Get JSON representation */
-		private String toJson() {
-			StringBuilder sb = new StringBuilder();
-			sb.append('{');
-			sb.append(height.toJson());
-			sb.append(avg_speed.toJson());
-			sb.append(avg_direction.toJson());
-			sb.append(spot_speed.toJson());
-			sb.append(spot_direction.toJson());
-			sb.append(gust_speed.toJson());
-			sb.append(gust_direction.toJson());
-			sb.append(Json.str("situation", getSituation()));
-			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-			sb.append("},");
-			return sb.toString();
-		}
+	public WindSensorsTable(){
+		setSensorCount(num_sensors);
 	}
 
 	/** Wind sensor height in meters (deprecated in V2) */
-	public final HeightObject height = new HeightObject("height",
-		essWindSensorHeight.makeInt());
+	public final EssDistance height =
+		new EssDistance("height", essWindSensorHeight);
 
 	/** Wind situation.
 	 * Note: this object not supported by all vendors */
-	public final ASN1Enum<WindSituation> situation =
-		new ASN1Enum<WindSituation>(WindSituation.class,
-		essWindSituation.node);
+	public final EssEnum<WindSituation> situation =
+		EssEnum.make(WindSituation.class, "situation", essWindSituation);
 
-	/** Two minute average wind speed (deprecated in V2) */
-	public final WindSpeedObject avg_speed = new WindSpeedObject(
-		"avg_speed", essAvgWindSpeed.makeInt());
+	/** Two minute average wind speed in m/s (deprecated in V2) */
+	public final EssSpeed avg_speed =
+		new EssSpeed("avg_speed", essAvgWindSpeed);
 
 	/** Two minute average wind direction (deprecated in V2) */
-	public final DirectionObject avg_direction = new DirectionObject(
-		"avg_direction", essAvgWindDirection.makeInt());
+	public final EssAngle avg_direction =
+		new EssAngle("avg_direction", essAvgWindDirection);
 
-	/** Spot wind speed (deprecated in V2) */
-	public final WindSpeedObject spot_speed = new WindSpeedObject(
-		"spot_speed", essSpotWindSpeed.makeInt());
+	/** Spot wind speed in m/s  (deprecated in V2) */
+	public final EssSpeed spot_speed =
+		new EssSpeed("spot_speed", essSpotWindSpeed);
 
 	/** Spot wind direction (deprecated in V2) */
-	public final DirectionObject spot_direction = new DirectionObject(
-		"spot_direction", essSpotWindDirection.makeInt());
+	public final EssAngle spot_direction =
+		new EssAngle("spot_direction", essSpotWindDirection);
 
-	/** Ten minute max gust wind speed (deprecated in V2) */
-	public final WindSpeedObject gust_speed = new WindSpeedObject(
-		"gust_speed", essMaxWindGustSpeed.makeInt());
+	/** Ten minute max gust wind speed in m/s (deprecated in V2) */
+	public final EssSpeed gust_speed =
+		new EssSpeed("gust_speed", essMaxWindGustSpeed);
 
 	/** Ten minute max gust wind direction (deprecated in V2) */
-	public final DirectionObject gust_direction = new DirectionObject(
-		"gust_direction", essMaxWindGustDir.makeInt());
+	public final EssAngle gust_direction =
+		new EssAngle("gust_direction", essMaxWindGustDir);
 
-	/** Number of sensors in table (V2+) */
-	public final ASN1Integer num_sensors =
-		windSensorTableNumSensors.makeInt();
+	/** Wind sensor row */
+	static public class Row implements JsonBuilder.Buildable {
+		public final EssDistance height;
+		public final EssSpeed avg_speed;
+		public final EssAngle avg_direction;
+		public final EssSpeed spot_speed;
+		public final EssAngle spot_direction;
+		public final EssSpeed gust_speed;
+		public final EssAngle gust_direction;
+		/** Wind situation enum */
+		public final EssEnum<WindSituation> situation;
 
-	/** Get number of sensors in table */
-	private int size() {
-		return num_sensors.getInteger();
+		/** Create a table row */
+		private Row(int row) {
+			height = new EssDistance("height", windSensorHeight, row);
+			avg_speed =
+				new EssSpeed("avg_speed", windSensorAvgSpeed, row);
+			avg_direction =
+				new EssAngle("avg_direction", windSensorAvgDirection, row);
+			spot_speed =
+				new EssSpeed("spot_speed", windSensorSpotSpeed, row);
+			spot_direction =
+				new EssAngle("spot_direction", windSensorSpotDirection, row);
+			gust_speed =
+				new EssSpeed("gust_speed", windSensorGustSpeed, row);
+			gust_direction =
+				new EssAngle("gust_direction", windSensorGustDirection, row);
+			// Note: this object not supported by all vendors
+			situation =
+				EssEnum.make(WindSituation.class, "situation", windSensorSituation, row);
+		}
+
+		/** Get JSON representation */
+		public void toJson(JsonBuilder jb){
+			jb.object(new EssConvertible[]{
+				height,
+				avg_speed,
+				avg_direction,
+				spot_speed,
+				spot_direction,
+				gust_speed,
+				gust_direction,
+				situation
+			});
+		}
 	}
 
-	/** Rows in table */
-	private final ArrayList<Row> table_rows = new ArrayList<Row>();
-
-	/** Check if all rows have been read */
-	public boolean isDone() {
-		return table_rows.size() >= size();
+	@Override
+	protected Row createRow(int row_num) {
+		return new Row(row_num);
 	}
 
-	/** Add a row to the table */
-	public Row addRow() {
-		Row tr = new Row(table_rows.size() + 1);
-		table_rows.add(tr);
-		return tr;
-	}
-
-	/** Get one table row */
-	public Row getRow(int row) {
-		return (row >= 1 && row <= table_rows.size())
-		      ? table_rows.get(row - 1)
-		      : null;
-	}
-
-	/** Get the wind situation */
-	private WindSituation getSituation() {
-		WindSituation ws = situation.getEnum();
-		return (ws != WindSituation.undefined &&
-		        ws != WindSituation.unknown)
-		      ? ws
-		      : null;
-	}
+	// TODO: so Json was previously specified to use m/s, but the storage
+	// in WeatherSensorImpl is km/h; I'm leaving as is, but think we should
+	// settle on a single unit to use for both
 
 	/** Get two minute average wind speed */
-	public WindSpeedObject getAvgSpeed() {
-		return table_rows.isEmpty()
-		      ? avg_speed
-		      : table_rows.get(0).avg_speed;
+	public Integer getAvgSpeed() {
+		return fallback(r -> r.avg_speed, avg_speed).get(v -> v.round(KPH));
 	}
 
 	/** Get two minute average wind direction */
-	public DirectionObject getAvgDir() {
-		return table_rows.isEmpty()
-		      ? avg_direction
-		      : table_rows.get(0).avg_direction;
+	public Integer getAvgDir() {
+		return fallback(r -> r.avg_direction, avg_direction).toInteger();
 	}
 
 	/** Get spot wind speed */
-	public WindSpeedObject getSpotSpeed() {
-		return table_rows.isEmpty()
-		      ? spot_speed
-		      : table_rows.get(0).spot_speed;
+	public Integer getSpotSpeed() {
+		return fallback(r -> r.spot_speed, spot_speed).get(v -> v.round(KPH));
 	}
 
 	/** Get spot wind direction */
-	public DirectionObject getSpotDir() {
-		return table_rows.isEmpty()
-		      ? spot_direction
-		      : table_rows.get(0).spot_direction;
+	public Integer getSpotDir() {
+		return fallback(r -> r.spot_direction, spot_direction).toInteger();
 	}
 
 	/** Get ten minute max gust wind speed */
-	public WindSpeedObject getGustSpeed() {
-		return table_rows.isEmpty()
-		      ? gust_speed
-		      : table_rows.get(0).gust_speed;
+	public Integer getGustSpeed() {
+		return fallback(r -> r.gust_speed, gust_speed).get(v -> v.round(KPH));
 	}
 
 	/** Get ten minute max gust wind direction */
-	public DirectionObject getGustDir() {
-		return table_rows.isEmpty()
-		      ? gust_direction
-		      : table_rows.get(0).gust_direction;
+	public Integer getGustDir() {
+		return fallback(r -> r.gust_direction, gust_direction).toInteger();
 	}
 
 	/** Get JSON representation */
-	public String toJson() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("\"wind_sensor\":[");
-		if (table_rows.size() > 0) {
-			for (Row row : table_rows)
-				sb.append(row.toJson());
-		} else {
-			sb.append('{');
-			sb.append(height.toJson());
-			sb.append(avg_speed.toJson());
-			sb.append(avg_direction.toJson());
-			sb.append(spot_speed.toJson());
-			sb.append(spot_direction.toJson());
-			sb.append(gust_speed.toJson());
-			sb.append(gust_direction.toJson());
-			sb.append(Json.str("situation", getSituation()));
-			// remove trailing comma
-			if (sb.charAt(sb.length() - 1) == ',')
-				sb.setLength(sb.length() - 1);
-			sb.append("},");
+	public void toJson(JsonBuilder jb){
+		jb.key("wind_sensor");
+		if (!isEmpty())
+			super.toJson(jb);
+		else {
+			// emulate sensor table w/ V1 properties
+			jb.beginList()
+				.object(new EssConvertible[]{
+					height,
+					avg_speed,
+					avg_direction,
+					spot_speed,
+					spot_direction,
+					gust_speed,
+					gust_direction,
+					situation
+				})
+				.endList();
 		}
-		// remove trailing comma
-		if (sb.charAt(sb.length() - 1) == ',')
-			sb.setLength(sb.length() - 1);
-		sb.append("],");
-		return sb.toString();
 	}
 }

@@ -57,12 +57,12 @@ public class OpRead extends OpController<ClearGuideProperty> {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<ClearGuideProperty> phaseOne() {
+	protected Phase phaseOne() {
 		return new AuthenticatePhase();
 	}
 
 	/** Phase to authenticate with ClearGuide */
-	protected class AuthenticatePhase extends Phase<ClearGuideProperty> {
+	protected class AuthenticatePhase extends Phase {
 
 		/** Maximum authentication retries */
 		private final int MAX_AUTH_RETRY = 3;
@@ -73,7 +73,7 @@ public class OpRead extends OpController<ClearGuideProperty> {
 		/** Authenticate with ClearGuide auth server
 		 * @param msg Associated comm message.
 		 * @return Null if done else next phase. */
-		protected Phase<ClearGuideProperty> poll(
+		public Phase poll(
 			CommMessage<ClearGuideProperty> msg)
 			throws IOException
 		{
@@ -96,12 +96,12 @@ public class OpRead extends OpController<ClearGuideProperty> {
 	}
 
 	/** Phase to read DMS metrics from ClearGuide */
-	protected class DmsMetricsPhase extends Phase<ClearGuideProperty>{
+	protected class DmsMetricsPhase extends Phase{
 
 		/** Read DMS metrics
 		 * @param msg Associated comm message.
 		 * @return Null if done else next phase. */
-		protected Phase<ClearGuideProperty> poll(
+		public Phase poll(
 			CommMessage<ClearGuideProperty> msg) throws IOException
 		{
 			log("DmsMetricsPhase.poll: ------------");

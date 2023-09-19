@@ -42,15 +42,15 @@ public class OpTestCap extends OpReadCap {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<CapProperty> phaseOne() {
+	protected Phase phaseOne() {
 		return new PhaseTestCap();
 	}
 
 	/** Phase to read the test alert */
-	protected class PhaseTestCap extends Phase<CapProperty> {
+	protected class PhaseTestCap extends Phase {
 
 		/** Execute the phase */
-		protected Phase<CapProperty> poll(
+		public Phase poll(
 			CommMessage<CapProperty> mess) throws IOException
 		{
 			File testAlert = new File(TEST_FILE);

@@ -1,7 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2005-2017  Minnesota Department of Transportation
- * Copyright (C) 2012  Iteris Inc.
+ * Copyright (C) 2012-2023  Iteris Inc.
  * Copyright (C) 2014-2015  AHMCT, University of California
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@ import us.mn.state.dot.tms.utils.SString;
  * An operation is a sequence of phases to be performed on a field controller.
  *
  * @author Douglas Lau
- * @author Michael Darter
+ * @author Michael Darter, Isaac Nygaard
  * @author Travis Swanston
  */
 abstract public class OpController<T extends ControllerProperty> {
@@ -55,17 +55,20 @@ abstract public class OpController<T extends ControllerProperty> {
 		return (i >= 0) ? v.substring(i + 1) : v;
 	}
 
-	/** Base class for operation phases */
-	abstract protected class Phase<T extends ControllerProperty> {
-
-		/** Perform a poll.
-		 * @return The next phase of the operation, or null */
-		abstract protected Phase<T> poll(CommMessage<T> mess)
-			throws IOException, DeviceContentionException;
+	/** Polling interface, which can be used as lambda or class Phase. Return
+	 * the next phase of the operation as another Pollable.
+	 */
+	protected interface Pollable<K extends ControllerProperty>{
+		Pollable<K> poll(CommMessage<K> mess) throws IOException, DeviceContentionException;
 	}
 
+	/** Class for operation phases. Prefer using a Pollable lambda instead for
+	 * new code where possible. Use this class if you need to pass state to
+	 * the phase for it to operate on. */
+	abstract protected class Phase implements Pollable<T>{}
+
 	/** Current phase of the operation, or null if done */
-	private Phase<T> phase;
+	private Pollable<T> phase;
 
 	/** Begin the operation.  The operation begins when it is queued for
 	 * processing. */
@@ -76,7 +79,7 @@ abstract public class OpController<T extends ControllerProperty> {
 	/** Create the first phase of the operation.  This method cannot be
 	 * called in the Operation constructor, because the object may not
 	 * have been fully constructed yet (subclass initialization). */
-	abstract protected Phase<T> phaseOne();
+	abstract protected Pollable<T> phaseOne();
 
 	/** Priority of the operation */
 	private PriorityLevel priority;
@@ -184,7 +187,7 @@ abstract public class OpController<T extends ControllerProperty> {
 
 	/** Get the phase class */
 	private Class phaseClass() {
-		Phase<T> p = phase;
+		Pollable<T> p = phase;
 		return (p != null) ? p.getClass() : getClass();
 	}
 
@@ -203,13 +206,13 @@ abstract public class OpController<T extends ControllerProperty> {
 	public final void poll(CommMessage<T> mess) throws IOException,
 		DeviceContentionException
 	{
-		Phase<T> p = phase;
+		Pollable<T> p = phase;
 		if (p != null)
 			updatePhase(p.poll(mess));
 	}
 
 	/** Update the phase of the operation */
-	private synchronized void updatePhase(Phase<T> p) {
+	private synchronized void updatePhase(Pollable<T> p) {
 		// Need to synchronize against setFailed / setSucceeded
 		if (!isDone())
 			phase = p;

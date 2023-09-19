@@ -46,17 +46,18 @@ public class OpQueryBinned extends OpSS125 {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<SS125Property> phaseOne() {
+	protected Phase phaseOne() {
 		return new GetCurrentInterval();
 	}
 
 	/** Phase to get the most recent interval data */
-	private class GetCurrentInterval extends Phase<SS125Property> {
+	private class GetCurrentInterval extends Phase {
 
 		/** Get the most recent binned interval */
-		protected Phase<SS125Property> poll(
+		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
+			log("-------OpQueryBinned.GetCurrentInterval.poll");
 			mess.add(binned_data);
 			mess.queryProps();
 			return (binned_data.isPreviousInterval())
@@ -66,12 +67,13 @@ public class OpQueryBinned extends OpSS125 {
 	}
 
 	/** Phase to send the date and time */
-	private class SendDateTime extends Phase<SS125Property> {
+	private class SendDateTime extends Phase {
 
 		/** Send the date and time */
-		protected Phase<SS125Property> poll(
+		public Phase poll(
 			CommMessage<SS125Property> mess) throws IOException
 		{
+			log("-------OpQueryBinned.SendDateTime.poll");
 			long stamp = binned_data.getTime();
 			mess.logError("BAD TIMESTAMP: " + new Date(stamp));
 			if (!binned_data.isValidStamp())

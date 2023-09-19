@@ -98,17 +98,17 @@ public class OpSendSettings extends OpE6 {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<E6Property> phaseTwo() {
+	protected Phase phaseTwo() {
 		// store ACK timeout without checking it first
 		// to prevent timeout errors on an invalid config
 		return new StoreAckTimeout();
 	}
 
 	/** Phase to store the data ACK timeout */
-	private class StoreAckTimeout extends Phase<E6Property> {
+	private class StoreAckTimeout extends Phase {
 
 		/** Store the ACK timeout */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			AckTimeoutProp ato = new AckTimeoutProp(
@@ -121,10 +121,10 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to query the time / date */
-	private class QueryTimeDate extends Phase<E6Property> {
+	private class QueryTimeDate extends Phase {
 
 		/** Query the time / date */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			TimeDateProp stamp = new TimeDateProp();
@@ -137,10 +137,10 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to store the time / date */
-	private class StoreTimeDate extends Phase<E6Property> {
+	private class StoreTimeDate extends Phase {
 
 		/** Store the time / date */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			TimeDateProp stamp = new TimeDateProp();
@@ -151,10 +151,10 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to query the mode */
-	private class QueryMode extends Phase<E6Property> {
+	private class QueryMode extends Phase {
 
 		/** Query the mode */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			ModeProp mode = new ModeProp();
@@ -167,10 +167,10 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to query the buffering enabled */
-	private class QueryBufferingEnabled extends Phase<E6Property> {
+	private class QueryBufferingEnabled extends Phase {
 
 		/** Query the buffering enabled */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			BufferingEnabledProp buffering =
@@ -184,10 +184,10 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to store the buffering enabled */
-	private class StoreBufferingEnabled extends Phase<E6Property> {
+	private class StoreBufferingEnabled extends Phase {
 
 		/** Store the buffering enabled */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			BufferingEnabledProp buffering =
@@ -200,10 +200,10 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to query the append data */
-	private class QueryAppendData extends Phase<E6Property> {
+	private class QueryAppendData extends Phase {
 
 		/** Query the append data */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			AppendDataProp append = new AppendDataProp();
@@ -217,10 +217,10 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to store the append data */
-	private class StoreAppendData extends Phase<E6Property> {
+	private class StoreAppendData extends Phase {
 
 		/** Store the append data */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			AppendDataProp append = new AppendDataProp();
@@ -232,10 +232,10 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to query the RF control */
-	private class QueryRFControl extends Phase<E6Property> {
+	private class QueryRFControl extends Phase {
 
 		/** Query the RF control */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			RFControlProp ctrl = new RFControlProp();
@@ -249,10 +249,10 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to store the RF control */
-	private class StoreRFControl extends Phase<E6Property> {
+	private class StoreRFControl extends Phase {
 
 		/** Store the RF control */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			RFControlProp ctrl = new RFControlProp();
@@ -264,7 +264,7 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Create phase to check the downlink frequency */
-	private Phase<E6Property> checkDownlinkFreq() {
+	private Phase checkDownlinkFreq() {
 		Integer df = intSetting("downlink_freq_khz");
 		return (df != null)
 		      ? new CheckDownlinkFreq(df)
@@ -272,14 +272,14 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to check the downlink frequency */
-	private class CheckDownlinkFreq extends Phase<E6Property> {
+	private class CheckDownlinkFreq extends Phase {
 		private final int downlink_freq;
 		private CheckDownlinkFreq(int df) {
 			downlink_freq = df;
 		}
 
 		/** Check the downlink frequency */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			FrequencyProp freq = new FrequencyProp(
@@ -295,14 +295,14 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to store the downlink frequency */
-	private class StoreDownlinkFreq extends Phase<E6Property> {
+	private class StoreDownlinkFreq extends Phase {
 		private final int downlink_freq;
 		private StoreDownlinkFreq(int df) {
 			downlink_freq = df;
 		}
 
 		/** Store the downlink frequency */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			FrequencyProp freq = new FrequencyProp(
@@ -315,7 +315,7 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Create phase to check the uplink frequency */
-	private Phase<E6Property> checkUplinkFreq() {
+	private Phase checkUplinkFreq() {
 		Integer uf = intSetting("uplink_freq_khz");
 		return (uf != null)
 		      ? new CheckUplinkFreq(uf)
@@ -323,14 +323,14 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to check the uplink frequency */
-	private class CheckUplinkFreq extends Phase<E6Property> {
+	private class CheckUplinkFreq extends Phase {
 		private final int uplink_freq;
 		private CheckUplinkFreq(int uf) {
 			uplink_freq = uf;
 		}
 
 		/** Check the uplink frequency */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			FrequencyProp freq = new FrequencyProp(Source.uplink);
@@ -345,14 +345,14 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to store the uplink frequency */
-	private class StoreUplinkFreq extends Phase<E6Property> {
+	private class StoreUplinkFreq extends Phase {
 		private final int uplink_freq;
 		private StoreUplinkFreq(int uf) {
 			uplink_freq = uf;
 		}
 
 		/** Store the uplink frequency */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			FrequencyProp freq = new FrequencyProp(Source.uplink);
@@ -364,7 +364,7 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Create phase to check the line loss */
-	private Phase<E6Property> checkLineLoss() {
+	private Phase checkLineLoss() {
 		Integer ll = intSetting("line_loss_db");
 		return (ll != null)
 		      ? new CheckLineLoss(ll)
@@ -372,14 +372,14 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to check the line loss */
-	private class CheckLineLoss extends Phase<E6Property> {
+	private class CheckLineLoss extends Phase {
 		private final int line_loss;
 		private CheckLineLoss(int ll) {
 			line_loss = ll;
 		}
 
 		/** Check the line loss */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			LineLossProp loss = new LineLossProp();
@@ -393,14 +393,14 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to store line loss */
-	private class StoreLineLoss extends Phase<E6Property> {
+	private class StoreLineLoss extends Phase {
 		private final int line_loss;
 		private StoreLineLoss(int ll) {
 			line_loss = ll;
 		}
 
 		/** Store line loss */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			LineLossProp loss = new LineLossProp();
@@ -412,7 +412,7 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Create phase to check master / slave settings */
-	private Phase<E6Property> checkMasterSlave() {
+	private Phase checkMasterSlave() {
 		SyncMode sm = SyncMode.fromValue(strSetting("sync_mode"));
 		Integer sc = intSetting("slave_select_count");
 		return (sm != null && sc != null)
@@ -421,7 +421,7 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to check master / slave settings */
-	private class CheckMasterSlave  extends Phase<E6Property> {
+	private class CheckMasterSlave  extends Phase {
 		private final SyncMode sync_mode;
 		private final int slave_select;
 		private CheckMasterSlave(SyncMode sm, int sc) {
@@ -430,7 +430,7 @@ public class OpSendSettings extends OpE6 {
 		}
 
 		/** Query master / slave settings */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			MasterSlaveProp mstr = new MasterSlaveProp();
@@ -446,7 +446,7 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to store master / slave settings */
-	private class StoreMasterSlave extends Phase<E6Property> {
+	private class StoreMasterSlave extends Phase {
 		private final SyncMode sync_mode;
 		private final int slave_select;
 		private StoreMasterSlave(SyncMode sm, int sc) {
@@ -455,7 +455,7 @@ public class OpSendSettings extends OpE6 {
 		}
 
 		/** Store master / slave settings */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			MasterSlaveProp mstr = new MasterSlaveProp();
@@ -468,13 +468,13 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Get the next protocol phase */
-	private Phase<E6Property> nextProtocol(RFProtocol p_prot) {
+	private Phase nextProtocol(RFProtocol p_prot) {
 		RFProtocol p = RFProtocol.next(p_prot);
 		return (p != null) ? checkAtten(p) : lastPhase();
 	}
 
 	/** Get check attenuation phase (or later) */
-	private Phase<E6Property> checkAtten(RFProtocol p) {
+	private Phase checkAtten(RFProtocol p) {
 		Integer ad = intSetting(p, "rf_atten_downlink_db");
 		Integer au = intSetting(p, "rf_atten_uplink_db");
 		return (ad != null && au != null)
@@ -483,7 +483,7 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to check RF attenuation for one protocol */
-	private class CheckAtten extends Phase<E6Property> {
+	private class CheckAtten extends Phase {
 		private final RFProtocol protocol;
 		private final int atten_down;
 		private final int atten_up;
@@ -494,7 +494,7 @@ public class OpSendSettings extends OpE6 {
 		}
 
 		/** Check RF attenuation */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			RFAttenProp atten = new RFAttenProp(protocol);
@@ -516,7 +516,7 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to store RF attenuation for one protocol */
-	private class StoreAtten extends Phase<E6Property> {
+	private class StoreAtten extends Phase {
 		private final RFProtocol protocol;
 		private final int atten_down;
 		private final int atten_up;
@@ -527,7 +527,7 @@ public class OpSendSettings extends OpE6 {
 		}
 
 		/** Store RF attenuation */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			RFAttenProp atten = new RFAttenProp(protocol);
@@ -540,7 +540,7 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Get check data detect phase (or later) */
-	private Phase<E6Property> checkDataDetect(RFProtocol p) {
+	private Phase checkDataDetect(RFProtocol p) {
 		Integer dd = intSetting(p, "data_detect_db");
 		return (dd != null)
 		      ? new CheckDataDetect(p, dd)
@@ -548,7 +548,7 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to check the data detect for one protocol */
-	private class CheckDataDetect extends Phase<E6Property> {
+	private class CheckDataDetect extends Phase {
 		private final RFProtocol protocol;
 		private final int data_detect;
 		private CheckDataDetect(RFProtocol p, int dd) {
@@ -557,7 +557,7 @@ public class OpSendSettings extends OpE6 {
 		}
 
 		/** Check the data detect */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			DataDetectProp det = new DataDetectProp(protocol);
@@ -571,7 +571,7 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to store data detect for one protocol */
-	private class StoreDataDetect extends Phase<E6Property> {
+	private class StoreDataDetect extends Phase {
 		private final RFProtocol protocol;
 		private final int data_detect;
 		private StoreDataDetect(RFProtocol p, int dd) {
@@ -580,7 +580,7 @@ public class OpSendSettings extends OpE6 {
 		}
 
 		/** Store data detect */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			DataDetectProp det = new DataDetectProp(protocol);
@@ -592,7 +592,7 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Get check seen count phase (or later) */
-	private Phase<E6Property> checkSeen(RFProtocol p) {
+	private Phase checkSeen(RFProtocol p) {
 		Integer sc = intSetting(p, "seen_count");
 		Integer uc = intSetting(p, "unique_count");
 		return (sc != null && uc != null)
@@ -601,7 +601,7 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to check seen count for one protocol */
-	private class CheckSeen extends Phase<E6Property> {
+	private class CheckSeen extends Phase {
 		private final RFProtocol protocol;
 		private final int seen_count;
 		private final int unique_count;
@@ -612,7 +612,7 @@ public class OpSendSettings extends OpE6 {
 		}
 
 		/** Check seen count */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			SeenCountProp seen = new SeenCountProp(protocol);
@@ -628,7 +628,7 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Phase to store seen and unique count for one protocol */
-	private class StoreSeen extends Phase<E6Property> {
+	private class StoreSeen extends Phase {
 		private final RFProtocol protocol;
 		private final int seen_count;
 		private final int unique_count;
@@ -639,7 +639,7 @@ public class OpSendSettings extends OpE6 {
 		}
 
 		/** Store seen and unique counts */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			SeenCountProp seen = new SeenCountProp(protocol);
@@ -652,15 +652,15 @@ public class OpSendSettings extends OpE6 {
 	}
 
 	/** Get the last phase */
-	private Phase<E6Property> lastPhase() {
+	private Phase lastPhase() {
 		return (stop) ? new StoreMode() : null;
 	}
 
 	/** Phase to store the mode */
-	private class StoreMode extends Phase<E6Property> {
+	private class StoreMode extends Phase {
 
 		/** Store the mode */
-		protected Phase<E6Property> poll(CommMessage<E6Property> mess)
+		public Phase poll(CommMessage<E6Property> mess)
 			throws IOException
 		{
 			ModeProp mode = new ModeProp();

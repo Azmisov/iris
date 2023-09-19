@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2010-2021  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +24,7 @@ import us.mn.state.dot.sched.TimeSteward;
  * Factory for creating sample archive files.
  *
  * @author Douglas Lau
+ * @author Michale Darter
  */
 public class SampleArchiveFactoryImpl implements SampleArchiveFactory {
 
@@ -62,13 +64,36 @@ public class SampleArchiveFactoryImpl implements SampleArchiveFactory {
 
 	/** Test if a sample file name has a known extension */
 	public boolean hasKnownExtension(String name) {
+		final boolean ARCHIVE_ALL_FILES = true;
+		if (ARCHIVE_ALL_FILES) {
+			// archive all files in the archive directory
+			return true;
+		} else {
+			// Archive only known file types in archive dir.
+			// If an unknown file type is encountered, operation
+			// is halted and partial daily archive file is not 
+			// deleted. This stops future archive attempts for 
+			// this day.
+			synchronized(extensions) {
+				for(String ext: extensions) {
+					if(name.endsWith(ext))
+						return true;
+				}
+			}
+			return false;
+		}
+	}
+
+	/** Get a list of all valid extensions */
+	public String getKnownExtensions() {
+		StringBuilder sb = new StringBuilder();
 		synchronized(extensions) {
 			for(String ext: extensions) {
-				if(name.endsWith(ext))
-					return true;
+				sb.append(ext);
+				sb.append(" ");
 			}
 		}
-		return false;
+		return sb.toString();
 	}
 
 	/** Create an archive file.

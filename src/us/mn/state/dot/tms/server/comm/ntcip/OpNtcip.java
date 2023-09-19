@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2013-2023  Minnesota Department of Transportation
+ * Copyright (C) 2023 Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,12 +39,12 @@ import us.mn.state.dot.tms.utils.MultiString;
 /**
  * Operation for NTCIP device.
  *
- * @author Douglas Lau
+ * @author Douglas Lau, Isaac Nygaard
  */
-abstract public class OpNtcip extends OpDevice {
+abstract public class OpNtcip extends OpDevice<ASN1Object> {
 
 	/** NTCIP debug log */
-	static private final DebugLog NTCIP_LOG = new DebugLog("ntcip");
+	static protected final DebugLog NTCIP_LOG = new DebugLog("ntcip");
 
 	/** Lookup a sign message number */
 	static protected int lookupMsgNum(String ms) {
@@ -139,6 +140,7 @@ abstract public class OpNtcip extends OpDevice {
 			try {
 				GraphicInfoList gil = new GraphicInfoList(g);
 				int gid = gil.getCrcSwapped();
+				gil.close();
 				return HexString.format(gid, 4);
 			}
 			catch (IOException e) {

@@ -271,6 +271,18 @@ UPDATE iris.controller_io SET resource_n = 'video_monitor'
     WHERE name IN (SELECT name FROM iris.video_monitor);
 UPDATE iris.controller_io SET resource_n = 'weather_sensor'
     WHERE name IN (SELECT name FROM iris.weather_sensor);
+-- v47 has some additional rows; don't know their types
+DO
+$do$
+DECLARE
+	rec RECORD;
+BEGIN
+	FOR rec IN (SELECT * FROM iris.controller_io WHERE resource_n is null) LOOP
+		RAISE NOTICE 'removing controller_io of unknown type: %', quote_ident(rec.name);
+	END LOOP;
+END
+$do$;
+DELETE FROM iris.controller_io WHERE resource_n IS NULL;
 ALTER TABLE iris.controller_io ALTER COLUMN resource_n SET NOT NULL;
 
 CREATE TRIGGER controller_io_notify_trig

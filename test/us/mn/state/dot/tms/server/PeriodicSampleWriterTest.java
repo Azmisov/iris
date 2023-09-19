@@ -105,5 +105,8 @@ public class PeriodicSampleWriterTest extends TestCase {
 		public boolean hasKnownExtension(String name) {
 			return true;
 		}
+		public String getKnownExtensions() {
+			return "";
+		}
 	}
 }

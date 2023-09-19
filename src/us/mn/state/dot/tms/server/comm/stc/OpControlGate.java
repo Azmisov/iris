@@ -55,15 +55,15 @@ public class OpControlGate extends OpSTC {
 
 	/** Create the second phase of the operation */
 	@Override
-	protected Phase<STCProperty> phaseTwo() {
+	protected Phase phaseTwo() {
 		return new StoreControl();
 	}
 
 	/** Phase to store control */
-	protected class StoreControl extends Phase<STCProperty> {
+	protected class StoreControl extends Phase {
 
 		/** Store control */
-		protected Phase<STCProperty> poll(CommMessage<STCProperty> mess)
+		public Phase poll(CommMessage<STCProperty> mess)
 			throws IOException
 		{
 			mess.add(control);

@@ -83,7 +83,7 @@ public class OpQueryDMSFonts extends OpDMS {
 
 		/** Query the maximum character size (v2 only) */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(max_char_sz);
 			try {
 				mess.queryProps();
@@ -107,7 +107,7 @@ public class OpQueryDMSFonts extends OpDMS {
 
 		/** Query the number of supported fonts */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(num_fonts);
 			mess.add(max_characters);
 			mess.queryProps();
@@ -164,7 +164,7 @@ public class OpQueryDMSFonts extends OpDMS {
 
 		/** Query one row in font table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(number);
 			mess.add(name);
 			mess.add(height);
@@ -248,7 +248,7 @@ public class OpQueryDMSFonts extends OpDMS {
 
 		/** Add a character to the font table */
 		@SuppressWarnings("unchecked")
-		protected Phase poll(CommMessage mess) throws IOException {
+		public Phase poll(CommMessage mess) throws IOException {
 			mess.add(char_width);
 			mess.add(char_bitmap);
 			mess.queryProps();

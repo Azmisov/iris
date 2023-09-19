@@ -66,15 +66,15 @@ public class OpSendSensorSettings extends OpG4 {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<G4Property> phaseOne() {
+	protected Phase phaseOne() {
 		return new QuerySensorInfo();
 	}
 
 	/** Phase to query the sensor information */
-	private class QuerySensorInfo extends Phase<G4Property> {
+	private class QuerySensorInfo extends Phase {
 
 		/** Query the sensor information */
-		protected Phase<G4Property> poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			mess.add(sensor_info);
@@ -89,10 +89,10 @@ public class OpSendSensorSettings extends OpG4 {
 	}
 
 	/** Phase to query the setup information */
-	private class QuerySetupInfo extends Phase<G4Property> {
+	private class QuerySetupInfo extends Phase {
 
 		/** Query the setup information */
-		protected Phase<G4Property> poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			mess.add(setup_info);
@@ -169,10 +169,10 @@ public class OpSendSensorSettings extends OpG4 {
 	}
 
 	/** Phase to store the setup information */
-	private class StoreSetupInfo extends Phase<G4Property> {
+	private class StoreSetupInfo extends Phase {
 
 		/** Store the setup information */
-		protected Phase<G4Property> poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			updateSetupInfo();
@@ -183,10 +183,10 @@ public class OpSendSensorSettings extends OpG4 {
 	}
 
 	/** Phase to query the vehicle class config */
-	private class QueryClassConfig extends Phase<G4Property> {
+	private class QueryClassConfig extends Phase {
 
 		/** Query the vehicle class config */
-		protected Phase<G4Property> poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			mess.add(class_config);
@@ -210,10 +210,10 @@ public class OpSendSensorSettings extends OpG4 {
 	}
 
 	/** Phase to store the vehicle class config */
-	protected class StoreClassConfig extends Phase<G4Property> {
+	protected class StoreClassConfig extends Phase {
 
 		/** Store the vehicle classes */
-		protected Phase<G4Property> poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			updateClassConfig();
@@ -232,10 +232,10 @@ public class OpSendSensorSettings extends OpG4 {
 	}
 
 	/** Phase to query RTC */
-	private class QueryRTC extends Phase<G4Property> {
+	private class QueryRTC extends Phase {
 
 		/** Query the RTC */
-		protected Phase<G4Property> poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			mess.add(rtc);
@@ -261,10 +261,10 @@ public class OpSendSensorSettings extends OpG4 {
 	}
 
 	/** Phase to store the RTC */
-	private class StoreRTC extends Phase<G4Property> {
+	private class StoreRTC extends Phase {
 
 		/** Store the RTC */
-		protected Phase<G4Property> poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			updateRTC();

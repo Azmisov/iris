@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2022  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
 import java.util.TimeZone;
+import us.mn.state.dot.tms.utils.HexString;
 import us.mn.state.dot.tms.server.ControllerImpl;
 import us.mn.state.dot.tms.server.comm.ChecksumException;
 import us.mn.state.dot.tms.server.comm.ControllerException;
@@ -32,6 +34,7 @@ import us.mn.state.dot.tms.server.comm.ProtocolException;
  * SS125 property.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 abstract public class SS125Property extends ControllerProperty {
 
@@ -62,10 +65,13 @@ abstract public class SS125Property extends ControllerProperty {
 	static private final int SUB_ID = 0;
 
 	/** Message sub ID "don't care" */
-	static private final byte MSG_SUB_ID = 0;
+	static private final byte DONT_CARE_MSG_SUB_ID = 0;
 
 	/** CRC calculator */
 	static private final CRC crc = new CRC(8, 0x1C, 0x00, false);
+
+	/** Controller name for logging */
+	private final String ctl_name;
 
 	/** Check if a drop address is valid */
 	static private boolean isAddressValid(int drop) {
@@ -149,7 +155,8 @@ abstract public class SS125Property extends ControllerProperty {
 		return (b2 << 16) | (b1 << 8) | b0;
 	}
 
-	/** Parse a 24-bit fixed-point value */
+	/** Parse a 24-bit fixed-point value.
+	 * @return Null if the controller indicates an error */
 	static protected Float parse24Fixed(byte[] body, int pos) {
 		int flag = (body[pos] >> 7) & 0x01;
 		if (flag == 0)
@@ -214,7 +221,29 @@ abstract public class SS125Property extends ControllerProperty {
 	private byte seq_num = 0;
 
 	/** Message sub ID */
-	protected int msg_sub_id = MSG_SUB_ID;
+	protected int msg_sub_id = DONT_CARE_MSG_SUB_ID;
+
+	/** Constructor */
+	public SS125Property() {
+		ctl_name = "";
+	}
+
+	/** Constructor */
+	public SS125Property(String cn) {
+		ctl_name = (cn == null ? "" : cn);
+	}
+
+	/** Log a message */
+	protected void log(String msg) {
+		if (SS125Poller.SS125_LOG.isOpen())
+			SS125Poller.SS125_LOG.log(ctl_name + " " + msg);
+	}
+
+	/** Log a message */
+	protected void logError(String msg) {
+		if (SS125Poller.SS125_LOG.isOpen())
+			SS125Poller.SS125_LOG.log(ctl_name + "! " + msg);
+	}
 
 	/** Format a request header.
 	 * @param body Body of message to send.
@@ -227,13 +256,33 @@ abstract public class SS125Property extends ControllerProperty {
 		byte[] header = new byte[11];
 		header[OFF_SENTINEL] = 'Z';
 		header[OFF_PROTOCOL_VER] = '1';
-		format8(header, OFF_DEST_SUB_ID, dest_sub_id);
-		format16(header, OFF_DEST_ID, drop);
+		if (SS125Poller.BROADCAST) {
+			// Broadcast to all devices on subnet, useful
+			// for resolving connection issues.
+			format8(header, OFF_DEST_SUB_ID, 0xFF);
+			format16(header, OFF_DEST_ID, 0xFFFF);
+		} else {
+			// traditional values
+			format8(header, OFF_DEST_SUB_ID, dest_sub_id);
+			format16(header, OFF_DEST_ID, drop);
+		}
 		format8(header, OFF_SOURCE_SUB_ID, source_sub_id);
 		format16(header, OFF_SOURCE_ID, source_id);
 		format8(header, OFF_SEQUENCE, seq_num);
 		format8(header, OFF_BODY_SIZE, body.length - 1);
 		format8(header, OFF_CRC, calculate(header));
+		log("SS125Property.formatHeader: dest_sub_id="+
+			dest_sub_id);
+		log("SS125Property.formatHeader: src_sub_id="+
+			source_sub_id);
+		log("SS125Property.formatHeader: source_id="+
+			source_id);
+		log("SS125Property.formatHeader: seq_num="+
+			seq_num);
+		log("SS125Property.formatHeader: body_len="+
+			body.length);
+		log("SS125Property.formatHeader: crc="+
+			calculate(header));
 		return header;
 	}
 
@@ -248,7 +297,10 @@ abstract public class SS125Property extends ControllerProperty {
 	 * @return Number of bytes in response body.
 	 * @throws IOException on error. */
 	private int decodeHead(InputStream is, int drop) throws IOException {
+		log("SS125Property.decodeHead: called: drop=" + drop);
 		byte[] rhead = recvResponse(is, 11);
+		log("SS125Property.decodeHead: read head=" + 
+			HexString.format(rhead));
 		if (parse8(rhead, OFF_CRC) != calculate(rhead))
 			throw new ChecksumException("HEADER");
 		if (rhead[OFF_SENTINEL] != 'Z')
@@ -261,14 +313,20 @@ abstract public class SS125Property extends ControllerProperty {
 			throw new ParsingException("DEST ID");
 		if (parse8(rhead, OFF_SOURCE_SUB_ID) != dest_sub_id)
 			throw new ParsingException("SRC SUB ID");
-		if (parse16(rhead, OFF_SOURCE_ID) != drop)
-			throw new ParsingException("SRC ID");
+		if(parse16(rhead, OFF_SOURCE_ID) != drop) {
+			// WYDOT specific change due to their comm config
+			logError("warning mismatch: off_source_id=" + 
+				parse16(rhead, OFF_SOURCE_ID) + " drop=" + drop);
+			//throw new ParsingException("SRC ID");
+		}
 		seq_num++;
 		if (parse8(rhead, OFF_SEQUENCE) != seq_num)
 			throw new ParsingException("SEQUENCE");
 		int n_body = parse8(rhead, OFF_BODY_SIZE);
 		if (n_body < 3 || n_body > MAX_BODY_OCTETS)
 			throw new ParsingException("BODY SIZE");
+		log("SS125Property.decodeHead: n_bytes_in_body=" + n_body);
+		log("SS125Property.decodeHead: read head with no problems");
 		return n_body;
 	}
 
@@ -289,23 +347,40 @@ abstract public class SS125Property extends ControllerProperty {
 	private byte[] decodeBody(InputStream is, int n_body, MessageType mt)
 		throws IOException
 	{
+		log("SS125Property.decodeBody: expected body len=" + n_body);
 		byte[] rbody = recvResponse(is, n_body + 1);
 		if (rbody.length < 4)
 			throw new ParsingException("BODY SIZE");
 		if (parse8(rbody, rbody.length - 1) != calculate(rbody))
 			throw new ChecksumException("BODY CRC");
+		log("SS125Property.decodeBody: body crc is good");
 		MessageID mid = MessageID.fromCode(parse8(rbody, OFF_MSG_ID));
 		if (mid != msgId())
 			throw new ParsingException("MESSAGE ID");
-		msg_sub_id = parse8(rbody, OFF_MSG_SUB_ID);
+		log("SS125Property.decodeBody: msg id matches: " + 
+			mid + "=" + msgId());
+		if(!parseMsgSubId(rbody)) {
+			log("SS125Property.decodeBody: EX");
+			throw new ParsingException("MESSAGE SUB ID");
+		}
 		MessageType rmt = MessageType.fromCode(parse8(rbody,
 			OFF_MSG_TYPE));
+		log("SS125Property.decodeBody: remote msg_type=" + rmt);
 		if (rmt == MessageType.RESULT) {
 			if (rbody.length != 6)
 				throw new ParsingException("RESULT SIZE");
 		} else if (rmt != mt)
-			throw new ParsingException("MESSAGE TYPE");
+			throw new ParsingException("MESSAGE TYPE");	
+		log("SS125Property.decodeBody: returning body=" + 
+			HexString.format(rbody));
 		return rbody;
+	}
+
+	/** Validate the message sub id in the message response body */
+	protected boolean parseMsgSubId(byte[] rbody) {
+		// previously checked that matched current msg_sub_id; now we just override
+		msg_sub_id = parse8(rbody, OFF_MSG_SUB_ID);
+		return true;
 	}
 
 	/** Get the message ID */
@@ -356,8 +431,14 @@ abstract public class SS125Property extends ControllerProperty {
 		byte[] body = formatStore();
 		byte[] header = formatHeader(body, c.getDrop());
 		format8(body, body.length - 1, calculate(body));
+		log("SS125Property.encodeQuery: hdr sending=" + 
+			HexString.format(header));
+		log("SS125Property.encodeQuery: body sending=" + 
+			HexString.format(body));
+		log("SS125Property.encodeQuery: writing header+body...");
 		os.write(header);
 		os.write(body);
+		log("SS125Property.encodeQuery: wrote header+body.");
 	}
 
 	/** Format a STORE request */

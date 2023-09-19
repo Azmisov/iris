@@ -39,7 +39,7 @@ abstract public class SS105Property extends ControllerProperty {
 	static private final String ASCII = "US-ASCII";
 
 	/** Multidrop SS105 protocol */
-	static private final boolean MULTIDROP = true;
+	static private final boolean MULTIDROP = false;
 
 	/** Maximum number of bytes in a response */
 	static private final int MAX_RESP = 256;

@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2006-2022  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +20,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.swing.ComboBoxModel;
@@ -57,6 +59,7 @@ import us.mn.state.dot.tms.utils.NumericAlphaComparator;
  * R_Node manager provides proxies for roadway nodes.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class R_NodeManager extends ProxyManager<R_Node>
 	implements CorridorFinder<R_Node>
@@ -406,7 +409,7 @@ public class R_NodeManager extends ProxyManager<R_Node>
 	}
 
 	/** Lookup all detectors in an r_node */
-	private TreeSet<Detector> lookupDets(R_Node n) {
+	public TreeSet<Detector> lookupDets(R_Node n) {
 		TreeSet<Detector> set = new TreeSet<Detector>(
 			new NumericAlphaComparator<Detector>());
 		Iterator<Detector> it = DetectorHelper.iterator();
@@ -416,5 +419,13 @@ public class R_NodeManager extends ProxyManager<R_Node>
 				set.add(d);
 		}
 		return set;
+	}
+
+	/** Get the sensor sample corresponding to the specified
+	 * station id for the current corridor.
+	 * @param sid Station id
+	 * @return The real-time SensorSample for the specified station id */
+	public SensorSample getSample(String sid) {
+		return builder.getSample(sid);
 	}
 }

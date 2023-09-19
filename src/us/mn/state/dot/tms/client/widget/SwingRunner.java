@@ -63,6 +63,9 @@ public final class SwingRunner {
 			}
 		}
 		catch (Exception e) {
+			// log to console for situations where error prevents dialog
+			// box from opening to display the error
+			System.err.println("Exception in swing runner: "+e);
 			getHandler().handle(e);
 		}
 	}

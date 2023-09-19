@@ -1,6 +1,6 @@
 /*
  * IRIS -- Intelligent Roadway Information System
- * Copyright (C) 2017  Iteris Inc.
+ * Copyright (C) 2017-2019  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,9 +35,24 @@ public class WeatherSensorXmlJob extends Job {
 
 	/** Perform the job */
 	public void perform() throws IOException {
-		WeatherSensorXmlWriter writer = new WeatherSensorXmlWriter();
-		writer.write();
-		WeatherSensorCsvWriter.createWrite(1);
-		WeatherSensorCsvWriter.createWrite(2);
+		new WeatherSensorXmlWriter().write();
+		writeCsvFiles();
+	}
+
+	/** Write CSV files */
+	public void writeCsvFiles() throws IOException {
+		WeatherSensorCsvWriter ww;
+		ww = WeatherSensorCsvWriter.create(WeatherSensorFileEnum.ATMO);
+		if (ww != null)
+			ww.write();
+		ww = WeatherSensorCsvWriter.create(WeatherSensorFileEnum.SURF);
+		if (ww != null)
+			ww.write();
+		ww = WeatherSensorCsvWriter.create(WeatherSensorFileEnum.ATMO2);
+		if (ww != null)
+			ww.write();
+		ww = WeatherSensorCsvWriter.create(WeatherSensorFileEnum.SURF2);
+		if (ww != null)
+			ww.write();
 	}
 }

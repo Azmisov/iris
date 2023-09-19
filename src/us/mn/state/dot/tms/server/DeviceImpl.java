@@ -2,6 +2,7 @@
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2000-2023  Minnesota Department of Transportation
  * Copyright (C) 2015-2017  SRF Consulting Group
+ * Copyright (C) 2021  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +18,6 @@ package us.mn.state.dot.tms.server;
 
 import us.mn.state.dot.sched.DebugLog;
 import us.mn.state.dot.sonar.SonarException;
-import us.mn.state.dot.tms.CommLink;
 import us.mn.state.dot.tms.ControllerHelper;
 import us.mn.state.dot.tms.Device;
 import us.mn.state.dot.tms.DeviceRequest;
@@ -31,6 +31,7 @@ import us.mn.state.dot.tms.server.comm.OpDevice;
  * cameras, ramp meters, dynamic message signs, etc.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 abstract public class DeviceImpl extends ControllerIoImpl implements Device {
 
@@ -184,6 +185,12 @@ abstract public class DeviceImpl extends ControllerIoImpl implements Device {
 		return (c != null) && c.isActive();
 	}
 
+	/** Determine if the device's comm link is enabled and 
+	 * controller is active */
+	public boolean getActiveEnabled() {
+		return ControllerHelper.isActive(controller);
+	}
+
 	/** Get the failure status */
 	public boolean isFailed() {
 		ControllerImpl c = controller;	// Avoid race
@@ -233,6 +240,12 @@ abstract public class DeviceImpl extends ControllerIoImpl implements Device {
 	protected int getPollPeriodSec() {
 		ControllerImpl c = controller;	// Avoid race
 		return (c != null) ? c.getPollPeriodSec() : 30;
+	}
+
+	/** Check if the device is on a "connected" comm link */
+	protected boolean isConnected() {
+		ControllerImpl c = controller;
+		return (c != null) && c.isConnected();
 	}
 
 	/** Check if dial-up is required to communicate */

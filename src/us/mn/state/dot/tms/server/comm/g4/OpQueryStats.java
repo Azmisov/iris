@@ -44,15 +44,15 @@ public class OpQueryStats extends OpG4 {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<G4Property> phaseOne() {
+	protected Phase phaseOne() {
 		return new GetCurrentSamples();
 	}
 
 	/** Phase to get the most recent binned samples */
-	private class GetCurrentSamples extends Phase<G4Property> {
+	private class GetCurrentSamples extends Phase {
 
 		/** Get the most recent binned samples */
-		protected Phase<G4Property> poll(CommMessage<G4Property> mess)
+		public Phase poll(CommMessage<G4Property> mess)
 			throws IOException
 		{
 			mess.add(stat);
@@ -64,10 +64,10 @@ public class OpQueryStats extends OpG4 {
 	}
 
 	/** Phase to store the RTC */
-	private class StoreRTC extends Phase<G4Property> {
+	private class StoreRTC extends Phase {
 
 		/** Store the RTC */
-		protected Phase<G4Property> poll(
+		public Phase poll(
 			CommMessage<G4Property> mess) throws IOException
 		{
 			long stamp = stat.getStamp();

@@ -1,6 +1,7 @@
 /*
  * IRIS -- Intelligent Roadway Information System
  * Copyright (C) 2009-2018  Minnesota Department of Transportation
+ * Copyright (C) 2017  Iteris Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +28,7 @@ import us.mn.state.dot.tms.geo.MapVector;
  * SegmentLayerState is a class for drawing roadway segments.
  *
  * @author Douglas Lau
+ * @author Michael Darter
  */
 public class SegmentLayerState extends ProxyLayerState<R_Node> {
 
@@ -41,10 +43,10 @@ public class SegmentLayerState extends ProxyLayerState<R_Node> {
 		MapBean mb, SegmentBuilder sb)
 	{
 		super(l, mb);
-		setTheme(new DensityTheme());
-		addTheme(new DensityTheme());
+		setTheme(new SpeedTheme());
 		addTheme(new SpeedTheme());
 		addTheme(new FlowTheme());
+		addTheme(new DensityTheme());
 		addTheme(new FreewayTheme());
 		manager = m;
 		builder = sb;
@@ -146,7 +148,7 @@ public class SegmentLayerState extends ProxyLayerState<R_Node> {
 	protected void doLeftClick(MouseEvent e, MapObject o) {
 		if (o instanceof MapSegment) {
 			MapSegment ms = (MapSegment) o;
-			doLeftClick(e, ms.getR_Node());
+			doLeftClick(e, ms.getStationR_Node());
 		} else if (o instanceof ParkingSpace) {
 			ParkingSpace ps = (ParkingSpace) o;
 			doLeftClick(e, ps.getR_Node());
@@ -165,7 +167,7 @@ public class SegmentLayerState extends ProxyLayerState<R_Node> {
 	protected void doRightClick(MouseEvent e, MapObject o) {
 		if (o instanceof MapSegment) {
 			MapSegment ms = (MapSegment) o;
-			R_Node n = ms.getR_Node();
+			R_Node n = ms.getStationR_Node();
 			MapObject mo = builder.findGeoLoc(n);
 			super.doRightClick(e, mo);
 		}

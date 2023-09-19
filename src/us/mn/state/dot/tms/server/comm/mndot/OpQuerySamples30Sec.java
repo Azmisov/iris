@@ -42,15 +42,15 @@ public class OpQuerySamples30Sec extends OpQuerySamples {
 
 	/** Create the first phase of the operation */
 	@Override
-	protected Phase<MndotProperty> phaseOne() {
+	protected Phase phaseOne() {
 		return new QuerySample30Sec();
 	}
 
 	/** Phase to query the 30-second sample data */
-	protected class QuerySample30Sec extends Phase<MndotProperty> {
+	protected class QuerySample30Sec extends Phase {
 
 		/** Query 30-second sample data */
-		protected Phase<MndotProperty> poll(
+		public Phase poll(
 			CommMessage<MndotProperty> mess) throws IOException
 		{
 			byte[] r = new byte[72];

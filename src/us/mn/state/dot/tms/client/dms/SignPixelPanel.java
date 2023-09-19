@@ -20,7 +20,6 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import javax.swing.JPanel;
 import us.mn.state.dot.tms.DMS;
@@ -35,6 +34,7 @@ import static us.mn.state.dot.tms.client.widget.Widgets.UI;
  *
  * @author Douglas Lau
  * @author Deb Behera
+ * @author Michael Darter
  */
 public class SignPixelPanel extends JPanel {
 
@@ -132,55 +132,6 @@ public class SignPixelPanel extends JPanel {
 		draw_modules = draw;
 	}
 
-	/** Draw  vertical pixel module lines.
-	 * @param g Graphics to draw the line */
-	private void drawVerticalLines(Graphics2D g) {
-		if (mwidth_pix <= 0 || width_pix % mwidth_pix != 0)
-			return;
-		int num_vertical_lines = width_pix / mwidth_pix;
-		int width_part_mm = width_mm / num_vertical_lines;
-		int x_mp = width_part_mm / 2;
-		for (int x = 1; x <= num_vertical_lines; x++) {
-			int xlines_mm = width_mm - (x * width_part_mm);
-			g.setColor(Color.WHITE);
-			g.drawLine(xlines_mm, 0, xlines_mm, height_mm);
-			g.drawString(String.valueOf(x), x_mp, 0);
-			g.drawString(String.valueOf(x), x_mp, height_mm);
-			x_mp += width_part_mm;
-		}
-
-	}
-
-	/** Draw  hotizontal lines pixel module lines.
-	 * @param g Graphics to draw the line */
-	private void drawHorizontalLines(Graphics2D g) {
-		if (mheight_pix <= 0 || height_pix % mheight_pix != 0)
-			return;
-		int num_horizontal_lines = height_pix / mheight_pix;
-		int height_part_mm = height_mm / num_horizontal_lines;
-		int y_mp = height_part_mm / 2;
-		for (int y = 1; y <= num_horizontal_lines; y++) {
-			int ylines_mm = height_mm - (y * height_part_mm);
-			g.setColor(Color.WHITE);
-			g.drawLine(0, ylines_mm, width_mm, ylines_mm);
-			g.drawString(String.valueOf(y), 0, y_mp);
-			g.setColor(Color.DARK_GRAY);
-			g.drawString(String.valueOf(y), width_mm + 10,  y_mp);
-			y_mp += height_part_mm;
-		}
-	}
-
-	/** Draw the pixel modules.
-	 * @param g Graphics to draw the line */
-	private void drawPixelLines(Graphics2D g) {
-		if (draw_modules) {
-			Font font = new Font("Serif", Font.PLAIN, 100);
-			g.setFont(font);
-			drawVerticalLines(g);
-			drawHorizontalLines(g);
-		}
-	}
-
 	/** Set the sign filter color.
 	 * @param fc Filter color of sign. */
 	public void setFilterColor(Color fc) {
@@ -244,7 +195,6 @@ public class SignPixelPanel extends JPanel {
 			g.transform(t);
 			g.setColor(face_color);
 			g.fillRect(0, 0, width_mm, height_mm);
-			drawPixelLines(g);
 			if (rg != null)
 				paintPixels(g, rg);
 			Color fc = filter_color;
@@ -252,6 +202,8 @@ public class SignPixelPanel extends JPanel {
 				g.setColor(fc);
 				g.fillRect(0, 0, width_mm, height_mm);
 			}
+			if (draw_modules)
+				drawPixelModules(g);
 		}
 	}
 
@@ -303,7 +255,7 @@ public class SignPixelPanel extends JPanel {
 		return getHorizontalPitch() / 2;
 	}
 
-	/** Get the x-distance to the given pixel */
+	/** Get the x-distance to the given pixel (mm) */
 	private float getPixelX(int x) {
 		return getHorizontalBorder() + getCharacterOffset(x) +
 		       getHorizontalPitch() * x;
@@ -355,7 +307,7 @@ public class SignPixelPanel extends JPanel {
 		return getVerticalPitch() / 2;
 	}
 
-	/** Get the y-distance to the given pixel */
+	/** Get the y-distance to the given pixel (mm) */
 	private float getPixelY(int y) {
 		return getVerticalBorder() + getLineOffset(y) +
 		       getVerticalPitch() * y;
@@ -469,5 +421,62 @@ public class SignPixelPanel extends JPanel {
 	 * within the component. */
 	public AffineTransform getTransform() {
 		return transform;
+	}
+
+	/** Draw the pixel modules.
+	 * @param g Graphics to draw the line */
+	private void drawPixelModules(Graphics2D g) {
+		if (mwidth_pix <= 0 || width_pix % mwidth_pix != 0)
+			return;
+		if (mheight_pix <= 0 || height_pix % mheight_pix != 0)
+			return;
+
+		final int num_vert_lines = width_pix / mwidth_pix;
+		final int num_horz_lines = height_pix / mheight_pix;
+		final int fsize = 100 * (int)(num_vert_lines > 9 ? 2 : 2.5);
+		Font font = new Font("Serif", Font.PLAIN, fsize);
+		g.setFont(font);
+
+                // draw pixels as gray rectangles
+		final int px = Math.round(getHorizontalPitch());
+		final int py = Math.round(getVerticalPitch());
+		g.setColor(Color.GRAY);
+		for (int y = 0; y < height_pix; ++y) {
+			int mm_y = Math.round(getPixelY(y));
+			for (int x = 0; x < width_pix; ++x) {
+				int mm_x = Math.round(getPixelX(x));
+				g.drawRect(mm_x, mm_y, px, py);
+			}
+		}
+
+		// draw pixel module outlines in yellow
+		final int mw_mm = Math.round(px * mwidth_pix);
+		final int mh_mm = Math.round(py * mheight_pix);
+		for (int y = 0, yi = height_pix / mheight_pix; 
+			y < height_pix; 
+			y += mheight_pix, yi--) 
+		{
+			int mm_y = Math.round(getPixelY(y));
+			int mmf_y = Math.round(getPixelY(y + mheight_pix));
+			for (int x = 0, xi = 1; 
+				x < width_pix; 
+				x += mwidth_pix, xi++) 
+			{
+				int mm_x = Math.round(getPixelX(x));
+				g.setColor(Color.YELLOW);
+				g.drawRect(mm_x, mm_y, mw_mm, mh_mm);
+				// vert legend
+				g.setColor(Color.WHITE);
+				if (xi == 1 && num_horz_lines > 3) {
+					g.drawString(String.valueOf(yi), 
+						mm_x, mmf_y);
+				}
+				// horz legend
+				if (yi == 1 && num_vert_lines > 3) {
+					g.drawString(String.valueOf(xi), 
+						mm_x, mmf_y);
+				}
+			}
+		}
 	}
 }

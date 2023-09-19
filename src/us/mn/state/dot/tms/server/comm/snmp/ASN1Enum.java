@@ -14,15 +14,12 @@
  */
 package us.mn.state.dot.tms.server.comm.snmp;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-
 /**
  * ASN1 Enum.
  *
  * @author Douglas Lau
  */
-public class ASN1Enum<T extends Enum> extends ASN1Integer {
+public class ASN1Enum<T extends Enum<T>> extends ASN1Integer {
 
 	/** Enum class (needed because Java generics sucks) */
 	private final Class<T> eclass;
