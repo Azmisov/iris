@@ -489,6 +489,13 @@ Merged notes
 			EventProperty + DetectionEvent -> ActiveEventProperty; Doug does not separate them
 			Lots of changes actually, so not worth enumerating all; I tried to do sensible
 			choices for merge, inserting Michael's logic if missing in Doug's
+10035:
+	- Warning: this is last patch to modify IncFeedProperty, det JSON is still ignored
+9930:
+	- encoder column has been split into enc_address and enc_port; to reconstruct
+		original address, just join with colon; see migrate-5.9.sql
+	- camera_view table is subset of current, so not changing; won't include
+		the other db changes either, since don't seem to be needed to make patch work
 
 Skipped
 ==================
@@ -512,7 +519,7 @@ Skipped
 9855, 9879, 9918, 10013:
 	- these are for install_jars[_client].sh; would go into iris specific repo I think, or else
 		will be unnecessary if we switch to doing containerized install instead
-9794, 9812, 9818, 9867, 9872, 9876, 10016, 10028, 10029:
+9794, 9812, 9818, 9867, 9872, 9876, 9887, 9888, 10016, 10028, 10029:
 	- already merged
 9838:
 	- Doug implemented same/very similar thing
@@ -525,6 +532,8 @@ Skipped
 	- obsolete with future patches
 9952, 9970:
 	- obsolete with EssConvertible changes
+9902, 9903:
+	- migrate-5.20.sql increases to 256 chars, so think that covers this patch
 
 TODO
 ===================
